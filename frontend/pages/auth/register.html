@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — EduVerse</title>
+  <meta name="description" content="Create your free EduVerse account." />
+  <meta name="robots" content="noindex" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+
+  <script>
+    try {
+      if (localStorage.getItem('ev_theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.documentElement.classList.add('dark');
+      }
+    } catch(e) {}
+  </script>
+
+  <style>
+    body { min-height: 100vh; }
+
+    .auth-left {
+      background: linear-gradient(150deg, #0f2340 0%, #1A56DB 55%, #7c3aed 100%);
+      position: relative;
+    }
+    .auth-left-pattern {
+      position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.05) 1.5px, transparent 1.5px);
+      background-size: 28px 28px; pointer-events: none; z-index: 0;
+    }
+    .auth-left > * { position: relative; z-index: 1; }
+
+    /* Stepper */
+    .reg-stepper { display: flex; align-items: center; margin-bottom: var(--space-7); }
+    .reg-step { display: flex; align-items: center; gap: var(--space-2); flex: 1; }
+    .reg-step:last-child { flex: 0; }
+    .reg-step-circle {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid var(--border-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--font-size-xs); font-weight: var(--font-weight-bold);
+      color: var(--text-muted); background: var(--bg-surface);
+      flex-shrink: 0; transition: all var(--transition-base); z-index: 1;
+    }
+    .reg-step.active .reg-step-circle { border-color: var(--color-primary-600); background: var(--color-primary-600); color: #fff; }
+    .reg-step.done   .reg-step-circle { border-color: var(--color-success); background: var(--color-success); color: #fff; }
+    .reg-step-label { font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); color: var(--text-muted); white-space: nowrap; }
+    .reg-step.active .reg-step-label { color: var(--color-primary-600); }
+    .reg-step.done   .reg-step-label { color: var(--color-success); }
+    .reg-step-line { flex: 1; height: 2px; background: var(--border-color); margin: 0 var(--space-2); transition: background var(--transition-base); }
+    .reg-step-line.done { background: var(--color-success); }
+
+    /* Role cards */
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-6); }
+    .role-card {
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-1-5);
+      padding: var(--space-4) var(--space-3); border: 2px solid var(--border-color);
+      border-radius: var(--border-radius-lg); cursor: pointer;
+      transition: all var(--transition-fast); background: var(--bg-surface);
+      text-align: center; user-select: none;
+    }
+    .role-card:hover { border-color: var(--color-primary-400); background: var(--color-primary-50); transform: translateY(-1px); }
+    .role-card.selected { border-color: var(--color-primary-600); background: var(--color-primary-50); box-shadow: 0 0 0 3px rgba(26,86,219,0.12); }
+    .role-card-icon { font-size: 1.6rem; }
+    .role-card-name { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--text-primary); }
+    .role-card-desc { font-size: 10px; color: var(--text-muted); line-height: 1.3; }
+
+    /* Field section title */
+    .field-section-title {
+      font-size: var(--font-size-xs); font-weight: var(--font-weight-bold);
+      letter-spacing: var(--tracking-wider); text-transform: uppercase;
+      color: var(--text-muted); margin: var(--space-5) 0 var(--space-3);
+      padding-bottom: var(--space-2); border-bottom: 1px solid var(--border-color);
+    }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+
+    /* Password toggle */
+    .input-wrap { position: relative; }
+    .input-wrap .form-input { padding-right: var(--space-11); }
+    .input-toggle-btn {
+      position: absolute; right: var(--space-3); top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; padding: var(--space-1);
+      border-radius: var(--border-radius-sm); transition: color var(--transition-fast);
+    }
+    .input-toggle-btn:hover { color: var(--text-primary); }
+
+    /* Strength bar */
+    .pw-strength-bar { display: flex; gap: 4px; margin-top: var(--space-2); }
+    .pw-strength-seg { flex: 1; height: 3px; border-radius: 99px; background: var(--border-color); transition: background var(--transition-base); }
+    .pw-strength-label { font-size: var(--font-size-xs); margin-top: var(--space-1); color: var(--text-muted); }
+    .str-1 .pw-strength-seg:nth-child(1) { background: var(--color-danger); }
+    .str-2 .pw-strength-seg:nth-child(-n+2) { background: var(--color-warning); }
+    .str-3 .pw-strength-seg:nth-child(-n+3) { background: #3b82f6; }
+    .str-4 .pw-strength-seg { background: var(--color-success); }
+
+    /* Select */
+    .form-select {
+      width: 100%; height: var(--input-height-md); padding: 0 36px 0 var(--input-padding-x);
+      background: var(--input-bg); border: var(--input-border); border-radius: var(--input-radius);
+      font-size: var(--font-size-sm); color: var(--text-primary); outline: none; cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      font-family: var(--font-ui);
+    }
+    .form-select:focus { border-color: var(--border-color-focus); box-shadow: var(--shadow-focus); }
+
+    /* Alert + views */
+    .auth-alert { display: none; padding: var(--space-3) var(--space-4); border-radius: var(--border-radius-md); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); margin-bottom: var(--space-4); }
+    .reg-view { display: none; }
+    .reg-view.active { display: block; }
+
+    /* Checkbox inline */
+    .cb-row { display: flex; align-items: flex-start; gap: var(--space-3); cursor: pointer; }
+    .cb-row input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; accent-color: var(--color-primary-600); cursor: pointer; }
+    .cb-row span { font-size: var(--font-size-sm); color: var(--text-secondary); line-height: var(--leading-normal); }
+
+    /* FIX: reset.css strips native checkbox appearance — restore it for all checkboxes on this page */
+    input[type="checkbox"] {
+      appearance: auto !important;
+      -webkit-appearance: checkbox !important;
+      width: 15px !important;
+      height: 15px !important;
+      accent-color: var(--color-primary-600);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Level checkboxes grid */
+    .levels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-top: var(--space-1); }
+    .level-check-label { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm); color: var(--text-secondary); cursor: pointer; }
+    .level-check-label input { accent-color: var(--color-primary-600); width: 15px; height: 15px; }
+
+    /* Success icon */
+    .success-icon { width: 68px; height: 68px; border-radius: 50%; background: var(--color-success-light); color: var(--color-success); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-5); font-size: 1.8rem; }
+
+    /* Left panel features */
+    .left-feature { display: flex; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-4); }
+    .left-feature-check { width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: #fff; margin-top: 1px; }
+    .left-feature-text { font-size: var(--font-size-sm); color: rgba(255,255,255,0.70); line-height: var(--leading-normal); }
+
+    @media (max-width: 767px) {
+      .form-row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="auth-shell">
+
+  <!-- LEFT PANEL -->
+  <div class="auth-left" aria-hidden="true">
+    <div class="auth-left-pattern"></div>
+    <div class="auth-left-brand">
+      <div class="auth-left-logo">E</div>
+      <span class="auth-left-name">EduVerse</span>
+    </div>
+    <div class="auth-left-content">
+      <h2 class="auth-left-title">Start your<br />learning<br />journey today.</h2>
+      <p class="auth-left-desc">Free to join. No credit card required.</p>
+      <div style="margin-top:var(--space-8);">
+        <div class="left-feature"><div class="left-feature-check">✓</div><div class="left-feature-text">Access courses across all education levels</div></div>
+        <div class="left-feature"><div class="left-feature-check">✓</div><div class="left-feature-text">Attend live classes and download recordings</div></div>
+        <div class="left-feature"><div class="left-feature-check">✓</div><div class="left-feature-text">Track performance with detailed analytics</div></div>
+        <div class="left-feature"><div class="left-feature-check">✓</div><div class="left-feature-text">Earn verified digital certificates</div></div>
+        <div class="left-feature"><div class="left-feature-check">✓</div><div class="left-feature-text">Connect with teachers and classmates</div></div>
+      </div>
+    </div>
+    <div class="auth-left-stats">
+      <div class="auth-stat"><div class="auth-stat-value">Free</div><div class="auth-stat-label">To Join</div></div>
+      <div class="auth-stat"><div class="auth-stat-value">2 min</div><div class="auth-stat-label">Setup</div></div>
+      <div class="auth-stat"><div class="auth-stat-value">4.8★</div><div class="auth-stat-label">Rating</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="auth-right">
+    <div class="auth-box">
+
+      <div class="auth-box-header">
+        <h1 class="auth-box-title">Create your account</h1>
+        <p class="auth-box-subtitle">Takes less than 2 minutes. Free forever.</p>
+      </div>
+
+      <!-- Stepper -->
+      <div class="reg-stepper" id="reg-stepper">
+        <div class="reg-step active" id="si-1"><div class="reg-step-circle">1</div><span class="reg-step-label">Your Role</span></div>
+        <div class="reg-step-line" id="line-12"></div>
+        <div class="reg-step" id="si-2"><div class="reg-step-circle">2</div><span class="reg-step-label">Your Details</span></div>
+        <div class="reg-step-line" id="line-23"></div>
+        <div class="reg-step" id="si-3"><div class="reg-step-circle">3</div><span class="reg-step-label">Verify</span></div>
+      </div>
+
+      <div class="auth-alert" id="auth-alert" role="alert" aria-live="assertive"></div>
+
+      <!-- STEP 1: Role selection -->
+      <div class="reg-view active" id="view-1">
+        <p style="font-size:var(--font-size-sm);color:var(--text-muted);margin-bottom:var(--space-4);">How will you use EduVerse?</p>
+        <div class="role-grid">
+          <div class="role-card" data-role="student"    tabindex="0" role="radio" aria-checked="false"><span class="role-card-icon">🎓</span><span class="role-card-name">Student</span><span class="role-card-desc">Enroll in courses &amp; attend classes</span></div>
+          <div class="role-card" data-role="instructor" tabindex="0" role="radio" aria-checked="false"><span class="role-card-icon">👨‍🏫</span><span class="role-card-name">Instructor</span><span class="role-card-desc">Create courses &amp; teach students</span></div>
+          <div class="role-card" data-role="parent"     tabindex="0" role="radio" aria-checked="false"><span class="role-card-icon">👨‍👩‍👧</span><span class="role-card-name">Parent</span><span class="role-card-desc">Monitor your child's progress</span></div>
+          <div class="role-card" data-role="institute"  tabindex="0" role="radio" aria-checked="false"><span class="role-card-icon">🏫</span><span class="role-card-name">Institute</span><span class="role-card-desc">Manage your school or college</span></div>
+        </div>
+        <div class="form-error" id="role-error"></div>
+        <button type="button" id="btn-next1" class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-2);">
+          Continue <i data-feather="arrow-right" style="width:16px;height:16px;margin-left:6px;"></i>
+        </button>
+        <div class="auth-divider" style="margin:var(--space-5) 0;">
+          <div class="auth-divider-line"></div><span class="auth-divider-text">or sign up with</span><div class="auth-divider-line"></div>
+        </div>
+        <button type="button" id="btn-google" class="btn-oauth">
+          <svg class="btn-oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <p class="auth-footer-text" style="margin-top:var(--space-5);">Already have an account? <a href="login.html">Sign in</a></p>
+      </div>
+
+      <!-- STEP 2: Role-specific form -->
+      <div class="reg-view" id="view-2">
+        <form id="reg-form" novalidate autocomplete="on">
+          <input type="hidden" id="f-role" name="role" />
+
+          <!-- == STUDENT == -->
+          <div id="fields-student" class="role-fields" style="display:none;">
+            <div class="field-section-title">Personal Information</div>
+            <div class="form-group">
+              <label class="form-label" for="s-name">Full name *</label>
+              <input type="text" id="s-name" name="name" class="form-input" placeholder="Your full name" autocomplete="name" /><div class="form-error" id="e-s-name"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="s-email">Email *</label>
+                <input type="email" id="s-email" name="email" class="form-input" placeholder="you@example.com" /><div class="form-error" id="e-s-email"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="s-phone">Phone <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                <input type="tel" id="s-phone" name="phone" class="form-input" placeholder="10-digit number" inputmode="tel" />
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="s-dob">Date of birth <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                <input type="date" id="s-dob" name="dob" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="s-grade">Grade / Level *</label>
+                <select id="s-grade" name="grade" class="form-select">
+                  <option value="">Select level</option>
+                  <optgroup label="Pre-School"><option value="preschool">Pre-School (Age 2–6)</option></optgroup>
+                  <optgroup label="School">
+                    <option value="grade1">Grade 1</option><option value="grade2">Grade 2</option><option value="grade3">Grade 3</option><option value="grade4">Grade 4</option><option value="grade5">Grade 5</option><option value="grade6">Grade 6</option><option value="grade7">Grade 7</option><option value="grade8">Grade 8</option><option value="grade9">Grade 9</option><option value="grade10">Grade 10</option><option value="grade11">Grade 11</option><option value="grade12">Grade 12</option>
+                  </optgroup>
+                  <optgroup label="Higher Education">
+                    <option value="ug">Undergraduate (UG)</option><option value="pg">Postgraduate (PG)</option><option value="phd">PhD / Research</option>
+                  </optgroup>
+                </select>
+                <div class="form-error" id="e-s-grade"></div>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="s-inst-code">Institute code <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                <input type="text" id="s-inst-code" name="institute_code" class="form-input" placeholder="e.g. INST2025" style="text-transform:uppercase;letter-spacing:.06em;" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="s-parent-email">Parent's email <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                <input type="email" id="s-parent-email" name="parent_email" class="form-input" placeholder="parent@example.com" />
+              </div>
+            </div>
+          </div>
+
+          <!-- == INSTRUCTOR == -->
+          <div id="fields-instructor" class="role-fields" style="display:none;">
+            <div class="field-section-title">Personal Information</div>
+            <div class="form-group">
+              <label class="form-label" for="i-name">Full name *</label>
+              <input type="text" id="i-name" name="name" class="form-input" placeholder="Your full name" autocomplete="name" /><div class="form-error" id="e-i-name"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="i-email">Email *</label>
+                <input type="email" id="i-email" name="email" class="form-input" placeholder="you@example.com" /><div class="form-error" id="e-i-email"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="i-phone">Phone *</label>
+                <input type="tel" id="i-phone" name="phone" class="form-input" placeholder="10-digit number" inputmode="tel" /><div class="form-error" id="e-i-phone"></div>
+              </div>
+            </div>
+            <div class="field-section-title">Professional Details</div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="i-subject">Subject expertise *</label>
+                <input type="text" id="i-subject" name="subject" class="form-input" placeholder="e.g. Mathematics, Physics" /><div class="form-error" id="e-i-subject"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="i-qualification">Highest qualification</label>
+                <input type="text" id="i-qualification" name="qualification" class="form-input" placeholder="e.g. M.Sc, B.Ed, PhD" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teaching levels *</label>
+              <div class="levels-grid">
+                <label class="level-check-label"><input type="checkbox" name="levels" value="preschool" />Pre-School</label>
+                <label class="level-check-label"><input type="checkbox" name="levels" value="school" />School (Grade 1–12)</label>
+                <label class="level-check-label"><input type="checkbox" name="levels" value="ug" />Undergraduate</label>
+                <label class="level-check-label"><input type="checkbox" name="levels" value="pg" />Postgraduate</label>
+              </div>
+              <div class="form-error" id="e-i-levels"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="i-experience">Years of experience</label>
+                <input type="number" id="i-experience" name="experience" class="form-input" placeholder="e.g. 5" min="0" max="50" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="i-linkedin">LinkedIn / Portfolio <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                <input type="url" id="i-linkedin" name="linkedin" class="form-input" placeholder="https://linkedin.com/in/..." />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="i-bio">Brief bio <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+              <textarea id="i-bio" name="bio" class="form-input" rows="3" placeholder="Tell students about yourself..." style="height:auto;resize:vertical;padding-top:10px;"></textarea>
+            </div>
+          </div>
+
+          <!-- == PARENT == -->
+          <div id="fields-parent" class="role-fields" style="display:none;">
+            <div class="field-section-title">Your Information</div>
+            <div class="form-group">
+              <label class="form-label" for="p-name">Your full name *</label>
+              <input type="text" id="p-name" name="name" class="form-input" placeholder="Your full name" autocomplete="name" /><div class="form-error" id="e-p-name"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="p-email">Email *</label>
+                <input type="email" id="p-email" name="email" class="form-input" placeholder="you@example.com" /><div class="form-error" id="e-p-email"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="p-phone">Phone *</label>
+                <input type="tel" id="p-phone" name="phone" class="form-input" placeholder="10-digit number" inputmode="tel" /><div class="form-error" id="e-p-phone"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="p-relation">Your relation to child *</label>
+              <select id="p-relation" name="relation" class="form-select">
+                <option value="">Select relation</option>
+                <option value="father">Father</option>
+                <option value="mother">Mother</option>
+                <option value="guardian">Legal Guardian</option>
+                <option value="grandparent">Grandparent</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="form-error" id="e-p-relation"></div>
+            </div>
+            <div class="field-section-title">Child's Information</div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="p-child-name">Child's full name *</label>
+                <input type="text" id="p-child-name" name="child_name" class="form-input" placeholder="Child's name" /><div class="form-error" id="e-p-child-name"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="p-child-grade">Child's grade / level *</label>
+                <select id="p-child-grade" name="child_grade" class="form-select">
+                  <option value="">Select grade</option>
+                  <option value="preschool">Pre-School</option>
+                  <option value="grade1">Grade 1</option><option value="grade2">Grade 2</option><option value="grade3">Grade 3</option><option value="grade4">Grade 4</option><option value="grade5">Grade 5</option><option value="grade6">Grade 6</option><option value="grade7">Grade 7</option><option value="grade8">Grade 8</option><option value="grade9">Grade 9</option><option value="grade10">Grade 10</option><option value="grade11">Grade 11</option><option value="grade12">Grade 12</option>
+                  <option value="ug">Undergraduate</option><option value="pg">Postgraduate</option>
+                </select>
+                <div class="form-error" id="e-p-child-grade"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="p-inst-code">Institute code <span style="font-weight:400;color:var(--text-muted);">(optional — links to your child's school)</span></label>
+              <input type="text" id="p-inst-code" name="institute_code" class="form-input" placeholder="e.g. INST2025" style="text-transform:uppercase;letter-spacing:.06em;" />
+            </div>
+          </div>
+
+          <!-- == INSTITUTE == -->
+          <div id="fields-institute" class="role-fields" style="display:none;">
+            <div class="field-section-title">Institute Information</div>
+            <div class="form-group">
+              <label class="form-label" for="ins-name">Institute name *</label>
+              <input type="text" id="ins-name" name="institute_name" class="form-input" placeholder="Full official name of the institute" /><div class="form-error" id="e-ins-name"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="ins-type">Institute type *</label>
+                <select id="ins-type" name="institute_type" class="form-select">
+                  <option value="">Select type</option>
+                  <option value="preschool">Pre-School / Playschool</option>
+                  <option value="primary">Primary School</option>
+                  <option value="secondary">Secondary School</option>
+                  <option value="k12">K-12 School</option>
+                  <option value="college">College / Junior College</option>
+                  <option value="university">University</option>
+                  <option value="coaching">Coaching / Tuition Centre</option>
+                  <option value="other">Other</option>
+                </select>
+                <div class="form-error" id="e-ins-type"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ins-capacity">Student capacity <span style="font-weight:400;color:var(--text-muted);">(approx.)</span></label>
+                <input type="number" id="ins-capacity" name="capacity" class="form-input" placeholder="e.g. 500" min="1" />
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="ins-city">City *</label>
+                <input type="text" id="ins-city" name="city" class="form-input" placeholder="City" /><div class="form-error" id="e-ins-city"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ins-state">State *</label>
+                <input type="text" id="ins-state" name="state" class="form-input" placeholder="State" /><div class="form-error" id="e-ins-state"></div>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="ins-affiliation">Affiliation / Board <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                <input type="text" id="ins-affiliation" name="affiliation" class="form-input" placeholder="e.g. CBSE, ICSE, State Board" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ins-website">Website <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                <input type="url" id="ins-website" name="website" class="form-input" placeholder="https://..." />
+              </div>
+            </div>
+
+            <div class="field-section-title">Administrator Contact</div>
+            <div class="form-group">
+              <label class="form-label" for="ins-admin-name">Admin full name *</label>
+              <input type="text" id="ins-admin-name" name="name" class="form-input" placeholder="Name of the primary administrator" autocomplete="name" /><div class="form-error" id="e-ins-admin-name"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="ins-email">Admin email *</label>
+                <input type="email" id="ins-email" name="email" class="form-input" placeholder="admin@institute.com" /><div class="form-error" id="e-ins-email"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ins-phone">Phone *</label>
+                <input type="tel" id="ins-phone" name="phone" class="form-input" placeholder="10-digit number" inputmode="tel" /><div class="form-error" id="e-ins-phone"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SHARED: Password block (all roles) -->
+          <div id="pw-block">
+            <div class="field-section-title">Set Password</div>
+            <div class="form-group">
+              <label class="form-label" for="f-password">Password *</label>
+              <div class="input-wrap">
+                <input type="password" id="f-password" name="password" class="form-input" placeholder="Min. 8 characters — include uppercase &amp; number" autocomplete="new-password" />
+                <button type="button" class="input-toggle-btn" id="toggle-pw" aria-label="Show password">
+                  <i data-feather="eye" style="width:16px;height:16px;"></i>
+                </button>
+              </div>
+              <div class="pw-strength-bar" id="pw-bar"><div class="pw-strength-seg"></div><div class="pw-strength-seg"></div><div class="pw-strength-seg"></div><div class="pw-strength-seg"></div></div>
+              <div class="pw-strength-label" id="pw-label" aria-live="polite"></div>
+              <div class="form-error" id="e-pw"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-confirm">Confirm password *</label>
+              <div class="input-wrap">
+                <input type="password" id="f-confirm" name="confirm_password" class="form-input" placeholder="Re-enter your password" autocomplete="new-password" />
+                <button type="button" class="input-toggle-btn" id="toggle-confirm" aria-label="Show password">
+                  <i data-feather="eye" style="width:16px;height:16px;"></i>
+                </button>
+              </div>
+              <div class="form-error" id="e-confirm"></div>
+            </div>
+            <div class="form-group" style="margin-top:var(--space-4);">
+              <label class="form-checkbox">
+                <input type="checkbox" id="f-terms" name="terms" />
+                <span class="form-checkbox-label">
+                  I agree to the
+                  <a href="#" onclick="event.stopPropagation(); return false;" style="color:var(--color-primary-600);">Terms of Service</a>
+                  and
+                  <a href="#" onclick="event.stopPropagation(); return false;" style="color:var(--color-primary-600);">Privacy Policy</a>
+                </span>
+              </label>
+              <div class="form-error" id="e-terms"></div>
+            </div>
+          </div>
+
+          <!-- Form buttons -->
+          <div style="display:flex;gap:var(--space-3);margin-top:var(--space-5);">
+            <button type="button" id="btn-back2" class="btn btn-outline btn-lg" style="flex:0 0 auto;">
+              <i data-feather="arrow-left" style="width:16px;height:16px;"></i> Back
+            </button>
+            <button type="submit" id="btn-register" class="btn btn-primary btn-lg" style="flex:1;">Create Account</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- STEP 3: Success -->
+      <div class="reg-view" id="view-3" style="text-align:center;padding:var(--space-6) 0;">
+        <div class="success-icon">✉️</div>
+        <h2 style="font-size:var(--font-size-2xl);font-weight:var(--font-weight-extrabold);color:var(--text-primary);margin-bottom:var(--space-3);">Check your inbox!</h2>
+        <p style="color:var(--text-muted);line-height:var(--leading-relaxed);margin-bottom:var(--space-2);">We've sent a verification link to:</p>
+        <p id="success-email" style="font-size:var(--font-size-base);font-weight:var(--font-weight-semibold);color:var(--text-primary);margin-bottom:var(--space-8);"></p>
+        <a href="login.html" class="btn btn-primary btn-lg" style="width:100%;margin-bottom:var(--space-3);display:flex;align-items:center;justify-content:center;">Go to Sign In</a>
+        <button type="button" id="btn-resend" class="btn btn-outline btn-lg" style="width:100%;">Resend verification email</button>
+        <p style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:var(--space-5);">Didn't receive it? Check your spam folder.</p>
+      </div>
+
+      <p class="auth-footer-text" id="reg-footer" style="margin-top:var(--space-5);">Already have an account? <a href="login.html">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<script>window.EV_BASE = "../../";</script>
+  <script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/router.js"></script>
+<script src="../../js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  if (typeof Store !== 'undefined' && Store.restoreAuth()) { Router.toDashboard(); return; }
+
+  var selectedRole = Utils.getParam('role') || null;
+  var currentStep  = 1;
+  var registeredEmail = '';
+
+  // Pre-select from URL
+  if (selectedRole) {
+    var preCard = document.querySelector('[data-role="' + selectedRole + '"]');
+    if (preCard) { preCard.classList.add('selected'); preCard.setAttribute('aria-checked','true'); }
+  }
+
+  // Role card selection
+  document.querySelectorAll('.role-card').forEach(function (card) {
+    function doSelect() {
+      document.querySelectorAll('.role-card').forEach(function (c) { c.classList.remove('selected'); c.setAttribute('aria-checked','false'); });
+      card.classList.add('selected'); card.setAttribute('aria-checked','true');
+      selectedRole = card.getAttribute('data-role');
+      Utils.clearFieldError(document.getElementById('role-error'));
+    }
+    card.addEventListener('click', doSelect);
+    card.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSelect(); } });
+  });
+
+  // Stepper
+  function updateStepper() {
+    for (var i = 1; i <= 3; i++) {
+      var ind = document.getElementById('si-' + i);
+      var circle = ind.querySelector('.reg-step-circle');
+      ind.classList.remove('active','done');
+      if (i < currentStep) { ind.classList.add('done'); circle.innerHTML = '<i data-feather="check" style="width:12px;height:12px;"></i>'; }
+      else if (i === currentStep) { ind.classList.add('active'); circle.textContent = i; }
+      else { circle.textContent = i; }
+    }
+    document.getElementById('line-12').classList.toggle('done', currentStep > 1);
+    document.getElementById('line-23').classList.toggle('done', currentStep > 2);
+    feather.replace({ 'stroke-width': 1.75 });
+  }
+
+  function goToStep(step) {
+    document.querySelectorAll('.reg-view').forEach(function (v) { v.classList.remove('active'); });
+    document.getElementById('view-' + step).classList.add('active');
+    currentStep = step;
+    updateStepper();
+    document.getElementById('reg-footer').style.display = step === 3 ? 'none' : '';
+    window.scrollTo(0, 0);
+  }
+
+  function showRoleFields(role) {
+    document.querySelectorAll('.role-fields').forEach(function (el) { el.style.display = 'none'; });
+    var el = document.getElementById('fields-' + role);
+    if (el) el.style.display = 'block';
+    document.getElementById('f-role').value = role;
+  }
+
+  // Step 1 → 2
+  document.getElementById('btn-next1').addEventListener('click', function () {
+    if (!selectedRole) { Utils.showFieldError(document.getElementById('role-error'), 'Please choose a role to continue.'); return; }
+    showRoleFields(selectedRole);
+    goToStep(2);
+  });
+
+  // Step 2 → 1
+  document.getElementById('btn-back2').addEventListener('click', function () { goToStep(1); });
+
+  // Password toggles
+  function wireToggle(inputId, btnId) {
+    var inp = document.getElementById(inputId);
+    var btn = document.getElementById(btnId);
+    if (!inp || !btn) return;
+    var vis = false;
+    btn.addEventListener('click', function () {
+      vis = !vis;
+      inp.type = vis ? 'text' : 'password';
+      // After feather.replace(), the icon is <svg> not <i>
+      // Replace entire button content with a new <i> then re-run feather
+      btn.innerHTML = '<i data-feather="' + (vis ? 'eye-off' : 'eye') + '" style="width:16px;height:16px;"></i>';
+      if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+    });
+  }
+  wireToggle('f-password','toggle-pw');
+  wireToggle('f-confirm','toggle-confirm');
+
+  // Password strength
+  var pwBar = document.getElementById('pw-bar'), pwLabel = document.getElementById('pw-label');
+  var strTexts = ['','Too weak','Fair','Good','Strong'];
+  var strColors = ['','#ef4444','#f59e0b','#3b82f6','#10b981'];
+  document.getElementById('f-password').addEventListener('input', function () {
+    var pw = this.value, score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    pwBar.className = 'pw-strength-bar' + (pw ? ' str-' + score : '');
+    pwLabel.textContent = pw ? strTexts[score] : '';
+    pwLabel.style.color = strColors[score];
+  });
+
+  document.getElementById('f-confirm').addEventListener('blur', function () {
+    var pw = document.getElementById('f-password').value;
+    if (this.value && this.value !== pw) Utils.showFieldError(this, 'Passwords do not match.');
+    else Utils.clearFieldError(this);
+  });
+
+  // Helper: get email/name for current role
+  function getRoleVal(fieldMap) {
+    var id = fieldMap[selectedRole];
+    var el = id ? document.getElementById(id) : null;
+    return el ? el.value.trim() : '';
+  }
+  var emailMap = { student:'s-email', instructor:'i-email', parent:'p-email', institute:'ins-email' };
+  var nameMap  = { student:'s-name',  instructor:'i-name',  parent:'p-name',  institute:'ins-admin-name' };
+
+  // Show/clear error helpers
+  function showErr(id, msg) {
+    // Show the error div (e-{id})
+    var errEl = document.getElementById('e-' + id) || document.getElementById(id + '-err');
+    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+    // Mark the input red — try both id and f-{id}
+    var inp = document.getElementById(id) || document.getElementById('f-' + id);
+    if (inp && inp.tagName !== 'DIV' && inp.type !== 'checkbox') inp.classList.add('input-error');
+  }
+  function clearAllErrors() {
+    document.querySelectorAll('.form-error').forEach(function (el) { el.textContent = ''; el.style.display = 'none'; });
+    document.querySelectorAll('.input-error').forEach(function (el) { el.classList.remove('input-error'); });
+  }
+
+  // Role-specific validation
+  function validate() {
+    clearAllErrors();
+    var valid = true;
+    var U = Utils;
+
+    var name  = getRoleVal(nameMap);
+    var email = getRoleVal(emailMap);
+    var pw    = document.getElementById('f-password').value;
+    var conf  = document.getElementById('f-confirm').value;
+
+    // Common
+    if (!name) { showErr(nameMap[selectedRole], 'Full name is required.'); valid = false; }
+    if (!U.isValidEmail(email)) { showErr(emailMap[selectedRole], 'Enter a valid email address.'); valid = false; }
+    var pwResult = U.validatePassword(pw);
+    if (!pwResult.valid) { showErr('pw', pwResult.message); valid = false; }
+    if (pw !== conf) { showErr('confirm', 'Passwords do not match.'); valid = false; }
+    if (!document.getElementById('f-terms').checked) { showErr('terms', 'You must accept the Terms to continue.'); valid = false; }
+
+    // Student-specific
+    if (selectedRole === 'student') {
+      if (!document.getElementById('s-grade').value) { showErr('s-grade', 'Please select your grade or level.'); valid = false; }
+    }
+    // Instructor-specific
+    if (selectedRole === 'instructor') {
+      var iphone = document.getElementById('i-phone').value.trim();
+      if (!U.isValidPhone(iphone)) { showErr('i-phone', 'Enter a valid 10-digit phone number.'); valid = false; }
+      if (!document.getElementById('i-subject').value.trim()) { showErr('i-subject', 'Please enter your subject expertise.'); valid = false; }
+      if (document.querySelectorAll('input[name="levels"]:checked').length === 0) { showErr('i-levels', 'Select at least one teaching level.'); valid = false; }
+    }
+    // Parent-specific
+    if (selectedRole === 'parent') {
+      var pphone = document.getElementById('p-phone').value.trim();
+      if (!U.isValidPhone(pphone)) { showErr('p-phone', 'Enter a valid 10-digit phone number.'); valid = false; }
+      if (!document.getElementById('p-relation').value) { showErr('p-relation', 'Please select your relation to the child.'); valid = false; }
+      if (!document.getElementById('p-child-name').value.trim()) { showErr('p-child-name', "Enter your child's full name."); valid = false; }
+      if (!document.getElementById('p-child-grade').value) { showErr('p-child-grade', "Select your child's grade."); valid = false; }
+    }
+    // Institute-specific
+    if (selectedRole === 'institute') {
+      if (!document.getElementById('ins-name').value.trim()) { showErr('ins-name', 'Institute name is required.'); valid = false; }
+      if (!document.getElementById('ins-type').value) { showErr('ins-type', 'Please select institute type.'); valid = false; }
+      if (!document.getElementById('ins-city').value.trim()) { showErr('ins-city', 'City is required.'); valid = false; }
+      if (!document.getElementById('ins-state').value.trim()) { showErr('ins-state', 'State is required.'); valid = false; }
+      var insphone = document.getElementById('ins-phone').value.trim();
+      if (!U.isValidPhone(insphone)) { showErr('ins-phone', 'Enter a valid 10-digit phone number.'); valid = false; }
+    }
+
+    return valid;
+  }
+
+  // Form submit
+  var alertEl = document.getElementById('auth-alert');
+  document.getElementById('reg-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    Utils.hide(alertEl);
+    if (!validate()) return;
+
+    var btn = document.getElementById('btn-register');
+    Utils.setButtonLoading(btn, 'Creating account…');
+
+    // Build payload
+    var data = { role: selectedRole, name: getRoleVal(nameMap), email: getRoleVal(emailMap), password: document.getElementById('f-password').value };
+    if (selectedRole === 'student') {
+      Object.assign(data, { phone: document.getElementById('s-phone').value.trim()||undefined, dob: document.getElementById('s-dob').value||undefined, grade: document.getElementById('s-grade').value, institute_code: document.getElementById('s-inst-code').value.trim().toUpperCase()||undefined, parent_email: document.getElementById('s-parent-email').value.trim()||undefined });
+    } else if (selectedRole === 'instructor') {
+      var levels = Array.from(document.querySelectorAll('input[name="levels"]:checked')).map(function(c){return c.value;});
+      Object.assign(data, { phone: document.getElementById('i-phone').value.trim(), subject: document.getElementById('i-subject').value.trim(), qualification: document.getElementById('i-qualification').value.trim()||undefined, experience: document.getElementById('i-experience').value||undefined, linkedin: document.getElementById('i-linkedin').value.trim()||undefined, bio: document.getElementById('i-bio').value.trim()||undefined, levels: levels });
+    } else if (selectedRole === 'parent') {
+      Object.assign(data, { phone: document.getElementById('p-phone').value.trim(), relation: document.getElementById('p-relation').value, child_name: document.getElementById('p-child-name').value.trim(), child_grade: document.getElementById('p-child-grade').value, institute_code: document.getElementById('p-inst-code').value.trim().toUpperCase()||undefined });
+    } else if (selectedRole === 'institute') {
+      Object.assign(data, { institute_name: document.getElementById('ins-name').value.trim(), institute_type: document.getElementById('ins-type').value, city: document.getElementById('ins-city').value.trim(), state: document.getElementById('ins-state').value.trim(), phone: document.getElementById('ins-phone').value.trim(), affiliation: document.getElementById('ins-affiliation').value.trim()||undefined, website: document.getElementById('ins-website').value.trim()||undefined, capacity: document.getElementById('ins-capacity').value||undefined });
+    }
+
+    try {
+      await Auth.register(data);
+      registeredEmail = data.email;
+      document.getElementById('success-email').textContent = registeredEmail;
+      goToStep(3);
+    } catch (err) {
+      Utils.clearButtonLoading(btn);
+      var msg = (err && err.message) || 'Registration failed. Please try again.';
+      alertEl.className = 'auth-alert alert alert-error';
+      alertEl.textContent = msg;
+      Utils.show(alertEl);
+    }
+  });
+
+  // Resend
+  document.getElementById('btn-resend').addEventListener('click', async function () {
+    Utils.setButtonLoading(this, 'Sending…');
+    try { await Api.auth.resendVerification(registeredEmail); this.textContent = 'Email sent!'; this.disabled = true; }
+    catch(e) { Utils.clearButtonLoading(this); }
+  });
+
+  // Google
+  document.getElementById('btn-google').addEventListener('click', function () { Auth.loginWithGoogle(); });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify Email — EduVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-page);
+    }
+
+    .verify-box {
+      background: var(--bg-surface);
+      border: var(--card-border);
+      border-radius: var(--border-radius-2xl);
+      box-shadow: var(--shadow-xl);
+      padding: var(--space-12) var(--space-10);
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .verify-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-6);
+      font-size: 2.5rem;
+    }
+
+    .verify-icon-loading { background: var(--color-primary-50); }
+    .verify-icon-success { background: var(--color-success-light); }
+    .verify-icon-error   { background: var(--color-danger-light); }
+
+    .verify-title {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-extrabold);
+      color: var(--text-primary);
+      margin-bottom: var(--space-3);
+    }
+
+    .verify-message {
+      font-size: var(--font-size-base);
+      color: var(--text-muted);
+      line-height: var(--leading-relaxed);
+      margin-bottom: var(--space-8);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-8);
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
+      border-radius: var(--border-radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: var(--font-weight-extrabold);
+      font-size: var(--font-size-lg);
+      color: #ffffff;
+    }
+
+    .brand-name {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-extrabold);
+      color: var(--text-primary);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--color-primary-600);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="verify-box">
+
+    <!-- Brand -->
+    <div class="brand">
+      <div class="brand-logo">E</div>
+      <span class="brand-name">EduVerse</span>
+    </div>
+
+    <!-- Loading State -->
+    <div id="state-loading">
+      <div class="verify-icon verify-icon-loading">
+        <div class="spinner"></div>
+      </div>
+      <div class="verify-title">Verifying your email…</div>
+      <div class="verify-message">Please wait while we verify your email address.</div>
+    </div>
+
+    <!-- Success State -->
+    <div id="state-success" style="display:none;">
+      <div class="verify-icon verify-icon-success">✅</div>
+      <div class="verify-title">Email Verified!</div>
+      <div class="verify-message">
+        Your email has been verified successfully.<br />
+        You can now sign in to your account.
+      </div>
+      <a href="login.html" class="btn btn-primary btn-lg" style="width:100%;display:flex;align-items:center;justify-content:center;">
+        Go to Sign In
+      </a>
+    </div>
+
+    <!-- Error State -->
+    <div id="state-error" style="display:none;">
+      <div class="verify-icon verify-icon-error">❌</div>
+      <div class="verify-title">Verification Failed</div>
+      <div class="verify-message" id="error-message">
+        This verification link is invalid or has expired.
+      </div>
+      <a href="register.html" class="btn btn-primary btn-lg" style="width:100%;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-3);">
+        Register Again
+      </a>
+      <a href="login.html" class="btn btn-outline btn-lg" style="width:100%;display:flex;align-items:center;justify-content:center;">
+        Back to Sign In
+      </a>
+    </div>
+
+  </div>
+
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/store.js"></script>
+  <script src="../../js/api.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+
+      // Get token from URL
+      var token = Utils.getParam('token');
+
+      if (!token) {
+        showError('No verification token found in the URL.');
+        return;
+      }
+
+      try {
+        // Call verify email API
+        await Api.auth.verifyEmail(token);
+        showSuccess();
+      } catch (err) {
+        var msg = (err && err.message) || 'Verification failed. Please try again.';
+        showError(msg);
+      }
+
+    });
+
+    function showSuccess() {
+      document.getElementById('state-loading').style.display = 'none';
+      document.getElementById('state-success').style.display = 'block';
+    }
+
+    function showError(message) {
+      document.getElementById('state-loading').style.display = 'none';
+      document.getElementById('state-error').style.display = 'block';
+      document.getElementById('error-message').textContent = message;
+    }
+  </script>
+
+</body>
+</html>
