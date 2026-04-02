@@ -79,6 +79,8 @@ app.get('/health', function (req, res) {
 
 app.use('/api/v1/auth', require('./modules/auth/auth.routes'));
 
+app.use('/api/v1/student', require('./modules/student/student.routes'));
+
 /* ============================================================
    404 HANDLER
 ============================================================ */

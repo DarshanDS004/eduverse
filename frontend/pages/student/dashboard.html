@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard — EduVerse</title>
+  <meta name="robots" content="noindex" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+
+  <script>
+    try {
+      if (localStorage.getItem('ev_theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.documentElement.classList.add('dark');
+      }
+    } catch(e) {}
+  </script>
+
+  <style>
+    /* ── Welcome banner ── */
+    .welcome-banner {
+      background: linear-gradient(135deg, #1A56DB 0%, #1e40af 60%, #4f46e5 100%);
+      border-radius: var(--border-radius-xl);
+      padding: var(--space-8);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-6); margin-bottom: var(--space-6);
+      position: relative; overflow: hidden;
+    }
+    .welcome-banner::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(255,255,255,0.06); pointer-events: none;
+    }
+    .welcome-banner::after {
+      content: ''; position: absolute; bottom: -80px; right: 120px;
+      width: 260px; height: 260px; border-radius: 50%;
+      background: rgba(255,255,255,0.04); pointer-events: none;
+    }
+    .welcome-text { position: relative; z-index: 1; }
+    .welcome-greeting {
+      font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--tracking-wider); text-transform: uppercase;
+      color: rgba(255,255,255,0.60); margin-bottom: var(--space-1);
+    }
+    .welcome-name {
+      font-size: var(--font-size-3xl); font-weight: var(--font-weight-extrabold);
+      color: #ffffff; letter-spacing: var(--tracking-tight);
+      line-height: var(--leading-tight); margin-bottom: var(--space-2);
+      min-height: 2.4rem; /* prevent layout shift while loading */
+    }
+    .welcome-subtitle {
+      font-size: var(--font-size-sm); color: rgba(255,255,255,0.65); margin-bottom: var(--space-5);
+    }
+    .welcome-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .btn-welcome {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      height: 38px; padding: 0 var(--space-5);
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: var(--border-radius-md); color: #ffffff;
+      font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+      text-decoration: none; cursor: pointer; transition: all var(--transition-fast); font-family: var(--font-ui);
+    }
+    .btn-welcome:hover { background: rgba(255,255,255,0.22); }
+    .welcome-illustration {
+      position: relative; z-index: 1; flex-shrink: 0;
+      font-size: 68px; line-height: 1;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.25));
+    }
+
+    /* ── Stats grid ── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4); margin-bottom: var(--space-6);
+    }
+    .stat-card {
+      background: var(--bg-surface); border: var(--card-border);
+      border-radius: var(--card-radius); box-shadow: var(--card-shadow);
+      padding: var(--space-5) var(--space-6);
+      display: flex; align-items: flex-start; gap: var(--space-4);
+      transition: all var(--transition-fast);
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .stat-icon-wrap {
+      width: 44px; height: 44px; border-radius: var(--border-radius-lg);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .si-blue   { background: var(--color-primary-50); color: var(--color-primary-600); }
+    .si-amber  { background: var(--color-warning-light); color: var(--color-warning); }
+    .si-green  { background: var(--color-success-light); color: var(--color-success); }
+    .si-purple { background: #ede9fe; color: #7c3aed; }
+    .stat-info { flex: 1; min-width: 0; }
+    .stat-value {
+      font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold);
+      color: var(--text-primary); letter-spacing: var(--tracking-tight);
+      line-height: 1; margin-bottom: var(--space-1); min-height: 1.8rem;
+    }
+    .stat-label { font-size: var(--font-size-xs); color: var(--text-muted); font-weight: var(--font-weight-medium); }
+    .stat-delta {
+      display: inline-flex; align-items: center; gap: 2px;
+      font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); margin-top: var(--space-1);
+    }
+    .delta-up   { color: var(--color-success); }
+    .delta-down { color: var(--color-danger); }
+
+    /* ── Dashboard grid ── */
+    .dash-grid {
+      display: grid; grid-template-columns: 1fr 340px;
+      gap: var(--space-6); align-items: start;
+    }
+    .dash-left  { display: flex; flex-direction: column; gap: var(--space-6); }
+    .dash-right { display: flex; flex-direction: column; gap: var(--space-6); position: sticky; top: calc(var(--navbar-height) + var(--space-6)); }
+
+    /* ── Section card ── */
+    .dash-card { background: var(--bg-surface); border: var(--card-border); border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow: hidden; }
+    .dash-card-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border-color); }
+    .dash-card-title  { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-primary); }
+    .dash-card-body   { padding: var(--space-5); }
+    .dash-card-link   { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-primary-600); text-decoration: none; }
+    .dash-card-link:hover { color: var(--color-primary-700); }
+
+    /* ── Course item ── */
+    .course-item {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) 0; border-bottom: 1px solid var(--border-color);
+      text-decoration: none; color: inherit; transition: background var(--transition-fast);
+    }
+    .course-item:last-child { border-bottom: none; }
+    .course-item:hover .course-item-title { color: var(--color-primary-600); }
+    .course-thumb {
+      width: 52px; height: 52px; border-radius: var(--border-radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .course-item-info { flex: 1; min-width: 0; }
+    .course-item-subject {
+      font-size: var(--font-size-xs); font-weight: var(--font-weight-bold);
+      text-transform: uppercase; letter-spacing: var(--tracking-wider);
+      color: var(--color-primary-600); margin-bottom: 2px;
+    }
+    .course-item-title {
+      font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+      color: var(--text-primary); margin-bottom: var(--space-1-5);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      transition: color var(--transition-fast);
+    }
+    .course-item-meta {
+      display: flex; align-items: center; gap: var(--space-3);
+      font-size: var(--font-size-xs); color: var(--text-muted);
+    }
+    .course-item-meta span { display: flex; align-items: center; gap: 3px; }
+    .course-progress-bar { height: 4px; background: var(--neutral-100); border-radius: 99px; overflow: hidden; margin-top: var(--space-2); }
+    .course-progress-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
+    .course-item-pct { font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); white-space: nowrap; flex-shrink: 0; }
+    .course-play-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all var(--transition-fast); text-decoration: none;
+    }
+    .course-play-btn:hover { transform: scale(1.1); }
+
+    /* ── Assignment item ── */
+    .assignment-item {
+      display: flex; align-items: flex-start; gap: var(--space-3);
+      padding: var(--space-3-5) 0; border-bottom: 1px solid var(--border-color);
+    }
+    .assignment-item:last-child { border-bottom: none; }
+    .assignment-due-badge {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      width: 44px; height: 44px; border-radius: var(--border-radius-md);
+      flex-shrink: 0; font-weight: var(--font-weight-bold); line-height: 1.1;
+    }
+    .due-urgent { background: var(--color-danger-light); color: var(--color-danger); }
+    .due-soon   { background: var(--color-warning-light); color: #92400e; }
+    .due-later  { background: var(--color-primary-50); color: var(--color-primary-700); }
+    .due-day    { font-size: var(--font-size-lg); }
+    .due-month  { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .assignment-info { flex: 1; min-width: 0; }
+    .assignment-title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--text-primary); margin-bottom: 2px; }
+    .assignment-meta  { font-size: var(--font-size-xs); color: var(--text-muted); display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .assignment-status { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: var(--font-weight-semibold); }
+    .status-pending { background: var(--color-warning-light); color: #92400e; }
+    .status-done    { background: var(--color-success-light); color: var(--color-success-dark); }
+    .status-overdue { background: var(--color-danger-light); color: var(--color-danger-dark); }
+
+    /* ── Activity item ── */
+    .activity-item { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-color); }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .activity-content { flex: 1; min-width: 0; }
+    .activity-text { font-size: var(--font-size-sm); color: var(--text-secondary); line-height: var(--leading-normal); margin-bottom: 2px; }
+    .activity-text strong { color: var(--text-primary); font-weight: var(--font-weight-semibold); }
+    .activity-time { font-size: var(--font-size-xs); color: var(--text-muted); }
+
+    /* ── Streak ── */
+    .streak-card {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border: 1px solid #fde68a; border-radius: var(--border-radius-lg);
+      padding: var(--space-5); display: flex; align-items: center; gap: var(--space-4);
+    }
+    .streak-icon   { font-size: 2.5rem; line-height: 1; flex-shrink: 0; }
+    .streak-count  { font-size: var(--font-size-5xl); font-weight: var(--font-weight-extrabold); color: #92400e; line-height: 1; letter-spacing: var(--tracking-tight); }
+    .streak-label  { font-size: var(--font-size-xs); color: #b45309; font-weight: var(--font-weight-medium); margin-top: 2px; }
+    .streak-day    { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
+    .sd-done   { background: #f59e0b; color: #ffffff; }
+    .sd-today  { background: #1A56DB; color: #ffffff; }
+    .sd-future { background: var(--neutral-100); color: var(--text-muted); }
+
+    /* ── Live class card ── */
+    .live-class-card { background: var(--bg-surface); border: var(--card-border); border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow: hidden; }
+    .live-class-banner { background: linear-gradient(135deg, #7c3aed, #4f46e5); padding: var(--space-4) var(--space-5); display: flex; align-items: center; justify-content: space-between; }
+    .live-badge { display: inline-flex; align-items: center; gap: var(--space-1-5); background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 99px; padding: 3px 10px; font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); color: #ffffff; letter-spacing: var(--tracking-wide); text-transform: uppercase; }
+    .live-pulse { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: pulse-live 1.4s ease infinite; }
+    @keyframes pulse-live { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+    .live-countdown { font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: rgba(255,255,255,0.85); font-variant-numeric: tabular-nums; }
+    .live-class-body { padding: var(--space-4) var(--space-5); }
+    .live-class-subject { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: #7c3aed; text-transform: uppercase; letter-spacing: var(--tracking-wider); margin-bottom: var(--space-1); }
+    .live-class-title { font-size: var(--font-size-base); font-weight: var(--font-weight-bold); color: var(--text-primary); margin-bottom: var(--space-1-5); }
+    .live-class-instructor { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm); color: var(--text-muted); margin-bottom: var(--space-4); }
+    .live-instructor-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--color-primary-100); color: var(--color-primary-700); font-size: 10px; font-weight: var(--font-weight-bold); display: flex; align-items: center; justify-content: center; }
+
+    /* ── Performance ring ── */
+    .perf-ring-wrap { display: flex; align-items: center; justify-content: center; padding: var(--space-5) 0 var(--space-3); }
+    .perf-ring-container { position: relative; width: 120px; height: 120px; }
+    .perf-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .perf-ring-value { font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold); color: var(--text-primary); line-height: 1; }
+    .perf-ring-label { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 2px; }
+    .perf-subject-row { display: flex; flex-direction: column; gap: 4px; }
+    .perf-subject-meta { display: flex; justify-content: space-between; align-items: center; }
+    .perf-subject-name { font-size: var(--font-size-sm); color: var(--text-secondary); font-weight: var(--font-weight-medium); }
+    .perf-subject-score { font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: var(--text-primary); }
+    .perf-bar { height: 6px; background: var(--neutral-100); border-radius: 99px; overflow: hidden; }
+    .perf-bar-fill { height: 100%; border-radius: 99px; transition: width 1s ease; }
+
+    /* ── Quick actions ── */
+    .quick-actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+    .quick-action {
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+      padding: var(--space-4) var(--space-3); background: var(--bg-sunken);
+      border: 1px solid var(--border-color); border-radius: var(--border-radius-lg);
+      cursor: pointer; text-decoration: none; transition: all var(--transition-fast); text-align: center;
+    }
+    .quick-action:hover { background: var(--color-primary-50); border-color: var(--color-primary-300); }
+    .qa-icon { width: 40px; height: 40px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .qa-label { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: var(--text-secondary); }
+
+    /* ── Announcements ── */
+    .announce-item { display: flex; gap: var(--space-3); padding: var(--space-3-5) 0; border-bottom: 1px solid var(--border-color); }
+    .announce-item:last-child { border-bottom: none; }
+    .announce-indicator { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .announce-title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--text-primary); margin-bottom: 2px; }
+    .announce-body  { font-size: var(--font-size-xs); color: var(--text-muted); line-height: var(--leading-relaxed); }
+    .announce-time  { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 3px; }
+
+    /* ── Skeleton loader ── */
+    .skel { background: var(--neutral-100); border-radius: 4px; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ── Responsive ── */
+    @media (max-width: 1199px) { .dash-grid { grid-template-columns: 1fr; } .dash-right { position: static; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 767px)  { .stats-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); } .welcome-illustration { display: none; } .welcome-banner { padding: var(--space-6); } .welcome-name { font-size: var(--font-size-2xl); } }
+  </style>
+</head>
+
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="app-sidebar" id="app-sidebar" role="navigation" aria-label="Main navigation">
+    <a class="sidebar-brand" href="../../index.html">
+      <div class="sidebar-logo">E</div>
+      <div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Student Portal</div></div>
+    </a>
+    <nav class="sidebar-nav" role="menubar">
+      <a class="sidebar-item active" href="dashboard.html" role="menuitem" aria-current="page">
+        <span class="sidebar-item-icon"><i data-feather="grid"></i></span>
+        <span class="sidebar-item-label">Dashboard</span>
+      </a>
+      <a class="sidebar-item" href="courses.html" role="menuitem">
+        <span class="sidebar-item-icon"><i data-feather="book-open"></i></span>
+        <span class="sidebar-item-label">My Courses</span>
+      </a>
+      <a class="sidebar-item" href="assignments.html" role="menuitem">
+        <span class="sidebar-item-icon"><i data-feather="clipboard"></i></span>
+        <span class="sidebar-item-label">Assignments</span>
+        <span class="sidebar-item-badge" id="badge-assignments" style="display:none;"></span>
+      </a>
+      <a class="sidebar-item" href="performance.html" role="menuitem">
+        <span class="sidebar-item-icon"><i data-feather="trending-up"></i></span>
+        <span class="sidebar-item-label">Performance</span>
+      </a>
+      <a class="sidebar-item" href="calendar.html" role="menuitem">
+        <span class="sidebar-item-icon"><i data-feather="calendar"></i></span>
+        <span class="sidebar-item-label">Calendar</span>
+      </a>
+      <a class="sidebar-item" href="messages.html" role="menuitem">
+        <span class="sidebar-item-icon"><i data-feather="message-circle"></i></span>
+        <span class="sidebar-item-label">Messages</span>
+        <span class="sidebar-item-badge" id="badge-messages" style="display:none;"></span>
+      </a>
+      <a class="sidebar-item" href="certificates.html" role="menuitem">
+        <span class="sidebar-item-icon"><i data-feather="award"></i></span>
+        <span class="sidebar-item-label">Certificates</span>
+      </a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html" role="menuitem">
+        <span class="sidebar-item-icon"><i data-feather="user"></i></span>
+        <span class="sidebar-item-label">My Profile</span>
+      </a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm avatar-blue" id="sidebar-avatar">…</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+        <div class="sidebar-user-role">Student</div>
+      </div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar">
+      <i data-feather="chevron-left"></i>
+    </button>
+  </aside>
+
+  <!-- ══ MAIN BODY ══ -->
+  <div class="app-body">
+
+    <!-- Navbar -->
+    <nav class="app-navbar" role="navigation" aria-label="Top navigation">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn" aria-label="Open menu"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);" id="navbar-date"></div>
+          <div style="font-size:var(--font-size-base);font-weight:var(--font-weight-semibold);color:var(--text-primary);">Dashboard</div>
+        </div>
+      </div>
+      <div class="navbar-search">
+        <span class="navbar-search-icon"><i data-feather="search"></i></span>
+        <input type="search" class="navbar-search-input" placeholder="Search courses, topics…" aria-label="Search" />
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme" title="Toggle theme"><i data-feather="moon"></i></button>
+        <button class="navbar-icon-btn" data-action="toggle-notif" title="Notifications" aria-label="Notifications">
+          <i data-feather="bell"></i>
+          <span class="badge-count" id="notif-badge" style="display:none;"></span>
+        </button>
+        <div class="navbar-user" id="navbar-user-trigger" role="button" tabindex="0" aria-haspopup="true">
+          <div class="avatar avatar-sm avatar-blue" id="navbar-avatar">…</div>
+          <div class="navbar-user-info">
+            <span class="navbar-user-name" id="navbar-user-name">Loading…</span>
+            <span class="navbar-user-role">Student</span>
+          </div>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <!-- Dropdown -->
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-header" style="padding:var(--space-3) var(--space-4);">
+            <div style="font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);color:var(--text-primary);" id="dd-user-name">Loading…</div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Student</div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> My Profile</a>
+          <a class="dropdown-item" href="certificates.html"><i data-feather="award"></i> Certificates</a>
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Notification panel -->
+    <div class="notif-panel" id="notif-panel" role="dialog" aria-label="Notifications">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notifications</span>
+        <button class="btn btn-ghost btn-sm" id="mark-all-read">Mark all read</button>
+      </div>
+      <div class="notif-panel-body scroll-area" id="notif-panel-body">
+        <div class="notif-panel-empty">
+          <div class="spinner" style="margin-bottom:8px;"></div>
+          <div style="font-size:var(--font-size-sm);color:var(--text-muted);">Loading…</div>
+        </div>
+      </div>
+      <div class="notif-panel-footer">
+        <a href="messages.html" style="font-size:var(--font-size-sm);font-weight:var(--font-weight-medium);color:var(--color-primary-600);">View all notifications</a>
+      </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" role="status" aria-live="polite"></div>
+
+    <!-- ══ PAGE CONTENT ══ -->
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <div class="welcome-greeting" id="welcome-greeting">Good morning</div>
+            <div class="welcome-name" id="welcome-name">…</div>
+            <div class="welcome-subtitle" id="welcome-subtitle">Loading your dashboard…</div>
+            <div class="welcome-actions">
+              <a href="courses.html" class="btn-welcome">
+                <i data-feather="book-open" style="width:15px;height:15px;"></i>
+                Continue Learning
+              </a>
+              <a href="assignments.html" class="btn-welcome">
+                <i data-feather="clipboard" style="width:15px;height:15px;"></i>
+                View Assignments
+              </a>
+            </div>
+          </div>
+          <div class="welcome-illustration" aria-hidden="true">📚</div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrap si-blue"><i data-feather="book-open" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-courses"><div class="skel" style="width:40px;height:28px;"></div></div>
+              <div class="stat-label">Enrolled Courses</div>
+              <div class="stat-delta delta-up" id="stat-courses-delta" style="display:none;"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap si-amber"><i data-feather="clipboard" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-assignments"><div class="skel" style="width:40px;height:28px;"></div></div>
+              <div class="stat-label">Pending Assignments</div>
+              <div class="stat-delta delta-down" style="font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold);" id="stat-due-today"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap si-green"><i data-feather="check-circle" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-attendance"><div class="skel" style="width:40px;height:28px;"></div></div>
+              <div class="stat-label">Attendance Rate</div>
+              <div class="stat-delta delta-up" style="font-size:var(--font-size-xs);">Above average</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap si-purple"><i data-feather="award" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-score"><div class="skel" style="width:40px;height:28px;"></div></div>
+              <div class="stat-label">Overall Score</div>
+              <div class="stat-delta" id="stat-score-delta"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dash-grid">
+
+          <!-- LEFT -->
+          <div class="dash-left">
+
+            <!-- Continue Learning -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Continue Learning</div>
+                <a href="courses.html" class="dash-card-link">View all →</a>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <!-- Skeleton while loading -->
+                <div id="continue-learning-list">
+                  <div style="display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:52px;height:52px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                      <div class="skel" style="height:12px;width:60px;"></div>
+                      <div class="skel" style="height:14px;width:90%;"></div>
+                      <div class="skel" style="height:4px;width:100%;border-radius:99px;"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:52px;height:52px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                      <div class="skel" style="height:12px;width:55px;"></div>
+                      <div class="skel" style="height:14px;width:80%;"></div>
+                      <div class="skel" style="height:4px;width:100%;border-radius:99px;"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:16px;padding:16px 0;">
+                    <div class="skel" style="width:52px;height:52px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                      <div class="skel" style="height:12px;width:65px;"></div>
+                      <div class="skel" style="height:14px;width:75%;"></div>
+                      <div class="skel" style="height:4px;width:100%;border-radius:99px;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upcoming Assignments -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Upcoming Assignments</div>
+                <a href="assignments.html" class="dash-card-link">View all →</a>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="assignments-list">
+                  <div style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:44px;height:44px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;"><div class="skel" style="height:14px;width:70%;"></div><div class="skel" style="height:11px;width:50%;"></div></div>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:14px 0;">
+                    <div class="skel" style="width:44px;height:44px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;"><div class="skel" style="height:14px;width:65%;"></div><div class="skel" style="height:11px;width:45%;"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Recent Activity</div>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="activity-feed">
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);"><div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:13px;width:80%;"></div><div class="skel" style="height:11px;width:30%;"></div></div></div>
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);"><div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:13px;width:75%;"></div><div class="skel" style="height:11px;width:25%;"></div></div></div>
+                  <div style="display:flex;gap:12px;padding:12px 0;"><div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:13px;width:70%;"></div><div class="skel" style="height:11px;width:28%;"></div></div></div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /.dash-left -->
+
+          <!-- RIGHT -->
+          <div class="dash-right">
+
+            <!-- Live Class Card -->
+            <div class="live-class-card" id="live-class-card">
+              <div class="live-class-banner">
+                <div class="live-badge"><div class="live-pulse"></div> Next Live</div>
+                <div class="live-countdown" id="live-countdown">—</div>
+              </div>
+              <div class="live-class-body">
+                <div class="live-class-subject" id="live-class-subject">Loading…</div>
+                <div class="live-class-title" id="live-class-title">Fetching live class…</div>
+                <div class="live-class-instructor">
+                  <div class="live-instructor-avatar" id="live-instructor-initials">…</div>
+                  <span id="live-class-instructor">Loading…</span>
+                </div>
+                <a href="#" id="live-join-btn" class="btn btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:var(--space-2);">
+                  <i data-feather="video" style="width:15px;height:15px;"></i>
+                  Join Class
+                </a>
+              </div>
+            </div>
+
+            <!-- Streak -->
+            <div class="dash-card">
+              <div class="dash-card-header"><div class="dash-card-title">Learning Streak</div></div>
+              <div class="dash-card-body">
+                <div class="streak-card">
+                  <div class="streak-icon">🔥</div>
+                  <div>
+                    <div class="streak-count" id="streak-count">—</div>
+                    <div class="streak-label">Day Streak</div>
+                  </div>
+                </div>
+                <!-- Last 7 days -->
+                <div style="display:flex;justify-content:space-between;margin-top:var(--space-4);" id="streak-days-row">
+                  <!-- Rendered by JS -->
+                  <div style="text-align:center;"><div class="streak-day sd-done">M</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">9</div></div>
+                  <div style="text-align:center;"><div class="streak-day sd-done">T</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">10</div></div>
+                  <div style="text-align:center;"><div class="streak-day sd-done">W</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">11</div></div>
+                  <div style="text-align:center;"><div class="streak-day sd-done">T</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">12</div></div>
+                  <div style="text-align:center;"><div class="streak-day sd-done">F</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">13</div></div>
+                  <div style="text-align:center;"><div class="streak-day sd-done">S</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">14</div></div>
+                  <div style="text-align:center;"><div class="streak-day sd-today">S</div><div style="font-size:9px;color:var(--color-primary-600);font-weight:600;margin-top:3px;">15</div></div>
+                </div>
+                <p style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:var(--space-3);text-align:center;" id="streak-msg"></p>
+              </div>
+            </div>
+
+            <!-- Performance -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Performance Overview</div>
+                <a href="performance.html" class="dash-card-link">Details →</a>
+              </div>
+              <div class="dash-card-body">
+                <div class="perf-ring-wrap">
+                  <div class="perf-ring-container">
+                    <canvas id="perf-ring" width="120" height="120"></canvas>
+                    <div class="perf-ring-center">
+                      <div class="perf-ring-value" id="perf-ring-value">—</div>
+                      <div class="perf-ring-label">Overall %</div>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:var(--space-3);" id="perf-subjects">
+                  <!-- Skeletons -->
+                  <div class="perf-subject-row"><div class="perf-subject-meta"><div class="skel" style="height:12px;width:80px;"></div><div class="skel" style="height:12px;width:28px;"></div></div><div class="skel" style="height:6px;width:100%;border-radius:99px;margin-top:4px;"></div></div>
+                  <div class="perf-subject-row"><div class="perf-subject-meta"><div class="skel" style="height:12px;width:60px;"></div><div class="skel" style="height:12px;width:28px;"></div></div><div class="skel" style="height:6px;width:100%;border-radius:99px;margin-top:4px;"></div></div>
+                  <div class="perf-subject-row"><div class="perf-subject-meta"><div class="skel" style="height:12px;width:70px;"></div><div class="skel" style="height:12px;width:28px;"></div></div><div class="skel" style="height:6px;width:100%;border-radius:99px;margin-top:4px;"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dash-card">
+              <div class="dash-card-header"><div class="dash-card-title">Quick Actions</div></div>
+              <div class="dash-card-body">
+                <div class="quick-actions-grid">
+                  <a href="courses.html" class="quick-action"><div class="qa-icon" style="background:var(--color-primary-50);">📚</div><span class="qa-label">Browse Courses</span></a>
+                  <a href="quiz.html"    class="quick-action"><div class="qa-icon" style="background:var(--color-warning-light);">📝</div><span class="qa-label">Take a Quiz</span></a>
+                  <a href="messages.html" class="quick-action"><div class="qa-icon" style="background:var(--color-success-light);">💬</div><span class="qa-label">Messages</span></a>
+                  <a href="certificates.html" class="quick-action"><div class="qa-icon" style="background:#ede9fe;">🏆</div><span class="qa-label">Certificates</span></a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Announcements -->
+            <div class="dash-card">
+              <div class="dash-card-header"><div class="dash-card-title">Announcements</div></div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="announcements-list">
+                  <div class="skel" style="height:60px;border-radius:8px;margin-bottom:8px;"></div>
+                  <div class="skel" style="height:60px;border-radius:8px;"></div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /.dash-right -->
+        </div><!-- /.dash-grid -->
+      </div><!-- /.page-content -->
+    </main>
+  </div><!-- /.app-body -->
+</div><!-- /.app-shell -->
+
+<!-- Foundation JS — load order is critical -->
+<script>window.EV_BASE = "../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<!-- Inline auth guard — runs synchronously before any module -->
+<!-- If no token in localStorage, redirect to login immediately -->
+<script>
+(function() {
+  var token, user;
+  try {
+    token = localStorage.getItem('ev_token');
+    user  = token ? JSON.parse(localStorage.getItem('ev_user')) : null;
+  } catch(e) {}
+  if (!token || !user) {
+    window.location.replace('../../pages/auth/login.html');
+  } else if (user.role !== 'student') {
+    window.location.replace('../../pages/errors/403.html');
+  }
+})();
+</script>
+
+<!-- Page module -->
+<script src="../../js/modules/dashboard.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Session already restored by init.js (loaded before this script)
+  // Auth.isLoggedIn() is now reliable here
+
+  // Render feather icons immediately
+  if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+
+  // ── UI interactions (sidebar, theme, dropdown, notif panel) ──
+
+  var shell       = document.getElementById('app-shell');
+  var menuBtn     = document.getElementById('navbar-menu-btn');
+  var overlay     = document.getElementById('sidebar-overlay');
+  var collapseBtn = document.getElementById('sidebar-collapse-btn');
+  var notifBtn    = document.querySelector('[data-action="toggle-notif"]');
+  var notifPanel  = document.getElementById('notif-panel');
+  var trigger     = document.getElementById('navbar-user-trigger');
+  var dropdown    = document.getElementById('user-dropdown');
+
+  // Restore sidebar state
+  try { if (localStorage.getItem('ev_sidebar_collapsed') === 'true') shell.classList.add('sidebar-collapsed'); } catch(e) {}
+
+  collapseBtn && collapseBtn.addEventListener('click', function () {
+    var c = shell.classList.toggle('sidebar-collapsed');
+    try { localStorage.setItem('ev_sidebar_collapsed', c); } catch(e) {}
+  });
+
+  menuBtn && menuBtn.addEventListener('click', function () { shell.classList.toggle('sidebar-open'); });
+  overlay && overlay.addEventListener('click', function () { shell.classList.remove('sidebar-open'); });
+
+  // Theme toggle
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var d = document.documentElement.classList.toggle('dark');
+      document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+      try { localStorage.setItem('ev_theme', d ? 'dark' : 'light'); } catch(e) {}
+    });
+  });
+
+  // Notification panel
+  if (notifBtn && notifPanel) {
+    notifBtn.addEventListener('click', function (e) { e.stopPropagation(); notifPanel.classList.toggle('open'); });
+    document.addEventListener('click', function (e) {
+      if (!notifPanel.contains(e.target) && !notifBtn.contains(e.target)) notifPanel.classList.remove('open');
+    });
+  }
+
+  // Mark all read
+  var markAllBtn = document.getElementById('mark-all-read');
+  if (markAllBtn) {
+    markAllBtn.addEventListener('click', async function () {
+      try {
+        if (typeof Api !== 'undefined') await Api.notifications.markAllRead();
+        Store.set('notifications.unreadCount', 0);
+      } catch(e) {}
+    });
+  }
+
+  // User dropdown
+  if (trigger && dropdown) {
+    var _ddOpen = false;
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      _ddOpen = !_ddOpen;
+      dropdown.hidden = !_ddOpen;
+    });
+    document.addEventListener('click', function (e) {
+      if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+        _ddOpen = false;
+        if (dropdown) dropdown.hidden = true;
+      }
+    });
+    trigger.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger.click(); }
+      if (e.key === 'Escape') { _ddOpen = false; dropdown.hidden = true; }
+    });
+  }
+
+  // Logout
+  document.querySelectorAll('[data-action="logout"]').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (typeof Auth !== 'undefined') Auth.logout();
+      else window.location.replace('../auth/login.html');
+    });
+  });
+
+  // ── Welcome subtitle — update after data loads ──
+  Store.subscribe('student', function (state) {
+    var subtitleEl = document.getElementById('welcome-subtitle');
+    if (!subtitleEl || !state.enrolledCourses) return;
+    var pending = (Store.get('notifications.items') || []).filter(function (n) { return !n.read; }).length;
+    subtitleEl.textContent = 'You have ' + (state.enrolledCourses.length || 0) + ' enrolled courses' +
+      (pending > 0 ? ' and ' + pending + ' unread notifications.' : '.');
+  });
+
+  // ── Initialize dashboard module ──
+  // This is the single call that does everything:
+  // auth guard → API calls → Store updates → DOM render → live subscriptions
+  if (typeof StudentDashboard !== 'undefined') {
+    StudentDashboard.init();
+  }
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', function () {
+    if (typeof StudentDashboard !== 'undefined') StudentDashboard.destroy();
+  });
+});
+</script>
+
+</body>
+</html>
