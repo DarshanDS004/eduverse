@@ -20,15 +20,20 @@ const pool = mysql.createPool({
   charset:            'utf8mb4',
 });
 
-// Test connection on startup
+// Test connection on startup — non-blocking, never crashes the require() chain.
+// process.exit(1) is intentionally removed: calling it inside a require()'d file
+// kills the process mid-load, causing every module that required db.js to export {}
+// instead of its router — making Express throw:
+//   "Router.use() requires a middleware function but got a Object"
 async function testConnection() {
   try {
     const conn = await pool.getConnection();
-    console.log('✅ MySQL connected — database:', process.env.DB_NAME);
+    console.log('\u2705 MySQL connected \u2014 database:', process.env.DB_NAME);
     conn.release();
   } catch (err) {
-    console.error('❌ MySQL connection failed:', err.message);
-    process.exit(1);
+    console.error('\u274c MySQL connection failed:', err.message);
+    console.error('   Fix DB_HOST / DB_USER / DB_PASSWORD / DB_NAME in your .env file.');
+    // Server stays up — DB errors surface per-request via the query() calls in services.
   }
 }
 

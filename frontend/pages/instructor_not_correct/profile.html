@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — EduVerse Instructor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .profile-header {
+      background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+      border-radius: var(--border-radius-xl);
+      padding: var(--space-8);
+      display: flex; align-items: flex-start; gap: var(--space-6);
+      margin-bottom: var(--space-6); position: relative; overflow: hidden;
+    }
+    .profile-header::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .profile-avatar-wrap { position: relative; flex-shrink: 0; }
+    .profile-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; font-weight: 800; color: #fff;
+      overflow: hidden; cursor: pointer;
+    }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-upload-btn {
+      position: absolute; bottom: 0; right: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--color-primary-600); border: 2px solid #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #fff;
+    }
+    .profile-info { flex: 1; z-index: 1; }
+    .profile-name { font-size: var(--font-size-2xl); font-weight: 800; color: #fff; margin-bottom: var(--space-1); }
+    .profile-role { font-size: var(--font-size-sm); color: rgba(255,255,255,0.7); margin-bottom: var(--space-3); display: flex; align-items: center; gap: var(--space-2); }
+    .verified-badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 99px; padding: 2px 10px; font-size: var(--font-size-xs); font-weight: 600; color: #fff; }
+    .profile-stats { display: flex; gap: var(--space-6); }
+    .pstat { text-align: center; }
+    .pstat-val { font-size: var(--font-size-xl); font-weight: 800; color: #fff; line-height: 1; }
+    .pstat-lbl { font-size: var(--font-size-xs); color: rgba(255,255,255,0.65); margin-top: 2px; }
+
+    .profile-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-6); align-items: start; }
+    .form-card { background: var(--bg-surface); border: var(--card-border); border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow: hidden; margin-bottom: var(--space-5); }
+    .form-card-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border-color); }
+    .form-card-title { font-size: var(--font-size-base); font-weight: 600; color: var(--text-primary); }
+    .form-card-body { padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+
+    .tag-input-wrap { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-2); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); min-height: 42px; cursor: text; background: var(--input-bg); }
+    .tag-input-wrap:focus-within { border-color: var(--border-color-focus); box-shadow: var(--shadow-focus); }
+    .tag-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: 2px 8px; background: var(--color-primary-100); color: var(--color-primary-700); border-radius: 99px; font-size: var(--font-size-xs); font-weight: 600; }
+    .tag-chip button { background: none; border: none; cursor: pointer; color: inherit; padding: 0; line-height: 1; font-size: 14px; }
+    .tag-input { border: none; outline: none; background: none; font-size: var(--font-size-sm); font-family: var(--font-ui); color: var(--text-primary); min-width: 100px; flex: 1; }
+
+    .social-input-wrap { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); overflow: hidden; background: var(--input-bg); }
+    .social-input-wrap:focus-within { border-color: var(--border-color-focus); }
+    .social-prefix { padding: 0 var(--space-3); background: var(--bg-sunken); border-right: 1px solid var(--border-color); color: var(--text-muted); font-size: var(--font-size-sm); white-space: nowrap; height: 42px; display: flex; align-items: center; }
+    .social-input { flex: 1; border: none; outline: none; background: none; padding: 0 var(--space-3); height: 42px; font-size: var(--font-size-sm); font-family: var(--font-ui); color: var(--text-primary); }
+
+    .rating-display { display: flex; align-items: center; gap: var(--space-2); }
+    .stars { color: #f59e0b; font-size: var(--font-size-lg); letter-spacing: 2px; }
+    .rating-val { font-size: var(--font-size-2xl); font-weight: 800; color: var(--text-primary); }
+    .rating-count { font-size: var(--font-size-sm); color: var(--text-muted); }
+
+    .review-item { padding: var(--space-4) 0; border-bottom: 1px solid var(--border-color); }
+    .review-item:last-child { border-bottom: none; }
+    .review-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }
+    .review-stars { color: #f59e0b; font-size: var(--font-size-xs); }
+    .review-name { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); }
+    .review-date { font-size: var(--font-size-xs); color: var(--text-muted); margin-left: auto; }
+    .review-text { font-size: var(--font-size-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+
+    .credential-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--bg-sunken); border-radius: var(--border-radius-md); margin-bottom: var(--space-2); }
+    .credential-icon { width: 36px; height: 36px; border-radius: var(--border-radius-md); background: var(--color-primary-50); color: var(--color-primary-600); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .credential-info { flex: 1; min-width: 0; }
+    .credential-name { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .credential-date { font-size: var(--font-size-xs); color: var(--text-muted); }
+
+    .skel { background: var(--neutral-100); border-radius: 4px; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
+    .toast-container { position: fixed; bottom: var(--space-6); right: var(--space-6); z-index: var(--z-toast); display: flex; flex-direction: column; gap: var(--space-3); max-width: 360px; }
+    .toast { background: var(--bg-elevated); border: var(--card-border); border-radius: var(--card-radius); box-shadow: var(--shadow-lg); padding: var(--space-4); display: flex; align-items: center; gap: var(--space-3); }
+    .toast-success { border-left: 4px solid var(--color-success); }
+    .toast-error   { border-left: 4px solid var(--color-danger); }
+    .toast-content { flex: 1; font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); }
+
+    @media (max-width: 1023px) { .profile-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 767px) { .form-row { grid-template-columns: 1fr; } .profile-header { flex-direction: column; } }
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html">
+      <div class="sidebar-logo">E</div>
+      <div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div>
+    </a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item active" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar avatar-sm avatar-green" id="sidebar-avatar"></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+        <div class="sidebar-user-role">Instructor</div>
+      </div>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+
+  <div class="app-body">
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">My Profile</div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Manage your public instructor profile</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger">
+          <div class="avatar avatar-sm avatar-green" id="navbar-avatar"></div>
+          <div class="navbar-user-info">
+            <span class="navbar-user-name" id="navbar-user-name">Loading…</span>
+            <span class="navbar-user-role">Instructor</span>
+          </div>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="profile-avatar-display" onclick="document.getElementById('avatar-file-input').click()">
+              <span id="avatar-initials">…</span>
+            </div>
+            <div class="avatar-upload-btn" onclick="document.getElementById('avatar-file-input').click()">
+              <i data-feather="camera" style="width:12px;height:12px;"></i>
+            </div>
+            <input type="file" id="avatar-file-input" accept="image/*" hidden />
+          </div>
+          <div class="profile-info">
+            <div class="profile-name" id="header-name">Loading…</div>
+            <div class="profile-role">
+              Instructor
+              <span class="verified-badge" id="verified-badge" style="display:none;">✓ Verified</span>
+            </div>
+            <div class="profile-stats">
+              <div class="pstat"><div class="pstat-val" id="hdr-courses">0</div><div class="pstat-lbl">Courses</div></div>
+              <div class="pstat"><div class="pstat-val" id="hdr-students">0</div><div class="pstat-lbl">Students</div></div>
+              <div class="pstat"><div class="pstat-val" id="hdr-rating">—</div><div class="pstat-lbl">Avg Rating</div></div>
+              <div class="pstat"><div class="pstat-val" id="hdr-reviews">0</div><div class="pstat-lbl">Reviews</div></div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff;flex-shrink:0;" onclick="saveProfile()">
+            <i data-feather="save" style="width:14px;height:14px;"></i> Save Changes
+          </button>
+        </div>
+
+        <div class="profile-grid">
+          <!-- LEFT -->
+          <div>
+            <!-- Basic Info -->
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="form-card-title">Basic Information</div>
+              </div>
+              <div class="form-card-body">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" id="f-name" class="form-input" placeholder="Your full name" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" id="f-dob" class="form-input" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="f-email" class="form-input" disabled style="opacity:0.6;" />
+                    <div class="form-hint">Email cannot be changed here</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" id="f-phone" class="form-input" placeholder="+91 XXXXX XXXXX" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Bio / About Me</label>
+                  <textarea id="f-bio" class="form-textarea" rows="4" placeholder="Tell students about yourself, your teaching style, and what makes you passionate about your subject…"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Expertise Areas
+                    <span style="font-weight:400;color:var(--text-muted);">(press Enter to add)</span>
+                  </label>
+                  <div class="tag-input-wrap" id="expertise-wrap">
+                    <input type="text" class="tag-input" id="expertise-input" placeholder="e.g. Mathematics, Physics, CBSE…" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Qualifications -->
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="form-card-title">Educational Qualifications</div>
+                <button class="btn btn-ghost btn-sm" onclick="addQualification()">
+                  <i data-feather="plus" style="width:14px;height:14px;"></i> Add
+                </button>
+              </div>
+              <div class="form-card-body" id="qualifications-list">
+                <!-- rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Work Experience -->
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="form-card-title">Work Experience</div>
+                <button class="btn btn-ghost btn-sm" onclick="addExperience()">
+                  <i data-feather="plus" style="width:14px;height:14px;"></i> Add
+                </button>
+              </div>
+              <div class="form-card-body" id="experience-list">
+                <!-- rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="form-card-title">Social Links</div>
+              </div>
+              <div class="form-card-body">
+                <div class="form-group">
+                  <label class="form-label">LinkedIn</label>
+                  <div class="social-input-wrap">
+                    <span class="social-prefix">linkedin.com/in/</span>
+                    <input type="text" class="social-input" id="f-linkedin" placeholder="your-profile" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">GitHub</label>
+                  <div class="social-input-wrap">
+                    <span class="social-prefix">github.com/</span>
+                    <input type="text" class="social-input" id="f-github" placeholder="your-username" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">YouTube</label>
+                  <div class="social-input-wrap">
+                    <span class="social-prefix">youtube.com/</span>
+                    <input type="text" class="social-input" id="f-youtube" placeholder="@channel" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Website</label>
+                  <input type="url" class="form-input" id="f-website" placeholder="https://yourwebsite.com" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="form-card-title">Change Password</div>
+              </div>
+              <div class="form-card-body">
+                <div class="form-group">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" id="f-current-pw" class="form-input" placeholder="Enter current password" />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" id="f-new-pw" class="form-input" placeholder="Min. 8 characters" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" id="f-confirm-pw" class="form-input" placeholder="Re-enter new password" />
+                  </div>
+                </div>
+                <button class="btn btn-outline" onclick="changePassword()">
+                  <i data-feather="lock" style="width:14px;height:14px;"></i> Update Password
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <!-- Profile Strength -->
+            <div class="form-card" style="margin-bottom:var(--space-5);">
+              <div class="form-card-header"><div class="form-card-title">Profile Strength</div></div>
+              <div class="form-card-body">
+                <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                  <span style="font-size:var(--font-size-sm);color:var(--text-secondary);">Complete your profile</span>
+                  <span style="font-size:var(--font-size-sm);font-weight:700;color:var(--color-primary-600);" id="strength-pct">0%</span>
+                </div>
+                <div style="height:8px;background:var(--neutral-100);border-radius:99px;overflow:hidden;margin-bottom:var(--space-4);">
+                  <div id="strength-bar" style="height:100%;background:var(--color-primary-600);border-radius:99px;transition:width 1s;width:0%;"></div>
+                </div>
+                <div id="strength-tips" style="display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--font-size-xs);"></div>
+              </div>
+            </div>
+
+            <!-- Ratings & Reviews -->
+            <div class="form-card" style="margin-bottom:var(--space-5);">
+              <div class="form-card-header"><div class="form-card-title">Ratings & Reviews</div></div>
+              <div class="form-card-body">
+                <div class="rating-display" style="margin-bottom:var(--space-4);">
+                  <div class="rating-val" id="avg-rating">—</div>
+                  <div>
+                    <div class="stars" id="rating-stars">☆☆☆☆☆</div>
+                    <div class="rating-count" id="rating-count">No reviews yet</div>
+                  </div>
+                </div>
+                <div id="rating-breakdown" style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-5);">
+                  <!-- rendered by JS -->
+                </div>
+                <div id="reviews-list">
+                  <div style="text-align:center;padding:var(--space-6);color:var(--text-muted);font-size:var(--font-size-sm);">No reviews yet</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Credentials -->
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="form-card-title">Credentials & Certificates</div>
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cred-file-input').click()">
+                  <i data-feather="upload" style="width:14px;height:14px;"></i> Upload
+                </button>
+              </div>
+              <div class="form-card-body">
+                <input type="file" id="cred-file-input" accept=".pdf,.jpg,.jpeg,.png" hidden />
+                <div id="credentials-list">
+                  <div style="text-align:center;padding:var(--space-6);color:var(--text-muted);font-size:var(--font-size-sm);">
+                    No credentials uploaded yet
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u)window.location.replace('../../pages/auth/login.html');else if(u.role!=='instructor')window.location.replace('../../pages/errors/403.html');})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof feather !== 'undefined') feather.replace({'stroke-width':1.75});
+
+  var user = Store.get('auth.user') || {};
+  var name = user.name || '';
+  var initials = Utils.getInitials(name);
+  var color = Utils.getAvatarColor(name);
+
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el){ el.textContent = initials; el.className = 'avatar avatar-sm ' + color; }
+  });
+  ['sidebar-user-name','navbar-user-name'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.textContent = name;
+  });
+
+  // Shell
+  var shell = document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click', function(){ shell.classList.toggle('sidebar-open'); });
+  document.getElementById('sidebar-overlay').addEventListener('click', function(){ shell.classList.remove('sidebar-open'); });
+  document.getElementById('sidebar-collapse-btn').addEventListener('click', function(){
+    var c = shell.classList.toggle('sidebar-collapsed');
+    try{ localStorage.setItem('ev_sidebar_collapsed', String(c)); }catch(e){}
+  });
+  try{ if(localStorage.getItem('ev_sidebar_collapsed')==='true') shell.classList.add('sidebar-collapsed'); else shell.classList.remove('sidebar-collapsed'); }catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){
+    btn.addEventListener('click', function(){ var d=document.documentElement.classList.toggle('dark'); document.documentElement.setAttribute('data-theme',d?'dark':'light'); try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){} });
+  });
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.preventDefault(); Auth.logout(); });
+  });
+  var trigger = document.getElementById('navbar-user-trigger'), dropdown = document.getElementById('user-dropdown');
+  if(trigger&&dropdown){ trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;}); document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;}); }
+
+  // ── Data state ──
+  var expertiseTags = [];
+  var qualifications = [];
+  var experiences    = [];
+
+  // ── Load profile ──
+  loadProfile();
+
+  async function loadProfile() {
+    try {
+      var res  = await Api.student.profile(); // uses student profile endpoint
+      var data = res && res.data;
+      if (!data) return;
+
+      // Fill header
+      _t('header-name', data.name || name);
+      _t('avatar-initials', Utils.getInitials(data.name || name));
+      if (data.is_verified) document.getElementById('verified-badge').style.display = 'inline-flex';
+
+      // Fill form fields
+      _val('f-name',     data.name      || '');
+      _val('f-email',    data.email     || user.email || '');
+      _val('f-phone',    data.phone     || '');
+      _val('f-bio',      data.bio       || '');
+      _val('f-dob',      data.date_of_birth ? Utils.formatDate(data.date_of_birth,'input') : '');
+      _val('f-linkedin', data.linkedin_url || '');
+      _val('f-github',   data.github_url   || '');
+      _val('f-youtube',  data.youtube_url  || '');
+      _val('f-website',  data.website      || '');
+
+      // Expertise tags
+      if (data.expertise_areas) {
+        expertiseTags = data.expertise_areas.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+        renderTags();
+      }
+
+      // Qualifications
+      if (data.qualifications) {
+        try { qualifications = JSON.parse(data.qualifications); } catch(e) {}
+        renderQualifications();
+      }
+
+      // Experience
+      if (data.experience) {
+        try { experiences = JSON.parse(data.experience); } catch(e) {}
+        renderExperiences();
+      }
+
+      // Stats
+      _t('hdr-courses',  data.total_courses  || 0);
+      _t('hdr-students', data.total_students || 0);
+      _t('hdr-rating',   data.avg_rating ? parseFloat(data.avg_rating).toFixed(1) : '—');
+      _t('hdr-reviews',  data.total_reviews  || 0);
+
+      // Rating breakdown
+      renderRatings(data);
+
+      // Avatar
+      if (data.avatar || data.photo_url) {
+        var avatarEl = document.getElementById('profile-avatar-display');
+        avatarEl.innerHTML = '<img src="' + (data.avatar || data.photo_url) + '" />';
+      }
+
+      updateStrength(data);
+
+    } catch(err) {
+      console.error(err);
+      // Pre-fill from localStorage user
+      _val('f-name',  user.name  || '');
+      _val('f-email', user.email || '');
+      _t('header-name', user.name || '');
+      _t('avatar-initials', Utils.getInitials(user.name || ''));
+      updateStrength({});
+    }
+  }
+
+  // ── Save profile ──
+  window.saveProfile = async function() {
+    var btn = document.querySelector('[onclick="saveProfile()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+    try {
+      await Api.student.updateProfile({
+        name:            document.getElementById('f-name').value.trim(),
+        phone:           document.getElementById('f-phone').value.trim(),
+        bio:             document.getElementById('f-bio').value.trim(),
+        date_of_birth:   document.getElementById('f-dob').value || null,
+        expertise_areas: expertiseTags.join(', '),
+        linkedin_url:    document.getElementById('f-linkedin').value.trim(),
+        github_url:      document.getElementById('f-github').value.trim(),
+        youtube_url:     document.getElementById('f-youtube').value.trim(),
+        website:         document.getElementById('f-website').value.trim(),
+        qualifications:  JSON.stringify(qualifications),
+        experience:      JSON.stringify(experiences),
+      });
+
+      showToast('success', 'Profile saved successfully!');
+      _t('header-name', document.getElementById('f-name').value.trim());
+
+    } catch(err) {
+      showToast('error', (err && err.message) || 'Failed to save profile.');
+    }
+
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i data-feather="save" style="width:14px;height:14px;"></i> Save Changes'; feather.replace({'stroke-width':1.75}); }
+  };
+
+  // ── Change password ──
+  window.changePassword = async function() {
+    var cur  = document.getElementById('f-current-pw').value;
+    var nw   = document.getElementById('f-new-pw').value;
+    var conf = document.getElementById('f-confirm-pw').value;
+    if (!cur || !nw) { showToast('error', 'Please fill in all password fields.'); return; }
+    if (nw !== conf) { showToast('error', 'New passwords do not match.'); return; }
+    if (nw.length < 8) { showToast('error', 'Password must be at least 8 characters.'); return; }
+    try {
+      await Api.student.updateProfile({ current_password: cur, new_password: nw });
+      showToast('success', 'Password updated successfully!');
+      ['f-current-pw','f-new-pw','f-confirm-pw'].forEach(function(id){ document.getElementById(id).value=''; });
+    } catch(err) {
+      showToast('error', (err && err.message) || 'Failed to update password.');
+    }
+  };
+
+  // ── Tags ──
+  var tagInput = document.getElementById('expertise-input');
+  tagInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      var val = tagInput.value.trim().replace(/,$/,'');
+      if (val && !expertiseTags.includes(val)) {
+        expertiseTags.push(val);
+        renderTags();
+      }
+      tagInput.value = '';
+    }
+    if (e.key === 'Backspace' && !tagInput.value && expertiseTags.length) {
+      expertiseTags.pop();
+      renderTags();
+    }
+  });
+
+  function renderTags() {
+    var wrap = document.getElementById('expertise-wrap');
+    var existing = wrap.querySelectorAll('.tag-chip');
+    existing.forEach(function(el){ el.remove(); });
+    expertiseTags.forEach(function(tag, i) {
+      var chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = _esc(tag) + '<button onclick="removeTag(' + i + ')">×</button>';
+      wrap.insertBefore(chip, tagInput);
+    });
+  }
+
+  window.removeTag = function(i) {
+    expertiseTags.splice(i, 1);
+    renderTags();
+  };
+
+  // ── Qualifications ──
+  window.addQualification = function() {
+    qualifications.push({ degree: '', institution: '', year: '', field: '' });
+    renderQualifications();
+  };
+
+  function renderQualifications() {
+    var list = document.getElementById('qualifications-list');
+    if (!qualifications.length) {
+      list.innerHTML = '<div style="text-align:center;padding:var(--space-4);color:var(--text-muted);font-size:var(--font-size-sm);">No qualifications added yet. Click Add to get started.</div>';
+      return;
+    }
+    list.innerHTML = qualifications.map(function(q, i) {
+      return '<div style="border:1px solid var(--border-color);border-radius:var(--border-radius-md);padding:var(--space-4);margin-bottom:var(--space-3);">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-3);">' +
+          '<div class="form-group"><label class="form-label">Degree</label><input class="form-input" value="' + _esc(q.degree) + '" onchange="updateQual(' + i + ',\'degree\',this.value)" placeholder="e.g. B.Tech, M.Sc" /></div>' +
+          '<div class="form-group"><label class="form-label">Field of Study</label><input class="form-input" value="' + _esc(q.field) + '" onchange="updateQual(' + i + ',\'field\',this.value)" placeholder="e.g. Computer Science" /></div>' +
+          '<div class="form-group"><label class="form-label">Institution</label><input class="form-input" value="' + _esc(q.institution) + '" onchange="updateQual(' + i + ',\'institution\',this.value)" placeholder="University / College name" /></div>' +
+          '<div class="form-group"><label class="form-label">Year</label><input class="form-input" type="number" value="' + _esc(q.year) + '" onchange="updateQual(' + i + ',\'year\',this.value)" placeholder="e.g. 2020" /></div>' +
+        '</div>' +
+        '<button class="btn btn-outline-danger btn-sm" onclick="removeQual(' + i + ')"><i data-feather="trash-2" style="width:12px;height:12px;"></i> Remove</button>' +
+      '</div>';
+    }).join('');
+    feather.replace({'stroke-width':1.75});
+  }
+
+  window.updateQual = function(i, key, val) { qualifications[i][key] = val; };
+  window.removeQual = function(i) { qualifications.splice(i, 1); renderQualifications(); };
+
+  // ── Experience ──
+  window.addExperience = function() {
+    experiences.push({ title: '', company: '', from: '', to: '', current: false, description: '' });
+    renderExperiences();
+  };
+
+  function renderExperiences() {
+    var list = document.getElementById('experience-list');
+    if (!experiences.length) {
+      list.innerHTML = '<div style="text-align:center;padding:var(--space-4);color:var(--text-muted);font-size:var(--font-size-sm);">No experience added yet. Click Add to get started.</div>';
+      return;
+    }
+    list.innerHTML = experiences.map(function(e, i) {
+      return '<div style="border:1px solid var(--border-color);border-radius:var(--border-radius-md);padding:var(--space-4);margin-bottom:var(--space-3);">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-3);">' +
+          '<div class="form-group"><label class="form-label">Job Title</label><input class="form-input" value="' + _esc(e.title) + '" onchange="updateExp(' + i + ',\'title\',this.value)" placeholder="e.g. Senior Teacher" /></div>' +
+          '<div class="form-group"><label class="form-label">Company / School</label><input class="form-input" value="' + _esc(e.company) + '" onchange="updateExp(' + i + ',\'company\',this.value)" placeholder="Organisation name" /></div>' +
+          '<div class="form-group"><label class="form-label">From</label><input class="form-input" type="month" value="' + _esc(e.from) + '" onchange="updateExp(' + i + ',\'from\',this.value)" /></div>' +
+          '<div class="form-group"><label class="form-label">To</label><input class="form-input" type="month" value="' + _esc(e.to) + '" ' + (e.current ? 'disabled' : '') + ' onchange="updateExp(' + i + ',\'to\',this.value)" /></div>' +
+        '</div>' +
+        '<div class="form-group" style="margin-bottom:var(--space-3);">' +
+          '<label class="form-checkbox"><input type="checkbox" ' + (e.current ? 'checked' : '') + ' onchange="updateExp(' + i + ',\'current\',this.checked);renderExperiences()"><span style="font-size:var(--font-size-sm);color:var(--text-secondary);margin-left:8px;">Currently working here</span></label>' +
+        '</div>' +
+        '<div class="form-group" style="margin-bottom:var(--space-3);">' +
+          '<label class="form-label">Description</label>' +
+          '<textarea class="form-textarea" rows="2" onchange="updateExp(' + i + ',\'description\',this.value)" placeholder="Brief description of your role…">' + _esc(e.description) + '</textarea>' +
+        '</div>' +
+        '<button class="btn btn-outline-danger btn-sm" onclick="removeExp(' + i + ')"><i data-feather="trash-2" style="width:12px;height:12px;"></i> Remove</button>' +
+      '</div>';
+    }).join('');
+    feather.replace({'stroke-width':1.75});
+  }
+
+  window.updateExp = function(i, key, val) { experiences[i][key] = val; };
+  window.removeExp = function(i) { experiences.splice(i, 1); renderExperiences(); };
+
+  // ── Avatar upload ──
+  document.getElementById('avatar-file-input').addEventListener('change', async function() {
+    var file = this.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('error', 'Image must be under 5MB.'); return; }
+    try {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var avatarEl = document.getElementById('profile-avatar-display');
+        avatarEl.innerHTML = '<img src="' + e.target.result + '" />';
+      };
+      reader.readAsDataURL(file);
+      showToast('success', 'Avatar updated! Save your profile to apply.');
+    } catch(err) {
+      showToast('error', 'Failed to update avatar.');
+    }
+  });
+
+  // ── Profile strength ──
+  function updateStrength(data) {
+    var fields = [
+      { label: 'Full name',        done: !!(data.name || document.getElementById('f-name').value) },
+      { label: 'Profile photo',    done: !!(data.avatar || data.photo_url) },
+      { label: 'Bio',              done: !!(data.bio || document.getElementById('f-bio').value) },
+      { label: 'Expertise areas',  done: expertiseTags.length > 0 },
+      { label: 'Qualification',    done: qualifications.length > 0 },
+      { label: 'LinkedIn profile', done: !!(data.linkedin_url || document.getElementById('f-linkedin').value) },
+    ];
+    var done = fields.filter(function(f){ return f.done; }).length;
+    var pct  = Math.round((done / fields.length) * 100);
+    document.getElementById('strength-pct').textContent = pct + '%';
+    document.getElementById('strength-bar').style.width = pct + '%';
+    var missing = fields.filter(function(f){ return !f.done; });
+    document.getElementById('strength-tips').innerHTML = missing.length === 0
+      ? '<div style="color:var(--color-success);font-size:var(--font-size-xs);">✅ Profile is complete!</div>'
+      : missing.map(function(f){
+          return '<div style="display:flex;align-items:center;gap:6px;color:var(--text-muted);">' +
+            '<span style="font-size:10px;">○</span>' +
+            '<span style="font-size:var(--font-size-xs);">Add your ' + f.label.toLowerCase() + '</span></div>';
+        }).join('');
+  }
+
+  // ── Render ratings ──
+  function renderRatings(data) {
+    if (!data.avg_rating) return;
+    var avg = parseFloat(data.avg_rating).toFixed(1);
+    document.getElementById('avg-rating').textContent = avg;
+    document.getElementById('rating-count').textContent = (data.total_reviews || 0) + ' reviews';
+    var filled = Math.round(parseFloat(avg));
+    document.getElementById('rating-stars').textContent = '★'.repeat(filled) + '☆'.repeat(5 - filled);
+
+    if (data.reviews && data.reviews.length) {
+      document.getElementById('reviews-list').innerHTML = data.reviews.slice(0,3).map(function(r) {
+        return '<div class="review-item">' +
+          '<div class="review-header">' +
+            '<div class="avatar avatar-xs avatar-blue" style="font-size:10px;">' + Utils.getInitials(r.student_name || 'S') + '</div>' +
+            '<span class="review-name">' + _esc(r.student_name || 'Student') + '</span>' +
+            '<span class="review-stars">' + '★'.repeat(r.rating) + '☆'.repeat(5-r.rating) + '</span>' +
+            '<span class="review-date">' + Utils.timeAgo(r.created_at) + '</span>' +
+          '</div>' +
+          '<div class="review-text">' + _esc(r.review_text || '') + '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  // ── Helpers ──
+  function _t(id, val) { var el = document.getElementById(id); if(el) el.textContent = val == null ? '' : val; }
+  function _val(id, val) { var el = document.getElementById(id); if(el) el.value = val; }
+  function _esc(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function showToast(type, msg) {
+    var c  = document.getElementById('toast-container');
+    var el = document.createElement('div');
+    el.className = 'toast toast-' + type;
+    el.innerHTML = '<div class="toast-content">' + _esc(msg) + '</div><button style="background:none;border:none;cursor:pointer;color:var(--text-muted);" onclick="this.closest(\'.toast\').remove()">✕</button>';
+    c.appendChild(el);
+    setTimeout(function(){ if(el.parentNode) el.remove(); }, 4000);
+  }
+
+  // Initial render
+  renderQualifications();
+  renderExperiences();
+});
+</script>
+</body>
+</html>

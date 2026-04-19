@@ -5,3 +5,13 @@ node_modules/
 dist/
 .cache/
 thumbs.db
+# uploads (very important)
+uploads/
+
+# vscode
+.vscode/
+
+# temp/debug files
+*_prev.*
+*_not_corrected.*
+uploads/

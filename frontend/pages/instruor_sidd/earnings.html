@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Earnings — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .stat-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);display:flex;align-items:flex-start;gap:var(--space-4);transition:all var(--transition-fast);}
+    .stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+    .stat-icon-wrap{width:44px;height:44px;border-radius:var(--border-radius-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .si-blue{background:var(--color-primary-50);color:var(--color-primary-600);}
+    .si-green{background:var(--color-success-light);color:var(--color-success);}
+    .si-amber{background:var(--color-warning-light);color:var(--color-warning);}
+    .si-purple{background:#ede9fe;color:#7c3aed;}
+    .stat-value{font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);line-height:1;margin-bottom:var(--space-1);}
+    .stat-label{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;}
+    .dash-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:var(--space-6);}
+    .dash-card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .dash-card-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .dash-card-body{padding:var(--space-5);}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);}
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .badge-success{background:var(--color-success-light);color:var(--color-success-dark);}
+    .badge-warning{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .badge-danger{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    .badge-neutral{background:var(--neutral-100);color:var(--text-muted);}
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);padding:var(--space-3) var(--space-4);background:var(--bg-sunken);text-align:left;border-bottom:1px solid var(--border-color);white-space:nowrap;}
+    td{padding:var(--space-3) var(--space-4);font-size:var(--font-size-sm);color:var(--text-primary);border-bottom:1px solid var(--border-color);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:var(--neutral-50);}
+    .page-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-color);margin-bottom:var(--space-6);}
+    .page-tab{padding:var(--space-3) var(--space-5);font-size:var(--font-size-sm);font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-ui);transition:all var(--transition-fast);}
+    .page-tab:hover{color:var(--text-primary);}
+    .page-tab.active{color:var(--color-primary-600);border-bottom-color:var(--color-primary-600);font-weight:600;}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+    .payout-card{background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:var(--card-radius);padding:var(--space-5);color:#fff;margin-bottom:var(--space-4);}
+    .payout-amount{font-size:var(--font-size-4xl);font-weight:800;letter-spacing:var(--tracking-tight);line-height:1;margin:var(--space-2) 0;}
+    .payout-label{font-size:var(--font-size-xs);color:rgba(255,255,255,0.6);}
+    .bank-field{background:var(--bg-sunken);border-radius:var(--border-radius-md);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-3);display:flex;align-items:center;justify-content:space-between;}
+    .bank-field-label{font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:2px;}
+    .bank-field-value{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item active" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm" id="sidebar-avatar"></div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor Portal</div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Earnings & Payouts</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm" id="navbar-avatar"></div>
+          <div class="navbar-user-info"><span class="navbar-user-name" id="navbar-user-name"></span><span class="navbar-user-role">Instructor</span></div>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height)-8px);right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-header"><div style="font-weight:600;font-size:var(--font-size-sm);" id="dd-user-name"></div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" style="color:var(--color-danger);width:100%;text-align:left;" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main"><div class="page-content">
+
+      <div class="page-header" style="margin-bottom:var(--space-6);">
+        <div><h1 class="page-title">Earnings & Payouts</h1><p class="page-subtitle">Track revenue, manage payouts and bank details</p></div>
+        <div style="display:flex;gap:var(--space-3);">
+          <select class="form-select" id="earnings-period" style="width:160px;height:36px;">
+            <option value="30">Last 30 days</option><option value="90">Last 3 months</option>
+            <option value="180">Last 6 months</option><option value="365">This year</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="downloadStatement()"><i data-feather="download" style="width:14px;height:14px;"></i> Download Statement</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);">
+        <div class="stat-card"><div class="stat-icon-wrap si-green"><i data-feather="dollar-sign" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-total">—</div><div class="stat-label">Total Earnings</div></div></div>
+        <div class="stat-card"><div class="stat-icon-wrap si-blue"><i data-feather="book-open" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-courses">—</div><div class="stat-label">From Courses</div></div></div>
+        <div class="stat-card"><div class="stat-icon-wrap si-amber"><i data-feather="file-text" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-materials">—</div><div class="stat-label">From Materials</div></div></div>
+        <div class="stat-card"><div class="stat-icon-wrap si-purple"><i data-feather="clock" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-pending-payout">—</div><div class="stat-label">Pending Payout</div></div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="page-tabs">
+        <button class="page-tab active" data-tab="overview">Overview</button>
+        <button class="page-tab" data-tab="transactions">Transactions</button>
+        <button class="page-tab" data-tab="coupons">Coupon Usage</button>
+        <button class="page-tab" data-tab="payouts">Payout History</button>
+        <button class="page-tab" data-tab="bank">Bank / UPI Details</button>
+      </div>
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab-panel active" id="tab-overview">
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--space-6);margin-bottom:var(--space-6);">
+          <div class="dash-card">
+            <div class="dash-card-header"><div class="dash-card-title">Revenue Over Time</div></div>
+            <div class="dash-card-body"><canvas id="revenue-chart" height="80"></canvas></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-header"><div class="dash-card-title">Revenue Breakdown</div></div>
+            <div class="dash-card-body"><canvas id="breakdown-chart" height="120"></canvas></div>
+          </div>
+        </div>
+        <!-- Per-course breakdown -->
+        <div class="dash-card">
+          <div class="dash-card-header"><div class="dash-card-title">Revenue per Course</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Course</th><th>Enrollments</th><th>Price</th><th>Gross Revenue</th><th>Platform Fee</th><th>Net Earnings</th></tr></thead>
+              <tbody id="course-revenue-tbody"><tr><td colspan="6"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS TAB -->
+      <div class="tab-panel" id="tab-transactions">
+        <div class="dash-card">
+          <div class="dash-card-header"><div class="dash-card-title">Transaction History</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Student</th><th>Item</th><th>Type</th><th>Gross</th><th>Fee</th><th>Net</th><th>Status</th></tr></thead>
+              <tbody id="transactions-tbody"><tr><td colspan="8"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- COUPONS TAB -->
+      <div class="tab-panel" id="tab-coupons">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">Coupon Usage Report</div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('create-coupon-modal')"><i data-feather="plus" style="width:14px;height:14px;"></i> Create Coupon</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Code</th><th>Discount</th><th>Course</th><th>Used</th><th>Max Uses</th><th>Expiry</th><th>Revenue Lost</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="coupons-tbody"><tr><td colspan="9"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYOUTS TAB -->
+      <div class="tab-panel" id="tab-payouts">
+        <div style="display:grid;grid-template-columns:300px 1fr;gap:var(--space-6);">
+          <div>
+            <div class="payout-card">
+              <div class="payout-label">Pending Payout Balance</div>
+              <div class="payout-amount" id="payout-balance">₹0</div>
+              <div style="font-size:var(--font-size-xs);color:rgba(255,255,255,0.5);margin-top:4px;">Available after 7-day hold</div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;" onclick="requestPayout()">
+              <i data-feather="send" style="width:15px;height:15px;"></i> Request Payout
+            </button>
+            <div style="margin-top:var(--space-4);padding:var(--space-4);background:var(--bg-sunken);border-radius:var(--border-radius-lg);font-size:var(--font-size-xs);color:var(--text-muted);">
+              Payouts are processed every Monday. Minimum payout: ₹1,000. Bank details must be verified.
+            </div>
+          </div>
+          <div class="dash-card" style="margin-bottom:0;">
+            <div class="dash-card-header"><div class="dash-card-title">Payout History</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
+                <tbody id="payouts-tbody"><tr><td colspan="5"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BANK TAB -->
+      <div class="tab-panel" id="tab-bank">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);">
+          <!-- Bank account -->
+          <div class="dash-card" style="margin-bottom:0;">
+            <div class="dash-card-header">
+              <div class="dash-card-title">Bank Account</div>
+              <button class="btn btn-ghost btn-sm" onclick="openModal('bank-modal')"><i data-feather="edit-2" style="width:14px;height:14px;"></i> Edit</button>
+            </div>
+            <div class="dash-card-body" id="bank-display">
+              <div class="skel" style="height:120px;"></div>
+            </div>
+          </div>
+          <!-- UPI -->
+          <div class="dash-card" style="margin-bottom:0;">
+            <div class="dash-card-header">
+              <div class="dash-card-title">UPI Details</div>
+              <button class="btn btn-ghost btn-sm" onclick="openModal('upi-modal')"><i data-feather="edit-2" style="width:14px;height:14px;"></i> Edit</button>
+            </div>
+            <div class="dash-card-body" id="upi-display">
+              <div class="skel" style="height:80px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div></main>
+  </div>
+</div>
+
+<!-- Bank Modal -->
+<div class="modal-overlay" id="bank-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">Bank Account Details</div><button class="btn btn-ghost btn-sm" onclick="closeModal('bank-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Account Holder Name *</label><input type="text" class="form-input" id="bank-name" placeholder="As per bank records"/></div>
+      <div class="form-group"><label class="form-label">Account Number *</label><input type="text" class="form-input" id="bank-account" placeholder="Enter account number"/></div>
+      <div class="form-group"><label class="form-label">Confirm Account Number *</label><input type="text" class="form-input" id="bank-account-confirm" placeholder="Re-enter account number"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">IFSC Code *</label><input type="text" class="form-input" id="bank-ifsc" placeholder="e.g. HDFC0001234" style="text-transform:uppercase;"/></div>
+        <div class="form-group"><label class="form-label">Account Type</label><select class="form-select" id="bank-type"><option value="savings">Savings</option><option value="current">Current</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Bank Name</label><input type="text" class="form-input" id="bank-bankname" placeholder="e.g. HDFC Bank"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('bank-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-bank-btn">Save Bank Details</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPI Modal -->
+<div class="modal-overlay" id="upi-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">UPI Details</div><button class="btn btn-ghost btn-sm" onclick="closeModal('upi-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">UPI ID *</label><input type="text" class="form-input" id="upi-id" placeholder="yourname@upi"/></div>
+      <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Your UPI ID will be used for payouts under ₹50,000.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('upi-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-upi-btn">Save UPI</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Coupon Modal -->
+<div class="modal-overlay" id="create-coupon-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">Create Coupon Code</div><button class="btn btn-ghost btn-sm" onclick="closeModal('create-coupon-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Coupon Code *</label><input type="text" class="form-input" id="coupon-code" placeholder="e.g. SAVE20" style="text-transform:uppercase;"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Discount Type</label>
+          <select class="form-select" id="coupon-type"><option value="percent">Percentage (%)</option><option value="flat">Flat Amount (₹)</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Discount Value *</label><input type="number" class="form-input" id="coupon-value" placeholder="20" min="1"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">Max Uses (0 = unlimited)</label><input type="number" class="form-input" id="coupon-max" placeholder="100" min="0"/></div>
+        <div class="form-group"><label class="form-label">Expiry Date</label><input type="date" class="form-input" id="coupon-expiry"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Apply to Course (leave blank for all)</label><select class="form-select" id="coupon-course"><option value="">All Courses</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('create-coupon-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-coupon-btn">Create Coupon</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}
+if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  var name=user.name||'';
+  var initials=name.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+  ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar){el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}else{el.textContent=initials;}});
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  var colBtn=document.getElementById('sidebar-collapse-btn');
+  if(colBtn)colBtn.addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');localStorage.removeItem('ev_refresh_token');}catch(e){}window.location.replace('../../pages/auth/login.html');});});
+
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function fmt(n){return n!=null?'₹'+parseFloat(n).toFixed(0):'₹0';}
+  function showToast(type,title,msg){var c=document.getElementById('toast-container');if(!c)return;var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">&#x2715;</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4500);}
+  window._esc=_esc;window.showToast=showToast;
+  function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+  function closeModal(id){document.getElementById(id).classList.remove('open');}
+  window.openModal=openModal;window.closeModal=closeModal;
+
+  // Tabs
+  document.querySelectorAll('.page-tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.page-tab').forEach(function(x){x.classList.remove('active');});
+      document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+      t.classList.add('active');
+      document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+      if(t.dataset.tab==='coupons') loadCoupons();
+      if(t.dataset.tab==='payouts') loadPayouts();
+      if(t.dataset.tab==='bank') loadBankDetails();
+    });
+  });
+
+  var revChart=null,breakChart=null;
+
+  async function loadEarnings(){
+    var days=document.getElementById('earnings-period').value;
+    try{
+      var res=await Api.get('/instructor/earnings',{days:days});
+      var d=(res&&res.data)||{};
+      document.getElementById('s-total').textContent=fmt(d.total_earnings);
+      document.getElementById('s-courses').textContent=fmt(d.course_earnings);
+      document.getElementById('s-materials').textContent=fmt(d.material_earnings);
+      document.getElementById('s-pending-payout').textContent=fmt(d.pending_payout);
+      document.getElementById('payout-balance').textContent=fmt(d.pending_payout);
+
+      // Revenue chart
+      if(d.revenue_trend&&d.revenue_trend.length){
+        var labels=d.revenue_trend.map(function(t){return t.label||t.date;});
+        var vals=d.revenue_trend.map(function(t){return t.amount;});
+        if(revChart)revChart.destroy();
+        var ctx=document.getElementById('revenue-chart').getContext('2d');
+        revChart=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{label:'Revenue (₹)',data:vals,backgroundColor:'rgba(5,150,105,0.7)',borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:function(v){return '₹'+v;}}}}}});
+      }
+
+      // Breakdown donut
+      var ce=parseFloat(d.course_earnings||0),me=parseFloat(d.material_earnings||0);
+      if(ce+me>0){
+        if(breakChart)breakChart.destroy();
+        var ctx2=document.getElementById('breakdown-chart').getContext('2d');
+        breakChart=new Chart(ctx2,{type:'doughnut',data:{labels:['Courses','Materials'],datasets:[{data:[ce,me],backgroundColor:['#3b82f6','#f59e0b'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+      }
+
+      // Course revenue table
+      var courses=d.course_breakdown||[];
+      var tbody=document.getElementById('course-revenue-tbody');
+      tbody.innerHTML=courses.length
+        ?courses.map(function(c){
+          var gross=parseFloat(c.gross_revenue||0);
+          var fee=parseFloat(c.platform_fee||gross*0.1);
+          var net=gross-fee;
+          return '<tr>'+
+            '<td style="font-weight:600;">'+_esc(c.title)+'</td>'+
+            '<td>'+c.enrollment_count+'</td>'+
+            '<td>₹'+parseFloat(c.price||0).toFixed(0)+'</td>'+
+            '<td>₹'+gross.toFixed(0)+'</td>'+
+            '<td style="color:var(--color-danger);">-₹'+fee.toFixed(0)+'</td>'+
+            '<td style="font-weight:700;color:var(--color-success);">₹'+net.toFixed(0)+'</td>'+
+          '</tr>';
+        }).join('')
+        :'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:var(--space-8);">No course revenue yet.</td></tr>';
+
+      // Transactions
+      var txns=d.transactions||[];
+      var ttbody=document.getElementById('transactions-tbody');
+      ttbody.innerHTML=txns.length
+        ?txns.map(function(t){
+          var gross=parseFloat(t.amount||0);
+          var fee=parseFloat(t.platform_fee||gross*0.1);
+          var net=gross-fee;
+          var badgeCls=t.status==='completed'?'badge-success':t.status==='pending'?'badge-warning':'badge-danger';
+          return '<tr>'+
+            '<td style="font-size:var(--font-size-xs);">'+new Date(t.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+'</td>'+
+            '<td>'+_esc(t.student_name||'—')+'</td>'+
+            '<td>'+_esc(t.item_title||'—')+'</td>'+
+            '<td><span class="badge badge-neutral">'+_esc(t.type||'purchase')+'</span></td>'+
+            '<td>₹'+gross.toFixed(0)+'</td>'+
+            '<td style="color:var(--color-danger);">-₹'+fee.toFixed(0)+'</td>'+
+            '<td style="font-weight:700;color:var(--color-success);">₹'+net.toFixed(0)+'</td>'+
+            '<td><span class="badge '+badgeCls+'">'+_esc(t.status||'completed')+'</span></td>'+
+          '</tr>';
+        }).join('')
+        :'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:var(--space-8);"><div style="font-size:2rem;margin-bottom:8px;">💰</div>No transactions yet.</td></tr>';
+
+    }catch(e){console.error(e);}
+  }
+
+  async function loadCoupons(){
+    try{
+      var [cRes,coursesRes]=await Promise.all([Api.get('/instructor/coupons'),Api.get('/instructor/courses')]);
+      var coupons=(cRes&&cRes.data)||[];
+      var courses=(coursesRes&&coursesRes.data)||[];
+      // Populate coupon course selector
+      document.getElementById('coupon-course').innerHTML='<option value="">All Courses</option>'+courses.map(function(c){return '<option value="'+c.id+'">'+_esc(c.title)+'</option>';}).join('');
+      var tbody=document.getElementById('coupons-tbody');
+      tbody.innerHTML=coupons.length
+        ?coupons.map(function(c){
+          var isExpired=c.expiry&&new Date(c.expiry)<new Date();
+          var isFull=c.max_uses&&c.used_count>=c.max_uses;
+          var status=isExpired?'Expired':isFull?'Exhausted':'Active';
+          var badgeCls=status==='Active'?'badge-success':status==='Expired'?'badge-neutral':'badge-warning';
+          return '<tr>'+
+            '<td style="font-weight:700;font-family:monospace;">'+_esc(c.code)+'</td>'+
+            '<td>'+(c.type==='percent'?c.value+'%':'₹'+c.value)+'</td>'+
+            '<td>'+_esc(c.course_title||'All Courses')+'</td>'+
+            '<td>'+c.used_count+'</td>'+
+            '<td>'+(c.max_uses||'∞')+'</td>'+
+            '<td>'+(c.expiry?new Date(c.expiry).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'No expiry')+'</td>'+
+            '<td style="color:var(--color-danger);">-₹'+(c.revenue_lost||0)+'</td>'+
+            '<td><span class="badge '+badgeCls+'">'+status+'</span></td>'+
+            '<td><button class="btn btn-ghost btn-sm" style="color:var(--color-danger);" onclick="deleteCoupon('+c.id+')"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button></td>'+
+          '</tr>';
+        }).join('')
+        :'<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:var(--space-8);">No coupons created yet.</td></tr>';
+      if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+    }catch(e){console.error(e);}
+  }
+
+  async function loadPayouts(){
+    try{
+      var res=await Api.get('/instructor/payouts');
+      var payouts=(res&&res.data)||[];
+      var tbody=document.getElementById('payouts-tbody');
+      tbody.innerHTML=payouts.length
+        ?payouts.map(function(p){
+          var badgeCls=p.status==='completed'?'badge-success':p.status==='processing'?'badge-warning':'badge-neutral';
+          return '<tr>'+
+            '<td>'+new Date(p.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+'</td>'+
+            '<td style="font-weight:700;color:var(--color-success);">₹'+parseFloat(p.amount||0).toFixed(0)+'</td>'+
+            '<td>'+_esc(p.method||'Bank Transfer')+'</td>'+
+            '<td style="font-family:monospace;font-size:var(--font-size-xs);">'+_esc(p.reference||'—')+'</td>'+
+            '<td><span class="badge '+badgeCls+'">'+_esc(p.status||'pending')+'</span></td>'+
+          '</tr>';
+        }).join('')
+        :'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:var(--space-8);">No payout history yet.</td></tr>';
+    }catch(e){console.error(e);}
+  }
+
+  async function loadBankDetails(){
+    try{
+      var res=await Api.get('/instructor/payout-details');
+      var d=(res&&res.data)||{};
+      // Bank display
+      var bankEl=document.getElementById('bank-display');
+      if(d.bank_account){
+        var b=d.bank_account;
+        bankEl.innerHTML=
+          '<div class="bank-field"><div><div class="bank-field-label">Account Holder</div><div class="bank-field-value">'+_esc(b.holder_name)+'</div></div></div>'+
+          '<div class="bank-field"><div><div class="bank-field-label">Account Number</div><div class="bank-field-value">XXXX XXXX '+_esc(String(b.account_number||'').slice(-4))+'</div></div></div>'+
+          '<div class="bank-field"><div><div class="bank-field-label">IFSC</div><div class="bank-field-value">'+_esc(b.ifsc)+'</div></div><div><div class="bank-field-label">Bank</div><div class="bank-field-value">'+_esc(b.bank_name||'')+'</div></div></div>'+
+          '<div style="margin-top:var(--space-3);"><span style="display:inline-flex;align-items:center;gap:4px;font-size:var(--font-size-xs);color:var(--color-success);font-weight:600;">✅ Verified</span></div>';
+        document.getElementById('bank-name').value=b.holder_name||'';
+        document.getElementById('bank-ifsc').value=b.ifsc||'';
+        document.getElementById('bank-bankname').value=b.bank_name||'';
+      }else{
+        bankEl.innerHTML='<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);font-size:var(--font-size-sm);">No bank account added.<br><button class="btn btn-outline btn-sm" style="margin-top:var(--space-3);" onclick="openModal(\'bank-modal\')">Add Bank Account</button></div>';
+      }
+      // UPI display
+      var upiEl=document.getElementById('upi-display');
+      if(d.upi_id){
+        upiEl.innerHTML='<div class="bank-field"><div><div class="bank-field-label">UPI ID</div><div class="bank-field-value">'+_esc(d.upi_id)+'</div></div><span style="font-size:var(--font-size-xs);color:var(--color-success);font-weight:600;">✅</span></div>';
+        document.getElementById('upi-id').value=d.upi_id;
+      }else{
+        upiEl.innerHTML='<div style="text-align:center;padding:var(--space-5);color:var(--text-muted);font-size:var(--font-size-sm);">No UPI added.<br><button class="btn btn-outline btn-sm" style="margin-top:var(--space-3);" onclick="openModal(\'upi-modal\')">Add UPI ID</button></div>';
+      }
+    }catch(e){console.error(e);}
+  }
+
+  // Save bank
+  document.getElementById('save-bank-btn').addEventListener('click',async function(){
+    var name=document.getElementById('bank-name').value.trim();
+    var acc=document.getElementById('bank-account').value.trim();
+    var acc2=document.getElementById('bank-account-confirm').value.trim();
+    var ifsc=document.getElementById('bank-ifsc').value.trim().toUpperCase();
+    if(!name||!acc||!ifsc){showToast('error','Error','Name, Account Number and IFSC are required.');return;}
+    if(acc!==acc2){showToast('error','Error','Account numbers do not match.');return;}
+    this.disabled=true;this.textContent='Saving…';
+    try{
+      await Api.post('/instructor/payout-details/bank',{holder_name:name,account_number:acc,ifsc:ifsc,bank_name:document.getElementById('bank-bankname').value,account_type:document.getElementById('bank-type').value});
+      closeModal('bank-modal');showToast('success','Saved!','Bank details updated. Verification in 1-2 business days.');loadBankDetails();
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Save Bank Details';
+  });
+
+  // Save UPI
+  document.getElementById('save-upi-btn').addEventListener('click',async function(){
+    var upi=document.getElementById('upi-id').value.trim();
+    if(!upi||!upi.includes('@')){showToast('error','Error','Enter a valid UPI ID.');return;}
+    this.disabled=true;this.textContent='Saving…';
+    try{await Api.post('/instructor/payout-details/upi',{upi_id:upi});closeModal('upi-modal');showToast('success','Saved!','UPI ID updated.');loadBankDetails();}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Save UPI';
+  });
+
+  // Create coupon
+  document.getElementById('save-coupon-btn').addEventListener('click',async function(){
+    var code=document.getElementById('coupon-code').value.trim().toUpperCase();
+    var val=document.getElementById('coupon-value').value;
+    if(!code||!val){showToast('error','Error','Code and discount value required.');return;}
+    this.disabled=true;this.textContent='Creating…';
+    try{
+      await Api.post('/instructor/coupons',{code:code,type:document.getElementById('coupon-type').value,value:parseFloat(val),max_uses:parseInt(document.getElementById('coupon-max').value)||null,expiry:document.getElementById('coupon-expiry').value||null,course_id:document.getElementById('coupon-course').value||null});
+      closeModal('create-coupon-modal');showToast('success','Coupon Created!',code+' is ready to share.');loadCoupons();
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Create Coupon';
+  });
+
+  // Delete coupon
+  window.deleteCoupon=async function(id){
+    if(!confirm('Delete this coupon?'))return;
+    try{await Api.delete('/instructor/coupons/'+id);showToast('success','Deleted','Coupon removed.');loadCoupons();}
+    catch(e){showToast('error','Error','Failed.');}
+  };
+
+  // Request payout
+  window.requestPayout=async function(){
+    if(!confirm('Request payout of your available balance?'))return;
+    try{await Api.post('/instructor/payouts/request',{});showToast('success','Payout Requested!','Processing within 2-3 business days.');loadPayouts();}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed. Ensure bank details are verified.');}
+  };
+
+  // Download statement
+  window.downloadStatement=function(){showToast('info','Downloading…','Statement PDF is being generated.');Api.post('/instructor/earnings/statement',{days:document.getElementById('earnings-period').value}).catch(function(){});};
+
+  document.getElementById('earnings-period').addEventListener('change',loadEarnings);
+  loadEarnings();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Course Builder — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    /* Layout */
+    .builder-shell{display:grid;grid-template-columns:320px 1fr;height:100%;gap:0;}
+    .builder-sidebar-panel{border-right:1px solid var(--border-color);display:flex;flex-direction:column;overflow:hidden;background:var(--bg-surface);}
+    .builder-main-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--bg-page);}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);flex-shrink:0;}
+    .panel-title{font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);text-transform:uppercase;letter-spacing:.05em;}
+    .panel-body{flex:1;overflow-y:auto;padding:var(--space-4);}
+    .panel-footer{padding:var(--space-4) var(--space-5);border-top:1px solid var(--border-color);flex-shrink:0;}
+
+    /* Module items */
+    .module-wrap{margin-bottom:var(--space-3);}
+    .module-header{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);background:var(--bg-surface);border:var(--card-border);border-radius:var(--border-radius-lg);cursor:pointer;transition:background var(--transition-fast);user-select:none;}
+    .module-header:hover{background:var(--neutral-50);}
+    .module-header.active{background:var(--color-primary-50);border-color:var(--color-primary-200);}
+    .module-chevron{transition:transform var(--transition-fast);color:var(--text-muted);}
+    .module-chevron.open{transform:rotate(90deg);}
+    .module-name{flex:1;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .module-count-badge{font-size:10px;color:var(--text-muted);background:var(--neutral-100);border-radius:99px;padding:1px 7px;}
+    .module-children{padding:var(--space-1) 0 var(--space-2) var(--space-4);display:none;}
+    .module-children.open{display:block;}
+    .lesson-item{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--border-radius-md);cursor:pointer;transition:background var(--transition-fast);margin-bottom:2px;}
+    .lesson-item:hover{background:var(--neutral-50);}
+    .lesson-item.active{background:var(--color-primary-50);}
+    .lesson-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+    .li-video{background:#dbeafe;color:var(--color-primary-700);}
+    .li-note{background:#d1fae5;color:#065f46;}
+    .li-quiz{background:#fef3c7;color:#92400e;}
+    .li-live{background:#ede9fe;color:#5b21b6;}
+    .li-attach{background:#f3f4f6;color:var(--text-muted);}
+    .lesson-name{flex:1;font-size:var(--font-size-xs);color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .lesson-badge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;}
+    .lb-free{background:var(--color-success-light);color:var(--color-success-dark);}
+    .lb-live{background:#ede9fe;color:#5b21b6;}
+
+    /* Content editor area */
+    .content-editor{flex:1;overflow-y:auto;padding:var(--space-6);}
+    .editor-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-6);margin-bottom:var(--space-5);}
+    .editor-section-title{font-size:var(--font-size-sm);font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-4);padding-bottom:var(--space-2);border-bottom:1px solid var(--border-color);}
+
+    /* Upload area */
+    .upload-zone{border:2px dashed var(--border-color-strong);border-radius:var(--border-radius-lg);padding:var(--space-8);text-align:center;cursor:pointer;transition:all var(--transition-base);background:var(--bg-sunken);position:relative;}
+    .upload-zone:hover,.upload-zone.drag-over{border-color:var(--color-primary-400);background:var(--color-primary-50);}
+    .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+
+    /* Upload progress */
+    .upload-progress-wrap{background:var(--bg-sunken);border-radius:var(--border-radius-lg);padding:var(--space-4);margin-top:var(--space-3);}
+    .upload-progress-bar{height:6px;background:var(--neutral-100);border-radius:99px;overflow:hidden;margin-top:var(--space-2);}
+    .upload-progress-fill{height:100%;background:var(--color-primary-600);border-radius:99px;transition:width .3s ease;width:0%;}
+    .upload-status{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;display:flex;justify-content:space-between;}
+
+    /* Video item in module */
+    .content-row{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--bg-sunken);border-radius:var(--border-radius-md);margin-bottom:var(--space-2);transition:all var(--transition-fast);}
+    .content-row:hover{background:var(--neutral-100);}
+    .content-row-icon{width:32px;height:32px;border-radius:var(--border-radius-sm);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .content-row-info{flex:1;min-width:0;}
+    .content-row-name{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .content-row-meta{font-size:var(--font-size-xs);color:var(--text-muted);}
+
+    /* Timestamps */
+    .timestamp-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2);}
+    .ts-time{font-family:monospace;font-size:var(--font-size-sm);width:70px;height:34px;border:1px solid var(--border-color);border-radius:var(--border-radius-md);padding:0 var(--space-2);background:var(--bg-surface);color:var(--text-primary);outline:none;}
+    .ts-label{flex:1;height:34px;border:1px solid var(--border-color);border-radius:var(--border-radius-md);padding:0 var(--space-3);background:var(--bg-surface);font-size:var(--font-size-sm);color:var(--text-primary);outline:none;font-family:var(--font-ui);}
+
+    /* Forms */
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-hint{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:80px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+    .form-check{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-1) 0;}
+    .form-check input[type="checkbox"]{width:15px;height:15px;accent-color:var(--color-primary-600);}
+
+    /* Modals */
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);}
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .badge-success{background:var(--color-success-light);color:var(--color-success-dark);}
+    .badge-warning{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .badge-neutral{background:var(--neutral-100);color:var(--text-muted);}
+
+    /* Content type tabs */
+    .add-tabs{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-4);}
+    .add-tab-btn{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-xs);font-weight:600;cursor:pointer;background:var(--bg-surface);color:var(--text-secondary);transition:all var(--transition-fast);}
+    .add-tab-btn:hover{border-color:var(--color-primary-300);background:var(--color-primary-50);color:var(--color-primary-700);}
+
+    /* Toast */
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+
+    /* Completion ring */
+    .completion-ring{width:52px;height:52px;border-radius:50%;background:conic-gradient(var(--color-primary-600) 0deg, var(--neutral-200) 0deg);display:flex;align-items:center;justify-content:center;position:relative;}
+    .completion-ring-inner{width:40px;height:40px;border-radius:50%;background:var(--bg-surface);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--text-primary);}
+
+    @media(max-width:1023px){.builder-shell{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- SIDEBAR (nav) -->
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item active" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm avatar-green" id="sidebar-avatar">…</div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+
+  <div class="app-body">
+    <!-- Navbar -->
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <a href="courses.html" class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:4px;margin-right:var(--space-2);"><i data-feather="arrow-left" style="width:14px;height:14px;"></i> Courses</a>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);" id="nb-course-title">Loading…</div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Course Builder</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <!-- Completion indicator -->
+        <div style="display:flex;align-items:center;gap:var(--space-2);">
+          <div class="completion-ring" id="completion-ring" style="background:conic-gradient(var(--color-primary-600) 0deg, var(--neutral-200) 0deg);">
+            <div class="completion-ring-inner" id="completion-pct-text">0%</div>
+          </div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Complete</div>
+        </div>
+        <div style="width:1px;height:28px;background:var(--border-color);"></div>
+        <button class="btn btn-outline btn-sm" id="preview-btn"><i data-feather="eye" style="width:14px;height:14px;"></i> Preview</button>
+        <button class="btn btn-outline btn-sm" id="save-draft-btn"><i data-feather="save" style="width:14px;height:14px;"></i> Save</button>
+        <button class="btn btn-primary btn-sm" id="publish-btn"><i data-feather="globe" style="width:14px;height:14px;"></i> Publish</button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm avatar-green" id="navbar-avatar">…</div>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- BUILDER CONTENT -->
+    <main class="app-main" style="padding:0;overflow:hidden;">
+      <div class="builder-shell" style="height:calc(100vh - var(--navbar-height));">
+
+        <!-- LEFT: Module tree -->
+        <div class="builder-sidebar-panel">
+          <div class="panel-header">
+            <span class="panel-title">Course Content</span>
+            <span style="font-size:var(--font-size-xs);color:var(--text-muted);" id="content-summary">0 modules</span>
+          </div>
+          <div class="panel-body" id="module-tree">
+            <div class="skel" style="height:48px;border-radius:10px;margin-bottom:8px;"></div>
+            <div class="skel" style="height:48px;border-radius:10px;margin-bottom:8px;"></div>
+          </div>
+          <div class="panel-footer">
+            <button class="btn btn-primary" style="width:100%;" onclick="openModal('add-module-modal')">
+              <i data-feather="plus" style="width:14px;height:14px;"></i> Add Module
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Editor -->
+        <div class="builder-main-panel">
+          <div class="content-editor" id="content-editor">
+
+            <!-- Welcome state -->
+            <div id="editor-welcome">
+              <div style="text-align:center;padding:var(--space-12);">
+                <div style="font-size:4rem;margin-bottom:var(--space-4);">📚</div>
+                <div style="font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);margin-bottom:var(--space-3);">Build Your Course</div>
+                <p style="color:var(--text-muted);max-width:500px;margin:0 auto var(--space-6);">Add modules to organise your content, then add videos, notes, quizzes and live sessions inside each module.</p>
+                <div class="add-tabs" style="justify-content:center;">
+                  <button class="add-tab-btn" onclick="openModal('add-module-modal')">📁 Add Module</button>
+                </div>
+              </div>
+
+              <!-- Course details card -->
+              <div class="editor-card" id="course-details-card">
+                <div class="editor-section-title">Course Details</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+                  <div class="form-group"><label class="form-label">Title *</label><input type="text" class="form-input" id="cd-title" placeholder="Course title"/></div>
+                  <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="cd-category"><option value="">Select…</option><option value="programming">Programming</option><option value="design">Design</option><option value="mathematics">Mathematics</option><option value="science">Science</option><option value="business">Business</option><option value="language">Language</option><option value="other">Other</option></select></div>
+                  <div class="form-group"><label class="form-label">Level</label><select class="form-select" id="cd-level"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
+                  <div class="form-group"><label class="form-label">Price (₹ · 0 = Free)</label><input type="number" class="form-input" id="cd-price" placeholder="0" min="0"/></div>
+                </div>
+                <div class="form-group"><label class="form-label">Short Description</label><textarea class="form-textarea" id="cd-desc" placeholder="2-3 sentences…" style="min-height:70px;"></textarea></div>
+                <button class="btn btn-primary btn-sm" id="save-details-btn">Save Details</button>
+              </div>
+            </div>
+
+            <!-- Lesson editor (shown when lesson is selected) -->
+            <div id="lesson-editor" style="display:none;">
+              <div class="editor-card">
+                <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-5);">
+                  <div id="les-type-icon" style="width:40px;height:40px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🎬</div>
+                  <div>
+                    <div style="font-size:var(--font-size-xs);color:var(--text-muted);font-weight:700;text-transform:uppercase;" id="les-type-label">Video Lesson</div>
+                    <input type="text" class="form-input" id="les-title" placeholder="Lesson title…" style="border:none;padding:0;font-size:var(--font-size-xl);font-weight:700;color:var(--text-primary);background:transparent;height:auto;"/>
+                  </div>
+                </div>
+
+                <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="les-desc" placeholder="What will students learn in this lesson?"></textarea></div>
+
+                <div style="display:flex;gap:var(--space-4);">
+                  <div class="form-check"><input type="checkbox" id="les-free-preview"/><label for="les-free-preview" style="font-size:var(--font-size-sm);color:var(--text-secondary);">Free Preview (visible without enrollment)</label></div>
+                </div>
+              </div>
+
+              <!-- VIDEO section -->
+              <div class="editor-card" id="video-section">
+                <div class="editor-section-title">Video</div>
+
+                <!-- Upload zone -->
+                <div class="upload-zone" id="video-upload-zone">
+                  <input type="file" id="video-file-input" accept="video/mp4,video/mov,video/avi,video/webm" onchange="handleVideoUpload(this.files[0])"/>
+                  <div id="video-upload-placeholder">
+                    <div style="font-size:2.5rem;margin-bottom:var(--space-3);">🎬</div>
+                    <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Drop video here or click to upload</div>
+                    <div style="font-size:var(--font-size-sm);color:var(--text-muted);margin-top:var(--space-2);">MP4, MOV, AVI, WebM · Max 4GB</div>
+                  </div>
+                </div>
+
+                <!-- Upload progress -->
+                <div class="upload-progress-wrap" id="upload-progress-wrap" style="display:none;">
+                  <div style="display:flex;align-items:center;gap:var(--space-3);">
+                    <div style="font-size:1.2rem;">📤</div>
+                    <div style="flex:1;">
+                      <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);" id="upload-filename">Uploading…</div>
+                      <div class="upload-progress-bar"><div class="upload-progress-fill" id="upload-fill"></div></div>
+                      <div class="upload-status"><span id="upload-status-text">Uploading…</span><span id="upload-pct">0%</span></div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="cancelUpload()" style="color:var(--color-danger);"><i data-feather="x" style="width:14px;height:14px;"></i></button>
+                  </div>
+                </div>
+
+                <!-- Uploaded video info -->
+                <div id="video-info-wrap" style="display:none;margin-top:var(--space-3);">
+                  <div class="content-row">
+                    <div class="content-row-icon" style="background:#dbeafe;">🎬</div>
+                    <div class="content-row-info">
+                      <div class="content-row-name" id="video-file-name">video.mp4</div>
+                      <div class="content-row-meta" id="video-file-meta">Processing…</div>
+                    </div>
+                    <span class="badge" id="video-status-badge">Uploading</span>
+                    <button class="btn btn-ghost btn-xs" onclick="replaceVideo()" title="Replace video"><i data-feather="refresh-cw" style="width:13px;height:13px;"></i></button>
+                  </div>
+                </div>
+
+                <!-- OR: video URL -->
+                <div style="margin-top:var(--space-4);">
+                  <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);">
+                    <div style="flex:1;height:1px;background:var(--border-color);"></div>
+                    <span style="font-size:var(--font-size-xs);color:var(--text-muted);">OR paste URL</span>
+                    <div style="flex:1;height:1px;background:var(--border-color);"></div>
+                  </div>
+                  <input type="url" class="form-input" id="les-video-url" placeholder="YouTube, Vimeo, or direct MP4 URL…"/>
+                </div>
+
+                <!-- Chapter timestamps -->
+                <div style="margin-top:var(--space-5);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
+                    <span style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Chapter Timestamps</span>
+                    <button class="btn btn-ghost btn-sm" onclick="addTimestamp()"><i data-feather="plus" style="width:13px;height:13px;"></i> Add</button>
+                  </div>
+                  <div id="timestamps-list"></div>
+                </div>
+
+                <!-- Subtitles -->
+                <div style="margin-top:var(--space-4);">
+                  <label class="form-label">Subtitles / Captions (SRT file)</label>
+                  <div style="display:flex;gap:var(--space-3);">
+                    <input type="file" id="srt-file" accept=".srt" style="display:none;" onchange="handleSrtUpload(this.files[0])"/>
+                    <button class="btn btn-outline btn-sm" onclick="document.getElementById('srt-file').click()"><i data-feather="upload" style="width:13px;height:13px;"></i> Upload SRT</button>
+                    <span id="srt-filename" style="font-size:var(--font-size-sm);color:var(--text-muted);align-self:center;"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTES / ATTACHMENTS section -->
+              <div class="editor-card">
+                <div class="editor-section-title">Attachments & Study Materials</div>
+                <div class="upload-zone" style="padding:var(--space-5);" id="attach-zone">
+                  <input type="file" id="attach-file-input" multiple accept=".pdf,.docx,.pptx,.zip,.png,.jpg" onchange="handleAttachments(this.files)"/>
+                  <div style="font-size:1.5rem;margin-bottom:6px;">📎</div>
+                  <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Upload notes, PDFs, code files</div>
+                  <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;">PDF, DOCX, PPTX, ZIP, Images · Max 50MB each</div>
+                </div>
+                <div id="attachments-list" style="margin-top:var(--space-3);"></div>
+              </div>
+
+              <!-- QUIZ section (if lesson type = quiz) -->
+              <div class="editor-card" id="quiz-section" style="display:none;">
+                <div class="editor-section-title">Quiz Settings</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4);">
+                  <div class="form-group"><label class="form-label">Time Limit (min)</label><input type="number" class="form-input" id="q-time" placeholder="Unlimited" min="1"/></div>
+                  <div class="form-group"><label class="form-label">Pass Percentage</label><input type="number" class="form-input" id="q-pass" placeholder="60" min="0" max="100" value="60"/></div>
+                  <div class="form-group"><label class="form-label">Max Attempts</label><input type="number" class="form-input" id="q-attempts" placeholder="Unlimited" min="1"/></div>
+                </div>
+                <div style="display:flex;gap:var(--space-5);">
+                  <div class="form-check"><input type="checkbox" id="q-shuffle-q"/><label for="q-shuffle-q" style="font-size:var(--font-size-sm);">Shuffle questions</label></div>
+                  <div class="form-check"><input type="checkbox" id="q-shuffle-o"/><label for="q-shuffle-o" style="font-size:var(--font-size-sm);">Shuffle options</label></div>
+                  <div class="form-check"><input type="checkbox" id="q-show-result" checked/><label for="q-show-result" style="font-size:var(--font-size-sm);">Show result immediately</label></div>
+                </div>
+                <div style="margin-top:var(--space-4);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
+                    <span style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Questions (<span id="q-count">0</span>)</span>
+                    <div style="display:flex;gap:var(--space-2);">
+                      <button class="btn btn-outline btn-xs" onclick="addQuestion('mcq')">+ MCQ</button>
+                      <button class="btn btn-outline btn-xs" onclick="addQuestion('truefalse')">+ T/F</button>
+                      <button class="btn btn-outline btn-xs" onclick="addQuestion('short')">+ Short</button>
+                      <button class="btn btn-outline btn-xs" onclick="addQuestion('fill')">+ Fill</button>
+                    </div>
+                  </div>
+                  <div id="questions-list"></div>
+                </div>
+              </div>
+
+              <!-- LIVE SESSION section -->
+              <div class="editor-card" id="live-section" style="display:none;">
+                <div class="editor-section-title">Live Session Settings</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+                  <div class="form-group"><label class="form-label">Scheduled Date & Time *</label><input type="datetime-local" class="form-input" id="ls-datetime"/></div>
+                  <div class="form-group"><label class="form-label">Duration (minutes)</label><input type="number" class="form-input" id="ls-duration" placeholder="60" value="60" min="15"/></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+                  <div class="form-group"><label class="form-label">Platform</label><select class="form-select" id="ls-platform"><option value="zoom">Zoom</option><option value="google_meet">Google Meet</option><option value="teams">Microsoft Teams</option><option value="jitsi">Jitsi (built-in)</option><option value="custom">Custom Link</option></select></div>
+                  <div class="form-group"><label class="form-label">Meeting Link</label><input type="url" class="form-input" id="ls-link" placeholder="https://…"/></div>
+                </div>
+                <div class="form-group"><label class="form-label">Session Notes</label><textarea class="form-textarea" id="ls-notes" placeholder="What will be covered…"></textarea></div>
+                <div class="form-check"><input type="checkbox" id="ls-record" checked/><label for="ls-record" style="font-size:var(--font-size-sm);">Auto-record and attach recording after session</label></div>
+              </div>
+
+              <!-- Save lesson bar -->
+              <div style="display:flex;gap:var(--space-3);justify-content:flex-end;padding-bottom:var(--space-8);">
+                <button class="btn btn-outline" onclick="showWelcome()">← Back</button>
+                <button class="btn btn-primary" id="save-lesson-btn">Save Lesson</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add Module Modal -->
+<div class="modal-overlay" id="add-module-modal">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-header"><div class="modal-title" id="module-modal-title">Add Module</div><button class="btn btn-ghost btn-sm" onclick="closeModal('add-module-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Module Title *</label><input type="text" class="form-input" id="module-title" placeholder="e.g. Introduction to JavaScript"/></div>
+      <div class="form-group"><label class="form-label">Description (optional)</label><textarea class="form-textarea" id="module-desc" placeholder="What will students learn in this module?" style="min-height:70px;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-module-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-module-btn">Save Module</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Lesson Modal -->
+<div class="modal-overlay" id="add-lesson-modal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header"><div class="modal-title">Add Lesson to "<span id="lesson-module-name"></span>"</div><button class="btn btn-ghost btn-sm" onclick="closeModal('add-lesson-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-4);">
+        <label style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding:var(--space-4);border:2px solid var(--border-color);border-radius:var(--border-radius-lg);cursor:pointer;transition:all var(--transition-fast);" id="lt-video-lbl">
+          <input type="radio" name="lesson-type" value="video" checked onchange="selectLessonType('video')" style="display:none;"/>
+          <span style="font-size:1.8rem;">🎬</span><span style="font-size:var(--font-size-sm);font-weight:600;">Video</span>
+        </label>
+        <label style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding:var(--space-4);border:2px solid var(--border-color);border-radius:var(--border-radius-lg);cursor:pointer;transition:all var(--transition-fast);" id="lt-note-lbl">
+          <input type="radio" name="lesson-type" value="note" onchange="selectLessonType('note')" style="display:none;"/>
+          <span style="font-size:1.8rem;">📝</span><span style="font-size:var(--font-size-sm);font-weight:600;">Text / Note</span>
+        </label>
+        <label style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding:var(--space-4);border:2px solid var(--border-color);border-radius:var(--border-radius-lg);cursor:pointer;transition:all var(--transition-fast);" id="lt-quiz-lbl">
+          <input type="radio" name="lesson-type" value="quiz" onchange="selectLessonType('quiz')" style="display:none;"/>
+          <span style="font-size:1.8rem;">📋</span><span style="font-size:var(--font-size-sm);font-weight:600;">Quiz</span>
+        </label>
+        <label style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding:var(--space-4);border:2px solid var(--border-color);border-radius:var(--border-radius-lg);cursor:pointer;transition:all var(--transition-fast);" id="lt-live-lbl">
+          <input type="radio" name="lesson-type" value="live" onchange="selectLessonType('live')" style="display:none;"/>
+          <span style="font-size:1.8rem;">🎥</span><span style="font-size:var(--font-size-sm);font-weight:600;">Live Session</span>
+        </label>
+      </div>
+      <div class="form-group"><label class="form-label">Lesson Title *</label><input type="text" class="form-input" id="new-lesson-title" placeholder="e.g. Variables and Data Types"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-lesson-modal')">Cancel</button>
+      <button class="btn btn-primary" id="create-lesson-btn">Create & Edit</button>
+    </div>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u)window.location.replace('../../pages/auth/login.html');
+else if(u.role!=='instructor')window.location.replace('../../pages/errors/403.html');})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+
+  // User
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  var uname=user.name||'';
+  function _ini(n){if(!n)return '?';var p=n.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase();}
+  ['sidebar-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=uname;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar)el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';else el.textContent=_ini(uname);});
+
+  // Shell
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  var colBtn=document.getElementById('sidebar-collapse-btn');
+  if(colBtn)colBtn.addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+
+  // Helpers
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function showToast(type,title,msg){var c=document.getElementById('toast-container');var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">✕</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4500);}
+  function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+  function closeModal(id){document.getElementById(id).classList.remove('open');}
+  window.openModal=openModal;window.closeModal=closeModal;
+
+  // State
+  var courseId=null;
+  var courseData=null;
+  var modules=[];
+  var currentModuleId=null;
+  var currentLessonId=null;
+  var lessonType='video';
+  var timestamps=[];
+  var questions=[];
+  var attachments=[];
+  var uploadXhr=null;
+
+  // Get courseId from URL
+  var params=new URLSearchParams(window.location.search);
+  courseId=params.get('course');
+
+  // ── Load course ──
+  async function loadCourse(){
+    if(!courseId){showWelcome();return;}
+    try{
+      var res=await Api.get('/instructor/courses/'+courseId);
+      courseData=res&&res.data;
+      if(!courseData)throw new Error('Not found');
+      modules=courseData.modules||[];
+      // Populate header
+      document.getElementById('nb-course-title').textContent=courseData.title||'Untitled';
+      // Populate details form
+      document.getElementById('cd-title').value=courseData.title||'';
+      document.getElementById('cd-category').value=courseData.category||'';
+      document.getElementById('cd-level').value=courseData.level||'beginner';
+      document.getElementById('cd-price').value=courseData.price||0;
+      document.getElementById('cd-desc').value=courseData.short_description||courseData.description||'';
+      renderModuleTree();
+      updateCompletion();
+    }catch(e){showToast('error','Error','Failed to load course. Please go back and try again.');}
+  }
+
+  // ── Render module tree ──
+  function renderModuleTree(){
+    var tree=document.getElementById('module-tree');
+    var totalLessons=modules.reduce(function(a,m){return a+(m.lessons||m.videos||[]).length;},0);
+    document.getElementById('content-summary').textContent=modules.length+' modules · '+totalLessons+' lessons';
+
+    if(!modules.length){
+      tree.innerHTML='<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);font-size:var(--font-size-sm);">No modules yet.<br>Click "Add Module" below.</div>';
+      return;
+    }
+
+    var typeIcon={video:'🎬',note:'📝',quiz:'📋',live:'🎥',attachment:'📎'};
+    var typeClass={video:'li-video',note:'li-note',quiz:'li-quiz',live:'li-live',attachment:'li-attach'};
+
+    tree.innerHTML=modules.map(function(m){
+      var lessons=(m.lessons||m.videos||[]);
+      var isOpen=m.id===currentModuleId;
+      return '<div class="module-wrap" id="mwrap-'+m.id+'">' +
+        '<div class="module-header'+(isOpen?' active':'')+'" onclick="toggleModule('+m.id+')" id="mhdr-'+m.id+'">'+
+          '<i data-feather="chevron-right" style="width:14px;height:14px;" class="module-chevron'+(isOpen?' open':'')+'"></i>'+
+          '<span class="module-name">'+_esc(m.title)+'</span>'+
+          '<span class="module-count-badge">'+lessons.length+'</span>'+
+          '<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openAddLesson('+m.id+',\''+_esc(m.title)+'\');" title="Add lesson" style="flex-shrink:0;"><i data-feather="plus" style="width:12px;height:12px;"></i></button>'+
+          '<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();deleteModule('+m.id+');" title="Delete module" style="color:var(--color-danger);flex-shrink:0;"><i data-feather="trash-2" style="width:12px;height:12px;"></i></button>'+
+        '</div>'+
+        '<div class="module-children'+(isOpen?' open':'')+'">'+
+          lessons.map(function(l){
+            var t=l.type||'video';
+            var isActive=l.id===currentLessonId;
+            return '<div class="lesson-item'+(isActive?' active':'')+'" onclick="selectLesson('+m.id+','+l.id+')" id="litem-'+l.id+'">'+
+              '<div class="lesson-icon '+typeClass[t]+'">'+typeIcon[t]+'</div>'+
+              '<span class="lesson-name">'+_esc(l.title)+'</span>'+
+              (l.is_preview?'<span class="lesson-badge lb-free">Free</span>':'')+
+              (t==='live'?'<span class="lesson-badge lb-live">Live</span>':'')+
+              '<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();deleteLesson('+l.id+','+m.id+');" style="color:var(--color-danger);opacity:0;transition:opacity .2s;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0"><i data-feather="x" style="width:11px;height:11px;"></i></button>'+
+            '</div>';
+          }).join('')+
+          '<button class="btn btn-ghost btn-xs" style="width:100%;justify-content:center;margin-top:4px;color:var(--color-primary-600);" onclick="openAddLesson('+m.id+',\''+_esc(m.title)+'\')"><i data-feather="plus" style="width:12px;height:12px;"></i> Add lesson</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  }
+
+  window.toggleModule=function(id){
+    currentModuleId=currentModuleId===id?null:id;
+    renderModuleTree();
+  };
+
+  // ── Add module ──
+  document.getElementById('save-module-btn').addEventListener('click',async function(){
+    var title=document.getElementById('module-title').value.trim();
+    if(!title){showToast('error','Error','Module title required.');return;}
+    this.disabled=true;this.textContent='Saving…';
+    try{
+      var res=await Api.post('/instructor/courses/'+courseId+'/modules',{title:title,description:document.getElementById('module-desc').value});
+      var newMod=res&&res.data;
+      if(newMod){modules.push(Object.assign({lessons:[]},newMod));}
+      closeModal('add-module-modal');
+      document.getElementById('module-title').value='';document.getElementById('module-desc').value='';
+      currentModuleId=newMod?newMod.id:null;
+      renderModuleTree();updateCompletion();
+      showToast('success','Module added!','');
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Save Module';
+  });
+
+  // ── Add lesson ──
+  var addLessonModuleId=null;
+  window.openAddLesson=function(modId,modName){
+    addLessonModuleId=modId;
+    document.getElementById('lesson-module-name').textContent=modName;
+    document.getElementById('new-lesson-title').value='';
+    lessonType='video';
+    highlightLessonType('video');
+    openModal('add-lesson-modal');
+  };
+
+  window.selectLessonType=function(t){lessonType=t;highlightLessonType(t);};
+  function highlightLessonType(t){
+    ['video','note','quiz','live'].forEach(function(type){
+      var lbl=document.getElementById('lt-'+type+'-lbl');
+      if(lbl){lbl.style.borderColor=type===t?'var(--color-primary-600)':'var(--border-color)';lbl.style.background=type===t?'var(--color-primary-50)':'var(--bg-surface)';}
+    });
+  }
+
+  document.getElementById('create-lesson-btn').addEventListener('click',async function(){
+    var title=document.getElementById('new-lesson-title').value.trim();
+    if(!title){showToast('error','Error','Lesson title required.');return;}
+    this.disabled=true;this.textContent='Creating…';
+    try{
+      var endpoint=lessonType==='quiz'?'/instructor/modules/'+addLessonModuleId+'/quizzes':lessonType==='live'?'/instructor/modules/'+addLessonModuleId+'/live-sessions':'/instructor/modules/'+addLessonModuleId+'/videos';
+      var res=await Api.post(endpoint,{title:title,type:lessonType});
+      var newLesson=res&&res.data;
+      if(newLesson){
+        var mod=modules.find(function(m){return m.id==addLessonModuleId;});
+        if(mod){if(!mod.lessons)mod.lessons=[];mod.lessons.push(Object.assign({type:lessonType},newLesson));}
+      }
+      closeModal('add-lesson-modal');
+      currentModuleId=addLessonModuleId;
+      currentLessonId=newLesson?newLesson.id:null;
+      renderModuleTree();updateCompletion();
+      if(newLesson)openLessonEditor(newLesson,lessonType);
+      showToast('success','Lesson created!','Fill in the details below.');
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Create & Edit';
+  });
+
+  // ── Select / edit lesson ──
+  window.selectLesson=function(modId,lesId){
+    currentModuleId=modId;currentLessonId=lesId;
+    var mod=modules.find(function(m){return m.id==modId;});
+    var lesson=mod&&(mod.lessons||mod.videos||[]).find(function(l){return l.id==lesId;});
+    if(lesson){openLessonEditor(lesson,lesson.type||'video');}
+    renderModuleTree();
+  };
+
+  var typeIcons={video:'🎬',note:'📝',quiz:'📋',live:'🎥'};
+  var typeLabels={video:'Video Lesson',note:'Text / Note',quiz:'Quiz',live:'Live Session'};
+
+  function openLessonEditor(lesson,type){
+    timestamps=lesson.timestamps||[];
+    questions=lesson.questions||[];
+    attachments=lesson.attachments||[];
+
+    document.getElementById('editor-welcome').style.display='none';
+    document.getElementById('lesson-editor').style.display='block';
+    document.getElementById('les-type-icon').textContent=typeIcons[type]||'📄';
+    document.getElementById('les-type-label').textContent=typeLabels[type]||'Lesson';
+    document.getElementById('les-title').value=lesson.title||'';
+    document.getElementById('les-desc').value=lesson.description||'';
+    document.getElementById('les-free-preview').checked=lesson.is_preview||false;
+
+    // Video
+    document.getElementById('video-section').style.display=type==='video'||type==='note'?'':'none';
+    document.getElementById('quiz-section').style.display=type==='quiz'?'':'none';
+    document.getElementById('live-section').style.display=type==='live'?'':'none';
+
+    if(lesson.video_url||lesson.video_file_url){
+      document.getElementById('video-upload-placeholder').style.display='none';
+      document.getElementById('video-info-wrap').style.display='';
+      document.getElementById('video-file-name').textContent=lesson.video_filename||'Video uploaded';
+      document.getElementById('video-file-meta').textContent=lesson.duration?lesson.duration+' min':'';
+      document.getElementById('video-status-badge').textContent=lesson.processing_status||'Ready';
+      document.getElementById('video-status-badge').className='badge badge-success';
+    }
+    document.getElementById('les-video-url').value=lesson.video_url||'';
+
+    // Timestamps
+    renderTimestamps();
+
+    // Attachments
+    renderAttachments();
+
+    // Quiz questions
+    if(type==='quiz'){
+      document.getElementById('q-time').value=lesson.time_limit_minutes||'';
+      document.getElementById('q-pass').value=lesson.pass_percentage||60;
+      document.getElementById('q-attempts').value=lesson.max_attempts||'';
+      document.getElementById('q-shuffle-q').checked=lesson.shuffle_questions||false;
+      document.getElementById('q-shuffle-o').checked=lesson.shuffle_options||false;
+      renderQuestions();
+    }
+
+    // Live
+    if(type==='live'){
+      document.getElementById('ls-datetime').value=lesson.scheduled_at?lesson.scheduled_at.substring(0,16):'';
+      document.getElementById('ls-duration').value=lesson.duration_minutes||60;
+      document.getElementById('ls-platform').value=lesson.platform||'zoom';
+      document.getElementById('ls-link').value=lesson.meeting_link||'';
+      document.getElementById('ls-notes').value=lesson.description||'';
+    }
+  }
+
+  window.showWelcome=function(){
+    document.getElementById('editor-welcome').style.display='';
+    document.getElementById('lesson-editor').style.display='none';
+    currentLessonId=null;
+    renderModuleTree();
+  };
+
+  // ── Save lesson ──
+  document.getElementById('save-lesson-btn').addEventListener('click',async function(){
+    if(!currentLessonId)return;
+    this.disabled=true;this.textContent='Saving…';
+    try{
+      var lesson=null;
+      for(var i=0;i<modules.length;i++){var ls=(modules[i].lessons||modules[i].videos||[]);for(var j=0;j<ls.length;j++){if(ls[j].id==currentLessonId){lesson=ls[j];break;}}}
+      var type=lesson?lesson.type||'video':'video';
+      var payload={title:document.getElementById('les-title').value.trim(),description:document.getElementById('les-desc').value,is_preview:document.getElementById('les-free-preview').checked,timestamps:timestamps,attachments:attachments};
+      if(type==='video'){payload.video_url=document.getElementById('les-video-url').value;}
+      if(type==='quiz'){payload.time_limit_minutes=parseInt(document.getElementById('q-time').value)||null;payload.pass_percentage=parseInt(document.getElementById('q-pass').value)||60;payload.max_attempts=parseInt(document.getElementById('q-attempts').value)||null;payload.shuffle_questions=document.getElementById('q-shuffle-q').checked;payload.shuffle_options=document.getElementById('q-shuffle-o').checked;payload.questions=questions;}
+      if(type==='live'){payload.scheduled_at=document.getElementById('ls-datetime').value;payload.duration_minutes=parseInt(document.getElementById('ls-duration').value)||60;payload.platform=document.getElementById('ls-platform').value;payload.meeting_link=document.getElementById('ls-link').value;}
+      var ep=type==='quiz'?'/instructor/quizzes/'+currentLessonId:type==='live'?'/instructor/live-sessions/'+currentLessonId:'/instructor/videos/'+currentLessonId;
+      await Api.patch(ep,payload);
+      // Update in memory
+      if(lesson){Object.assign(lesson,payload);}
+      showToast('success','Saved!','Lesson updated successfully.');
+      renderModuleTree();updateCompletion();
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed to save.');}
+    this.disabled=false;this.textContent='Save Lesson';
+  });
+
+  // ── Video upload ──
+  window.handleVideoUpload=function(file){
+    if(!file)return;
+    if(file.size>4*1024*1024*1024){showToast('error','File too large','Max video size is 4GB.');return;}
+    document.getElementById('video-upload-placeholder').style.display='none';
+    document.getElementById('upload-progress-wrap').style.display='';
+    document.getElementById('upload-filename').textContent=file.name;
+    document.getElementById('upload-fill').style.width='0%';
+    document.getElementById('upload-pct').textContent='0%';
+    document.getElementById('upload-status-text').textContent='Uploading…';
+
+    var fd=new FormData();fd.append('video',file);fd.append('title',document.getElementById('les-title').value||file.name);
+    uploadXhr=new XMLHttpRequest();
+    uploadXhr.upload.addEventListener('progress',function(e){
+      if(e.lengthComputable){var pct=Math.round((e.loaded/e.total)*100);document.getElementById('upload-fill').style.width=pct+'%';document.getElementById('upload-pct').textContent=pct+'%';}
+    });
+    uploadXhr.onload=function(){
+      document.getElementById('upload-progress-wrap').style.display='none';
+      document.getElementById('video-info-wrap').style.display='';
+      var data=JSON.parse(uploadXhr.responseText);
+      document.getElementById('video-file-name').textContent=file.name;
+      document.getElementById('video-file-meta').textContent='Processing — will be ready in a few minutes';
+      document.getElementById('video-status-badge').textContent='Processing';
+      document.getElementById('video-status-badge').className='badge badge-warning';
+      showToast('success','Uploaded!','Video is now being processed.');
+    };
+    uploadXhr.onerror=function(){showToast('error','Upload failed','Check your connection and try again.');document.getElementById('video-upload-placeholder').style.display='';document.getElementById('upload-progress-wrap').style.display='none';};
+    uploadXhr.open('POST',window.EV_BASE+'api/v1/instructor/videos/'+currentLessonId+'/upload');
+    uploadXhr.setRequestHeader('Authorization','Bearer '+localStorage.getItem('ev_token'));
+    uploadXhr.send(fd);
+  };
+  window.cancelUpload=function(){if(uploadXhr)uploadXhr.abort();document.getElementById('upload-progress-wrap').style.display='none';document.getElementById('video-upload-placeholder').style.display='';};
+  window.replaceVideo=function(){document.getElementById('video-info-wrap').style.display='none';document.getElementById('video-upload-placeholder').style.display='';};
+
+  // ── Attachments ──
+  window.handleAttachments=function(files){
+    Array.from(files).forEach(function(f){attachments.push({name:f.name,size:f.size,_file:f,id:'local-'+Date.now()});});
+    renderAttachments();
+    // Upload each
+    Array.from(files).forEach(function(f){
+      var fd=new FormData();fd.append('file',f);fd.append('lesson_id',currentLessonId);
+      fetch(window.EV_BASE+'api/v1/instructor/attachments',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('ev_token')},body:fd})
+        .then(function(r){return r.json();}).then(function(d){showToast('success','Uploaded!',f.name+' attached.');}).catch(function(){showToast('error','Error','Failed to upload '+f.name);});
+    });
+  };
+  function renderAttachments(){
+    var el=document.getElementById('attachments-list');
+    if(!attachments.length){el.innerHTML='';return;}
+    el.innerHTML=attachments.map(function(a,i){
+      return '<div class="content-row">'+
+        '<div class="content-row-icon" style="background:#f3f4f6;">📎</div>'+
+        '<div class="content-row-info"><div class="content-row-name">'+_esc(a.name||a.filename)+'</div><div class="content-row-meta">'+(a.size?(a.size/1024/1024).toFixed(1)+'MB':'')+'</div></div>'+
+        '<button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" onclick="removeAttachment('+i+')"><i data-feather="x" style="width:13px;height:13px;"></i></button>'+
+      '</div>';
+    }).join('');
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  }
+  window.removeAttachment=function(i){attachments.splice(i,1);renderAttachments();};
+
+  // SRT
+  window.handleSrtUpload=function(f){if(!f)return;document.getElementById('srt-filename').textContent=f.name;showToast('info','SRT selected','Subtitles will be uploaded when you save the lesson.');};
+
+  // ── Timestamps ──
+  window.addTimestamp=function(){timestamps.push({time:'00:00',label:''});renderTimestamps();};
+  function renderTimestamps(){
+    var el=document.getElementById('timestamps-list');
+    if(!timestamps.length){el.innerHTML='<div style="font-size:var(--font-size-xs);color:var(--text-muted);">No chapters yet.</div>';return;}
+    el.innerHTML=timestamps.map(function(ts,i){
+      return '<div class="timestamp-row">'+
+        '<input type="text" class="ts-time" value="'+_esc(ts.time)+'" placeholder="00:00" oninput="timestamps['+i+'].time=this.value"/>'+
+        '<input type="text" class="ts-label" value="'+_esc(ts.label)+'" placeholder="Chapter name…" oninput="timestamps['+i+'].label=this.value"/>'+
+        '<button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" onclick="removeTimestamp('+i+')"><i data-feather="x" style="width:13px;height:13px;"></i></button>'+
+      '</div>';
+    }).join('');
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  }
+  window.removeTimestamp=function(i){timestamps.splice(i,1);renderTimestamps();};
+
+  // ── Quiz questions ──
+  window.addQuestion=function(type){questions.push({type:type,text:'',options:type==='mcq'?['','','','']:type==='truefalse'?['True','False']:null,correct:0,explanation:'',points:1});renderQuestions();};
+  function renderQuestions(){
+    document.getElementById('q-count').textContent=questions.length;
+    var el=document.getElementById('questions-list');
+    if(!questions.length){el.innerHTML='<div style="text-align:center;padding:var(--space-5);color:var(--text-muted);background:var(--bg-sunken);border-radius:var(--border-radius-lg);font-size:var(--font-size-sm);">No questions yet. Add one above.</div>';return;}
+    el.innerHTML=questions.map(function(q,i){
+      var optHtml='';
+      if(q.type==='mcq'||q.type==='truefalse'){
+        optHtml='<div style="margin-top:var(--space-3);">'+
+          (q.options||[]).map(function(opt,oi){
+            return '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2);">'+
+              '<input type="radio" name="q'+i+'correct" '+(q.correct===oi?'checked':'')+'  style="accent-color:var(--color-success);" onchange="questions['+i+'].correct='+oi+'"/>'+
+              '<input type="text" class="form-input" value="'+_esc(opt)+'" placeholder="Option '+(oi+1)+'" style="flex:1;height:34px;" oninput="questions['+i+'].options['+oi+']=this.value"/>'+
+              (oi>=2&&q.type!=='truefalse'?'<button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" onclick="questions['+i+'].options.splice('+oi+',1);renderQuestions()"><i data-feather="x" style="width:12px;height:12px;"></i></button>':'') +
+            '</div>';
+          }).join('')+
+          (q.type==='mcq'?'<button class="btn btn-ghost btn-xs" onclick="questions['+i+'].options.push(\'\');renderQuestions()">+ Add option</button>':'')+
+        '</div>';
+      }else if(q.type==='fill'){
+        optHtml='<div style="margin-top:var(--space-2);"><input type="text" class="form-input" placeholder="Correct answer" value="'+_esc(q.correct||'')+'" style="height:36px;" oninput="questions['+i+'].correct=this.value"/></div>';
+      }
+      return '<div style="background:var(--bg-sunken);border-radius:var(--border-radius-lg);padding:var(--space-4);margin-bottom:var(--space-3);">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">'+
+          '<div style="display:flex;align-items:center;gap:var(--space-2);">'+
+            '<span style="width:24px;height:24px;border-radius:50%;background:var(--color-primary-600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">'+(i+1)+'</span>'+
+            '<span style="font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;color:var(--text-muted);">{q.type==='truefalse'?'True/False':q.type==='mcq'?'MCQ':q.type==='short'?'Short Answer':'Fill in Blank'}</span>'.replace('{q.type=\'truefalse\'?\'True/False\':q.type===\'mcq\'?\'MCQ\':q.type===\'short\'?\'Short Answer\':\'Fill in Blank\'}',q.type==='truefalse'?'True/False':q.type==='mcq'?'MCQ':q.type==='short'?'Short Answer':'Fill in Blank')+
+          '</div>'+
+          '<div style="display:flex;align-items:center;gap:var(--space-2);">'+
+            '<label style="font-size:var(--font-size-xs);color:var(--text-muted);">Pts</label><input type="number" value="'+q.points+'" min="1" style="width:52px;height:30px;border:1px solid var(--border-color);border-radius:6px;padding:0 6px;font-size:12px;font-family:var(--font-ui);" oninput="questions['+i+'].points=parseInt(this.value)||1"/>'+
+            '<button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" onclick="questions.splice('+i+',1);renderQuestions()"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button>'+
+          '</div>'+
+        '</div>'+
+        '<textarea class="form-textarea" placeholder="Question text…" style="min-height:60px;" oninput="questions['+i+'].text=this.value">'+_esc(q.text)+'</textarea>'+
+        optHtml+
+        '<input type="text" class="form-input" placeholder="Explanation (shown after attempt)" value="'+_esc(q.explanation)+'" style="height:34px;margin-top:var(--space-2);font-size:var(--font-size-xs);" oninput="questions['+i+'].explanation=this.value"/>'+
+      '</div>';
+    }).join('');
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  }
+  window.renderQuestions=renderQuestions;
+
+  // ── Delete module / lesson ──
+  window.deleteModule=async function(id){
+    if(!confirm('Delete this module and all its lessons?'))return;
+    try{await Api.delete('/instructor/modules/'+id);modules=modules.filter(function(m){return m.id!==id;});renderModuleTree();updateCompletion();showToast('success','Deleted','Module removed.');}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+  };
+  window.deleteLesson=async function(lesId,modId){
+    if(!confirm('Remove this lesson?'))return;
+    try{await Api.delete('/instructor/videos/'+lesId);var mod=modules.find(function(m){return m.id==modId;});if(mod){['lessons','videos'].forEach(function(k){if(mod[k])mod[k]=mod[k].filter(function(l){return l.id!==lesId;});});}if(currentLessonId===lesId)showWelcome();renderModuleTree();updateCompletion();showToast('success','Deleted','Lesson removed.');}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+  };
+
+  // ── Save course details ──
+  document.getElementById('save-details-btn').addEventListener('click',async function(){
+    var title=document.getElementById('cd-title').value.trim();
+    if(!title){showToast('error','Error','Title required.');return;}
+    this.disabled=true;this.textContent='Saving…';
+    try{await Api.patch('/instructor/courses/'+courseId,{title:title,category:document.getElementById('cd-category').value,level:document.getElementById('cd-level').value,price:parseFloat(document.getElementById('cd-price').value)||0,short_description:document.getElementById('cd-desc').value});document.getElementById('nb-course-title').textContent=title;showToast('success','Saved!','Course details updated.');updateCompletion();}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Save Details';
+  });
+
+  // ── Publish ──
+  document.getElementById('publish-btn').addEventListener('click',async function(){
+    if(!confirm('Publish this course? Students will be able to see and enroll.'))return;
+    this.disabled=true;this.textContent='Publishing…';
+    try{await Api.patch('/instructor/courses/'+courseId+'/publish',{status:'submitted'});showToast('success','Submitted for Review!','Your course will go live after review.');setTimeout(function(){window.location.href='courses.html';},2000);}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed to publish.');}
+    this.disabled=false;this.textContent='Publish';
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  });
+
+  // ── Save draft ──
+  document.getElementById('save-draft-btn').addEventListener('click',async function(){
+    this.disabled=true;this.textContent='Saving…';
+    try{await Api.patch('/instructor/courses/'+courseId,{title:document.getElementById('cd-title').value||courseData.title});showToast('success','Saved!','Draft updated.');}
+    catch(err){showToast('error','Error','Failed to save.');}
+    this.disabled=false;this.textContent='Save';
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  });
+
+  // ── Preview ──
+  document.getElementById('preview-btn').addEventListener('click',function(){window.open('../../pages/student/player.html?course='+courseId+'&preview=1','_blank');});
+
+  // ── Completion ──
+  function updateCompletion(){
+    var checks=[
+      !!(courseData&&courseData.title),
+      !!(courseData&&(courseData.short_description||courseData.description)),
+      !!(courseData&&courseData.category),
+      !!(courseData&&courseData.thumbnail_url),
+      modules.length>0,
+      modules.reduce(function(a,m){return a+(m.lessons||m.videos||[]).length;},0)>0,
+    ];
+    var done=checks.filter(Boolean).length;
+    var pct=Math.round((done/checks.length)*100);
+    var deg=Math.round(pct*3.6);
+    document.getElementById('completion-ring').style.background='conic-gradient(var(--color-primary-600) '+deg+'deg, var(--neutral-200) '+deg+'deg)';
+    document.getElementById('completion-pct-text').textContent=pct+'%';
+  }
+
+  // ── Modal close on overlay ──
+  document.querySelectorAll('.modal-overlay').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)closeModal(m.id);});});
+
+  loadCourse();
+});
+</script>
+</body>
+</html>

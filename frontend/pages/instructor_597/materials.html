@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Materials — EduVerse Instructor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>
+    try {
+      if (localStorage.getItem('ev_theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.documentElement.classList.add('dark');
+      }
+    } catch(e) {}
+  </script>
+  <style>
+    .upload-card {
+      background: var(--bg-surface); border: var(--card-border);
+      border-radius: var(--card-radius); box-shadow: var(--card-shadow);
+      padding: var(--space-8); margin-bottom: var(--space-6);
+    }
+    .upload-card-title {
+      font-size: var(--font-size-lg); font-weight: var(--font-weight-bold);
+      color: var(--text-primary); margin-bottom: var(--space-6);
+      padding-bottom: var(--space-4); border-bottom: 1px solid var(--border-color);
+    }
+    .form-grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);
+    }
+    .dropzone {
+      border: 2px dashed var(--border-color-strong);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-10) var(--space-6);
+      text-align: center; cursor: pointer;
+      transition: all var(--transition-base);
+      background: var(--bg-sunken);
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--color-primary-400);
+      background: var(--color-primary-50);
+    }
+    .dropzone-icon { font-size: 2.5rem; margin-bottom: var(--space-3); }
+    .dropzone-title {
+      font-size: var(--font-size-base); font-weight: var(--font-weight-semibold);
+      color: var(--text-primary); margin-bottom: var(--space-1);
+    }
+    .dropzone-hint { font-size: var(--font-size-sm); color: var(--text-muted); }
+    .file-selected {
+      display: none; align-items: center; gap: var(--space-3);
+      padding: var(--space-4); background: var(--color-success-light);
+      border: 1px solid #a7f3d0; border-radius: var(--border-radius-md);
+      margin-top: var(--space-3);
+    }
+    .progress-bar-wrap {
+      display: none; margin-top: var(--space-4);
+    }
+    .progress-bar-bg {
+      height: 8px; background: var(--neutral-100);
+      border-radius: 99px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; background: var(--color-primary-600);
+      border-radius: 99px; transition: width 0.3s;
+      width: 0%;
+    }
+    .progress-label {
+      font-size: var(--font-size-xs); color: var(--text-muted);
+      margin-top: var(--space-1); text-align: right;
+    }
+
+    /* Materials table */
+    .materials-table-wrap {
+      background: var(--bg-surface); border: var(--card-border);
+      border-radius: var(--card-radius); box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+    .materials-table-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .materials-table-title {
+      font-size: var(--font-size-base); font-weight: var(--font-weight-semibold);
+      color: var(--text-primary);
+    }
+    .mat-row {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-color);
+      transition: background var(--transition-fast);
+    }
+    .mat-row:last-child { border-bottom: none; }
+    .mat-row:hover { background: var(--neutral-50); }
+    .mat-icon {
+      width: 44px; height: 44px; border-radius: var(--border-radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .mat-info { flex: 1; min-width: 0; }
+    .mat-title {
+      font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+      color: var(--text-primary); margin-bottom: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mat-meta { font-size: var(--font-size-xs); color: var(--text-muted); }
+    .mat-stats {
+      display: flex; gap: var(--space-5); flex-shrink: 0;
+      font-size: var(--font-size-xs);
+    }
+    .mat-stat { text-align: center; }
+    .mat-stat-value {
+      font-size: var(--font-size-base); font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+    }
+    .mat-stat-label { color: var(--text-muted); margin-top: 1px; }
+    .mat-price {
+      font-size: var(--font-size-base); font-weight: var(--font-weight-extrabold);
+      color: var(--text-primary); flex-shrink: 0; min-width: 60px; text-align: right;
+    }
+    .mat-price-free { color: var(--color-success); }
+
+    /* Stats summary */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4); margin-bottom: var(--space-6);
+    }
+    .stat-box {
+      background: var(--bg-surface); border: var(--card-border);
+      border-radius: var(--card-radius); box-shadow: var(--card-shadow);
+      padding: var(--space-5) var(--space-6);
+    }
+    .stat-box-value {
+      font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold);
+      color: var(--text-primary); line-height: 1; margin-bottom: var(--space-1);
+    }
+    .stat-box-label {
+      font-size: var(--font-size-xs); color: var(--text-muted);
+      font-weight: var(--font-weight-medium);
+    }
+
+    .skel { background: var(--neutral-100); border-radius: 4px; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+    @media (max-width: 767px) {
+      .form-grid-2 { grid-template-columns: 1fr; }
+      .stats-row   { grid-template-columns: repeat(2, 1fr); }
+      .mat-stats   { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html">
+      <div class="sidebar-logo">E</div>
+      <div>
+        <div class="sidebar-brand-name">EduVerse</div>
+        <div class="sidebar-brand-tagline">Instructor Portal</div>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html">
+        <span class="sidebar-item-icon"><i data-feather="grid"></i></span>
+        <span class="sidebar-item-label">Dashboard</span>
+      </a>
+      <a class="sidebar-item" href="courses.html">
+        <span class="sidebar-item-icon"><i data-feather="book-open"></i></span>
+        <span class="sidebar-item-label">My Courses</span>
+      </a>
+      <a class="sidebar-item active" href="materials.html">
+        <span class="sidebar-item-icon"><i data-feather="file-text"></i></span>
+        <span class="sidebar-item-label">Study Materials</span>
+      </a>
+      <a class="sidebar-item" href="students.html">
+        <span class="sidebar-item-icon"><i data-feather="users"></i></span>
+        <span class="sidebar-item-label">Students</span>
+      </a>
+      <a class="sidebar-item" href="earnings.html">
+        <span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span>
+        <span class="sidebar-item-label">Earnings</span>
+      </a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html">
+        <span class="sidebar-item-icon"><i data-feather="user"></i></span>
+        <span class="sidebar-item-label">My Profile</span>
+      </a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm avatar-green" id="sidebar-avatar">…</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+        <div class="sidebar-user-role">Instructor</div>
+      </div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn">
+      <i data-feather="chevron-left"></i>
+    </button>
+  </aside>
+
+  <!-- MAIN BODY -->
+  <div class="app-body">
+
+    <!-- Navbar -->
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn">
+          <i data-feather="menu"></i>
+        </button>
+        <div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">
+            Study Materials
+          </div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">
+            Upload and manage your notes and study materials
+          </div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme">
+          <i data-feather="moon"></i>
+        </button>
+        <div class="navbar-user" id="navbar-user-trigger">
+          <div class="avatar avatar-sm avatar-green" id="navbar-avatar">…</div>
+          <div class="navbar-user-info">
+            <span class="navbar-user-name" id="navbar-user-name">Loading…</span>
+            <span class="navbar-user-role">Instructor</span>
+          </div>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden
+          style="position:absolute;top:calc(var(--navbar-height) - 8px);
+          right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html">
+            <i data-feather="user"></i> My Profile
+          </a>
+          <a class="dropdown-item" data-action="toggle-theme">
+            <i data-feather="moon"></i> Toggle Theme
+          </a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout">
+            <i data-feather="log-out"></i> Sign Out
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" role="status" aria-live="polite"></div>
+
+    <!-- PAGE CONTENT -->
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Stats -->
+        <div class="stats-row" id="stats-row">
+          <div class="stat-box">
+            <div class="stat-box-value skel" id="stat-total"
+              style="height:32px;width:60px;margin-bottom:6px;">
+            </div>
+            <div class="stat-box-label">Total Materials</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-value skel" id="stat-purchases"
+              style="height:32px;width:60px;margin-bottom:6px;">
+            </div>
+            <div class="stat-box-label">Total Purchases</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-value skel" id="stat-downloads"
+              style="height:32px;width:60px;margin-bottom:6px;">
+            </div>
+            <div class="stat-box-label">Total Downloads</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-value skel" id="stat-earnings"
+              style="height:32px;width:80px;margin-bottom:6px;">
+            </div>
+            <div class="stat-box-label">Total Earnings</div>
+          </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="upload-card">
+          <div class="upload-card-title">
+            <i data-feather="upload-cloud"
+              style="width:20px;height:20px;display:inline;margin-right:8px;
+              vertical-align:middle;color:var(--color-primary-600);"></i>
+            Upload New Material
+          </div>
+
+          <form id="upload-form" enctype="multipart/form-data">
+
+            <!-- File dropzone -->
+            <div class="dropzone" id="dropzone">
+              <div class="dropzone-icon">📁</div>
+              <div class="dropzone-title">Drop your file here or click to browse</div>
+              <div class="dropzone-hint">
+                PDF, Word, PowerPoint or ZIP · Max 50MB
+              </div>
+              <input type="file" id="file-input" name="file" hidden
+                accept=".pdf,.doc,.docx,.ppt,.pptx,.zip" />
+            </div>
+
+            <!-- File selected indicator -->
+            <div class="file-selected" id="file-selected">
+              <span style="font-size:1.5rem;">📄</span>
+              <div style="flex:1;">
+                <div style="font-size:var(--font-size-sm);font-weight:600;
+                  color:var(--color-success-dark);" id="file-name"></div>
+                <div style="font-size:var(--font-size-xs);color:var(--color-success);"
+                  id="file-size"></div>
+              </div>
+              <button type="button" class="btn btn-ghost btn-sm" id="file-remove">
+                <i data-feather="x"></i>
+              </button>
+            </div>
+
+            <!-- Upload progress -->
+            <div class="progress-bar-wrap" id="progress-wrap">
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+              </div>
+              <div class="progress-label" id="progress-label">0%</div>
+            </div>
+
+            <!-- Form fields -->
+            <div style="margin-top:var(--space-6);
+              display:flex;flex-direction:column;gap:var(--space-4);">
+
+              <div class="form-grid-2">
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Title *</label>
+                  <input type="text" name="title" id="f-title" class="form-input"
+                    placeholder="e.g. Class 10 Maths — Algebra Notes" required />
+                  <div class="form-error" id="e-title"></div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Type *</label>
+                  <select name="type" id="f-type" class="form-select" required>
+                    <option value="notes">Notes</option>
+                    <option value="question_paper">Question Paper</option>
+                    <option value="study_guide">Study Guide</option>
+                    <option value="assignment">Assignment</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Subject</label>
+                  <input type="text" name="subject" id="f-subject" class="form-input"
+                    placeholder="e.g. Mathematics, Physics" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Education Level</label>
+                  <select name="level" id="f-level" class="form-select">
+                    <option value="">Select Level</option>
+                    <option value="preschool">Pre-School</option>
+                    <option value="primary">Primary School</option>
+                    <option value="middle">Middle School</option>
+                    <option value="high">High School</option>
+                    <option value="ug">Undergraduate</option>
+                    <option value="pg">Postgraduate</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Category</label>
+                  <input type="text" name="category" id="f-category" class="form-input"
+                    placeholder="e.g. Science, Commerce, Arts" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Language</label>
+                  <select name="language" id="f-language" class="form-select">
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Kannada">Kannada</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Telugu">Telugu</option>
+                    <option value="Malayalam">Malayalam</option>
+                    <option value="Marathi">Marathi</option>
+                    <option value="Bengali">Bengali</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Number of Pages</label>
+                  <input type="number" name="pages" id="f-pages" class="form-input"
+                    placeholder="e.g. 24" min="1" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Price (₹)</label>
+                  <input type="number" name="price" id="f-price" class="form-input"
+                    placeholder="0 for free" min="0" step="1" value="0" />
+                </div>
+
+                <div class="form-group" style="display:flex;align-items:center;
+                  gap:var(--space-3);padding-top:var(--space-6);">
+                  <label class="form-toggle" style="cursor:pointer;">
+                    <input type="checkbox" id="f-is-free" name="is_free" checked />
+                    <div class="toggle-track">
+                      <div class="toggle-thumb"></div>
+                    </div>
+                    <span class="toggle-label">Free material</span>
+                  </label>
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Tags
+                    <span style="font-weight:400;color:var(--text-muted);">
+                      (comma separated)
+                    </span>
+                  </label>
+                  <input type="text" name="tags" id="f-tags" class="form-input"
+                    placeholder="e.g. algebra, equations, class10, cbse" />
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1;">
+                  <label class="form-label">Description</label>
+                  <textarea name="description" id="f-description"
+                    class="form-textarea" rows="3"
+                    placeholder="Briefly describe what this material covers…"></textarea>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:var(--space-3);justify-content:flex-end;">
+                <button type="button" class="btn btn-outline btn-lg" id="reset-btn">
+                  Reset Form
+                </button>
+                <button type="submit" class="btn btn-primary btn-lg" id="upload-btn">
+                  <i data-feather="upload-cloud" style="width:16px;height:16px;"></i>
+                  Upload Material
+                </button>
+              </div>
+
+            </div>
+          </form>
+        </div>
+
+        <!-- My Materials -->
+        <div class="materials-table-wrap">
+          <div class="materials-table-header">
+            <div class="materials-table-title">My Uploaded Materials</div>
+            <div style="font-size:var(--font-size-sm);color:var(--text-muted);"
+              id="my-materials-count">Loading…</div>
+          </div>
+          <div id="my-materials-list">
+            <div style="padding:var(--space-5);">
+              <div class="skel" style="height:60px;border-radius:8px;
+                margin-bottom:8px;"></div>
+              <div class="skel" style="height:60px;border-radius:8px;
+                margin-bottom:8px;"></div>
+              <div class="skel" style="height:60px;border-radius:8px;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Foundation JS -->
+<script>window.EV_BASE = "../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/router.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+
+<!-- Auth guard -->
+<script>
+(function() {
+  var token, user;
+  try {
+    token = localStorage.getItem('ev_token');
+    user  = token ? JSON.parse(localStorage.getItem('ev_user')) : null;
+  } catch(e) {}
+  if (!token || !user) window.location.replace('../../pages/auth/login.html');
+  else if (user.role !== 'instructor')
+    window.location.replace('../../pages/errors/403.html');
+})();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+
+  // ── User info ──
+  var user = Store.get('auth.user');
+  if (user) {
+    var initials = Utils.getInitials(user.name);
+    var color    = Utils.getAvatarColor(user.name);
+    ['sidebar-avatar','navbar-avatar'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.textContent = initials; el.className = 'avatar avatar-sm ' + color; }
+    });
+    ['sidebar-user-name','navbar-user-name'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = user.name;
+    });
+  }
+
+  // ── Sidebar wiring ──
+  var shell   = document.getElementById('app-shell');
+  var menuBtn = document.getElementById('navbar-menu-btn');
+  var overlay = document.getElementById('sidebar-overlay');
+  var colBtn  = document.getElementById('sidebar-collapse-btn');
+
+  try {
+    if (localStorage.getItem('ev_sidebar_collapsed') === 'true')
+      shell.classList.add('sidebar-collapsed');
+  } catch(e) {}
+
+  colBtn  && colBtn.addEventListener('click', function() {
+    var c = shell.classList.toggle('sidebar-collapsed');
+    try { localStorage.setItem('ev_sidebar_collapsed', c); } catch(e) {}
+  });
+  menuBtn && menuBtn.addEventListener('click', function() {
+    shell.classList.toggle('sidebar-open');
+  });
+  overlay && overlay.addEventListener('click', function() {
+    shell.classList.remove('sidebar-open');
+  });
+
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var d = document.documentElement.classList.toggle('dark');
+      document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+      try { localStorage.setItem('ev_theme', d ? 'dark' : 'light'); } catch(e) {}
+    });
+  });
+
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (typeof Auth !== 'undefined') Auth.logout();
+    });
+  });
+
+  var trigger  = document.getElementById('navbar-user-trigger');
+  var dropdown = document.getElementById('user-dropdown');
+  if (trigger && dropdown) {
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      dropdown.hidden = !dropdown.hidden;
+    });
+    document.addEventListener('click', function() {
+      if (dropdown) dropdown.hidden = true;
+    });
+  }
+
+  // ── Type config ──
+  var typeConfig = {
+    notes:         { emoji: '📝', bg: '#dbeafe' },
+    question_paper:{ emoji: '📋', bg: '#fef3c7' },
+    study_guide:   { emoji: '📖', bg: '#d1fae5' },
+    assignment:    { emoji: '✏️',  bg: '#ede9fe' },
+    other:         { emoji: '📄', bg: '#f3f4f6' },
+  };
+
+  // ── Free toggle ──
+  var freeToggle = document.getElementById('f-is-free');
+  var priceInput = document.getElementById('f-price');
+
+  freeToggle.addEventListener('change', function() {
+    priceInput.disabled = freeToggle.checked;
+    if (freeToggle.checked) priceInput.value = '0';
+  });
+  priceInput.disabled = true; // starts as free
+
+  // ── Dropzone ──
+  var dropzone  = document.getElementById('dropzone');
+  var fileInput = document.getElementById('file-input');
+  var fileSelEl = document.getElementById('file-selected');
+  var fileNameEl= document.getElementById('file-name');
+  var fileSizeEl= document.getElementById('file-size');
+  var fileRemBtn= document.getElementById('file-remove');
+  var selectedFile = null;
+
+  dropzone.addEventListener('click', function() { fileInput.click(); });
+  dropzone.addEventListener('dragover', function(e) {
+    e.preventDefault(); dropzone.classList.add('dragover');
+  });
+  dropzone.addEventListener('dragleave', function() {
+    dropzone.classList.remove('dragover');
+  });
+  dropzone.addEventListener('drop', function(e) {
+    e.preventDefault(); dropzone.classList.remove('dragover');
+    var file = e.dataTransfer.files[0];
+    if (file) setFile(file);
+  });
+
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files[0]) setFile(fileInput.files[0]);
+  });
+
+  function setFile(file) {
+    var allowed = ['.pdf','.doc','.docx','.ppt','.pptx','.zip'];
+    var ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!allowed.includes(ext)) {
+      showToast('error', 'Invalid File',
+        'Only PDF, Word, PowerPoint and ZIP files are allowed.');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      showToast('error', 'File Too Large', 'Maximum file size is 50MB.');
+      return;
+    }
+    selectedFile = file;
+    fileNameEl.textContent = file.name;
+    fileSizeEl.textContent = Utils.formatBytes(file.size);
+    fileSelEl.style.display = 'flex';
+    dropzone.style.display  = 'none';
+  }
+
+  fileRemBtn.addEventListener('click', function() {
+    selectedFile = null;
+    fileInput.value = '';
+    fileSelEl.style.display = 'none';
+    dropzone.style.display  = 'block';
+  });
+
+  // ── Reset form ──
+  document.getElementById('reset-btn').addEventListener('click', function() {
+    document.getElementById('upload-form').reset();
+    fileRemBtn.click();
+    freeToggle.checked    = true;
+    priceInput.disabled   = true;
+    priceInput.value      = '0';
+  });
+
+  // ── Upload form submit ──
+  document.getElementById('upload-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    var titleEl = document.getElementById('f-title');
+    var errEl   = document.getElementById('e-title');
+    errEl.textContent = '';
+
+    if (!selectedFile) {
+      showToast('error', 'No File', 'Please select a file to upload.');
+      return;
+    }
+    if (!titleEl.value.trim()) {
+      errEl.textContent = 'Title is required.';
+      titleEl.focus();
+      return;
+    }
+
+    var uploadBtn = document.getElementById('upload-btn');
+    var progressWrap = document.getElementById('progress-wrap');
+    var progressFill = document.getElementById('progress-fill');
+    var progressLabel= document.getElementById('progress-label');
+
+    uploadBtn.disabled    = true;
+    uploadBtn.textContent = 'Uploading…';
+    progressWrap.style.display = 'block';
+
+    // Build form data
+    var formData = new FormData();
+    formData.append('file',        selectedFile);
+    formData.append('title',       titleEl.value.trim());
+    formData.append('type',        document.getElementById('f-type').value);
+    formData.append('subject',     document.getElementById('f-subject').value.trim());
+    formData.append('level',       document.getElementById('f-level').value);
+    formData.append('category',    document.getElementById('f-category').value.trim());
+    formData.append('language',    document.getElementById('f-language').value);
+    formData.append('pages',       document.getElementById('f-pages').value);
+    formData.append('price',       document.getElementById('f-price').value || '0');
+    formData.append('is_free',     freeToggle.checked ? 'true' : 'false');
+    formData.append('tags',        document.getElementById('f-tags').value.trim());
+    formData.append('description', document.getElementById('f-description').value.trim());
+
+    try {
+      // Use XHR for progress tracking
+      await new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:5000/api/v1/materials/upload', true);
+
+        var token = localStorage.getItem('ev_token');
+        if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+
+        xhr.upload.onprogress = function(e) {
+          if (e.lengthComputable) {
+            var pct = Math.round((e.loaded / e.total) * 100);
+            progressFill.style.width = pct + '%';
+            progressLabel.textContent = pct + '%';
+          }
+        };
+
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            try {
+              var err = JSON.parse(xhr.responseText);
+              reject(new Error(err.message || 'Upload failed.'));
+            } catch(e) {
+              reject(new Error('Upload failed.'));
+            }
+          }
+        };
+
+        xhr.onerror = function() { reject(new Error('Network error.')); };
+        xhr.send(formData);
+      });
+
+      showToast('success', 'Uploaded!', 'Your material has been published.');
+      document.getElementById('reset-btn').click();
+      progressWrap.style.display = 'none';
+      progressFill.style.width   = '0%';
+      loadMyMaterials();
+
+    } catch (err) {
+      showToast('error', 'Upload Failed', err.message || 'Please try again.');
+      progressWrap.style.display = 'none';
+    } finally {
+      uploadBtn.disabled    = false;
+      uploadBtn.innerHTML   =
+        '<i data-feather="upload-cloud" style="width:16px;height:16px;"></i>' +
+        ' Upload Material';
+      if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+    }
+  });
+
+  // ── Load my materials ──
+  async function loadMyMaterials() {
+    var list  = document.getElementById('my-materials-list');
+    var count = document.getElementById('my-materials-count');
+
+    try {
+      var res   = await Api.get('/materials/my/materials');
+      var items = (res && res.data) || [];
+
+      count.textContent = items.length + ' material' +
+        (items.length !== 1 ? 's' : '');
+
+      // Update stats
+      var totalPurchases = items.reduce(function(a,m) {
+        return a + (m.purchase_count || 0); }, 0);
+      var totalDownloads = items.reduce(function(a,m) {
+        return a + (m.download_count || 0); }, 0);
+      var totalEarnings  = items.reduce(function(a,m) {
+        return a + parseFloat(m.total_earnings || 0); }, 0);
+
+      _setStat('stat-total',     items.length);
+      _setStat('stat-purchases', totalPurchases);
+      _setStat('stat-downloads', totalDownloads);
+      _setStat('stat-earnings',  '₹' + totalEarnings.toFixed(0));
+
+      if (!items.length) {
+        list.innerHTML =
+          '<div style="text-align:center;padding:var(--space-12);">' +
+          '<div style="font-size:2rem;margin-bottom:var(--space-3);">📭</div>' +
+          '<div style="font-size:var(--font-size-base);font-weight:600;' +
+            'color:var(--text-primary);">No materials yet</div>' +
+          '<div style="font-size:var(--font-size-sm);color:var(--text-muted);' +
+            'margin-top:var(--space-1);">Upload your first study material above.</div>' +
+          '</div>';
+        return;
+      }
+
+      list.innerHTML = items.map(function(m) {
+        var tc    = typeConfig[m.type] || typeConfig.other;
+        var price = m.is_free || m.price === 0
+          ? '<span style="color:var(--color-success);font-weight:800;">FREE</span>'
+          : '<span style="font-weight:800;">₹' + parseFloat(m.price).toFixed(0) + '</span>';
+        var rating = m.avg_rating
+          ? '★ ' + parseFloat(m.avg_rating).toFixed(1)
+          : 'No ratings';
+
+        return '<div class="mat-row">' +
+          '<div class="mat-icon" style="background:' + tc.bg + ';">' +
+            tc.emoji +
+          '</div>' +
+          '<div class="mat-info">' +
+            '<div class="mat-title">' + Utils.escapeHtml(m.title) + '</div>' +
+            '<div class="mat-meta">' +
+              (m.subject ? Utils.escapeHtml(m.subject) + ' · ' : '') +
+              Utils.escapeHtml(m.type.replace('_',' ')) + ' · ' +
+              Utils.formatDate(m.created_at) +
+            '</div>' +
+          '</div>' +
+          '<div class="mat-stats">' +
+            '<div class="mat-stat">' +
+              '<div class="mat-stat-value">' + (m.purchase_count || 0) + '</div>' +
+              '<div class="mat-stat-label">Purchases</div>' +
+            '</div>' +
+            '<div class="mat-stat">' +
+              '<div class="mat-stat-value">' + (m.download_count || 0) + '</div>' +
+              '<div class="mat-stat-label">Downloads</div>' +
+            '</div>' +
+            '<div class="mat-stat">' +
+              '<div class="mat-stat-value" style="color:#f59e0b;">' +
+                rating + '</div>' +
+              '<div class="mat-stat-label">Rating</div>' +
+            '</div>' +
+            '<div class="mat-stat">' +
+              '<div class="mat-stat-value" style="color:var(--color-success);">' +
+                '₹' + parseFloat(m.total_earnings || 0).toFixed(0) +
+              '</div>' +
+              '<div class="mat-stat-label">Earned</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="mat-price">' + price + '</div>' +
+          '<button class="btn btn-outline-danger btn-sm" ' +
+            'onclick="deleteMaterial(' + m.id + ', \'' +
+            m.title.replace(/'/g,"\\'") + '\')">' +
+            '<i data-feather="trash-2" style="width:14px;height:14px;"></i>' +
+          '</button>' +
+        '</div>';
+      }).join('');
+
+      if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+
+    } catch (err) {
+      list.innerHTML =
+        '<div style="color:var(--color-danger);text-align:center;' +
+        'padding:var(--space-8);">Failed to load materials.</div>';
+    }
+  }
+
+  function _setStat(id, val) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.textContent = val;
+      el.className   = 'stat-box-value';
+    }
+  }
+
+  // ── Delete material ──
+  window.deleteMaterial = async function(id, title) {
+    if (!confirm('Delete "' + title + '"? This cannot be undone.')) return;
+    try {
+      await Api.delete('/materials/' + id);
+      showToast('success', 'Deleted', '"' + title + '" has been removed.');
+      loadMyMaterials();
+    } catch (err) {
+      showToast('error', 'Error',
+        err && err.message || 'Failed to delete material.');
+    }
+  };
+
+  // ── Toast ──
+  function showToast(type, title, message) {
+    var container = document.querySelector('.toast-container');
+    if (!container) return;
+    var el = document.createElement('div');
+    el.className = 'toast toast-' + type;
+    el.innerHTML =
+      '<div class="toast-content">' +
+        '<div class="toast-title">'   + Utils.escapeHtml(title)   + '</div>' +
+        '<div class="toast-message">' + Utils.escapeHtml(message) + '</div>' +
+      '</div>' +
+      '<button class="toast-close" ' +
+        'onclick="this.closest(\'.toast\').remove()">✕</button>';
+    container.appendChild(el);
+    setTimeout(function() { if (el.parentNode) el.remove(); }, 4000);
+  }
+
+  // ── Initial load ──
+  loadMyMaterials();
+});
+</script>
+
+</body>
+</html>

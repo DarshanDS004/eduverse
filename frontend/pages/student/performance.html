@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Performance — EduVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .perf-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);}
+    .perf-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;}
+    .perf-card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .perf-card-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .perf-card-body{padding:var(--space-5);}
+    .score-ring-wrap{display:flex;align-items:center;gap:var(--space-6);}
+    .score-ring{position:relative;width:120px;height:120px;flex-shrink:0;}
+    .score-ring svg{transform:rotate(-90deg);}
+    .score-ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .score-ring-num{font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);line-height:1;}
+    .score-ring-label{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) 0;border-bottom:1px solid var(--border-color);}
+    .stat-row:last-child{border-bottom:none;}
+    .stat-row-label{font-size:var(--font-size-sm);color:var(--text-muted);}
+    .stat-row-val{font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);}
+    .quiz-row{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--border-color);}
+    .quiz-row:last-child{border-bottom:none;}
+    .quiz-score-badge{padding:2px 8px;border-radius:99px;font-size:var(--font-size-xs);font-weight:700;}
+    .score-high{background:var(--color-success-light);color:var(--color-success-dark);}
+    .score-mid{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .score-low{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    @media(max-width:1023px){.perf-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Student Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="assignments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assignments</span></a>
+      <a class="sidebar-item active" href="performance.html"><span class="sidebar-item-icon"><i data-feather="trending-up"></i></span><span class="sidebar-item-label">Performance</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="calendar.html"><span class="sidebar-item-icon"><i data-feather="calendar"></i></span><span class="sidebar-item-label">Calendar</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <a class="sidebar-item" href="certificates.html"><span class="sidebar-item-icon"><i data-feather="award"></i></span><span class="sidebar-item-label">Certificates</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">Profile</span></a>
+    </nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Student</div></div></div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <button class="btn-icon btn-ghost" id="sidebar-collapse-btn"><i data-feather="sidebar"></i></button>
+      </div>
+      <div class="navbar-right">
+        <button class="btn-icon btn-ghost" data-action="toggle-theme"><i data-feather="sun"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm" id="navbar-avatar"></div>
+          <span class="navbar-user-name" id="navbar-user-name"></span>
+        </div>
+        <div class="dropdown" id="user-dropdown" hidden>
+          <div class="dropdown-header"><div class="dropdown-user-name" id="dd-user-name"></div><div class="dropdown-user-role">Student</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-item-danger" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+    <main class="app-main">
+      <div class="page-content">
+        <div class="page-header" style="margin-bottom:var(--space-6);">
+          <div><h1 class="page-title">My Performance</h1><p class="page-subtitle">Track your academic progress and quiz results</p></div>
+          <div class="page-header-actions">
+            <select class="filter-select" id="period-filter" style="height:36px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-surface);font-family:var(--font-ui);">
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 3 months</option>
+              <option value="180">Last 6 months</option>
+              <option value="365">This year</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" style="margin-bottom:var(--space-6);">
+          <div class="stat-card"><div class="stat-icon-wrap si-blue"><i data-feather="trending-up" style="width:20px;height:20px;"></i></div><div class="stat-info"><div class="stat-value" id="s-avg-score">—</div><div class="stat-label">Avg. Score</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap si-green"><i data-feather="check-circle" style="width:20px;height:20px;"></i></div><div class="stat-info"><div class="stat-value" id="s-quizzes">—</div><div class="stat-label">Quizzes Taken</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap si-amber"><i data-feather="clipboard" style="width:20px;height:20px;"></i></div><div class="stat-info"><div class="stat-value" id="s-assignments">—</div><div class="stat-label">Assignments Done</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap si-purple"><i data-feather="calendar" style="width:20px;height:20px;"></i></div><div class="stat-info"><div class="stat-value" id="s-attendance">—</div><div class="stat-label">Attendance Rate</div></div></div>
+        </div>
+
+        <div class="perf-grid">
+          <!-- Score trend chart -->
+          <div class="perf-card" style="grid-column:1/-1;">
+            <div class="perf-card-header"><div class="perf-card-title">Score Trend</div></div>
+            <div class="perf-card-body"><canvas id="score-chart" height="80"></canvas></div>
+          </div>
+
+          <!-- Overall score ring -->
+          <div class="perf-card">
+            <div class="perf-card-header"><div class="perf-card-title">Overall Performance</div></div>
+            <div class="perf-card-body">
+              <div class="score-ring-wrap">
+                <div class="score-ring">
+                  <svg viewBox="0 0 120 120" width="120" height="120">
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="var(--neutral-100)" stroke-width="12"/>
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="var(--color-primary-600)" stroke-width="12"
+                      stroke-dasharray="314" stroke-dashoffset="314" id="score-ring-circle" stroke-linecap="round"/>
+                  </svg>
+                  <div class="score-ring-val"><div class="score-ring-num" id="ring-score">—</div><div class="score-ring-label">Score</div></div>
+                </div>
+                <div style="flex:1;">
+                  <div class="stat-row"><span class="stat-row-label">Highest Score</span><span class="stat-row-val" id="p-highest">—</span></div>
+                  <div class="stat-row"><span class="stat-row-label">Lowest Score</span><span class="stat-row-val" id="p-lowest">—</span></div>
+                  <div class="stat-row"><span class="stat-row-label">Courses Enrolled</span><span class="stat-row-val" id="p-courses">—</span></div>
+                  <div class="stat-row"><span class="stat-row-label">Courses Completed</span><span class="stat-row-val" id="p-completed">—</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subject-wise scores -->
+          <div class="perf-card">
+            <div class="perf-card-header"><div class="perf-card-title">Subject-wise Performance</div></div>
+            <div class="perf-card-body"><canvas id="subject-chart" height="200"></canvas></div>
+          </div>
+
+          <!-- Recent quizzes -->
+          <div class="perf-card">
+            <div class="perf-card-header"><div class="perf-card-title">Recent Quizzes</div></div>
+            <div class="perf-card-body" id="quiz-list">
+              <div class="skel" style="height:40px;margin-bottom:8px;"></div>
+              <div class="skel" style="height:40px;margin-bottom:8px;"></div>
+              <div class="skel" style="height:40px;"></div>
+            </div>
+          </div>
+
+          <!-- Assignment grades -->
+          <div class="perf-card">
+            <div class="perf-card-header"><div class="perf-card-title">Assignment Grades</div></div>
+            <div class="perf-card-body" id="grade-list">
+              <div class="skel" style="height:40px;margin-bottom:8px;"></div>
+              <div class="skel" style="height:40px;margin-bottom:8px;"></div>
+              <div class="skel" style="height:40px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/router.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}if(u.role!=='student'){window.location.replace('../../pages/errors/403.html');}})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  Sidebar.renderUser(user);
+  // ── Sidebar (managed by sidebar.js) ──
+  Sidebar.init();
+  Sidebar.initTheme();
+  Sidebar.initDropdown();
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');}catch(e){}window.location.replace('../../pages/auth/login.html');});});
+
+  var scoreChart=null, subjectChart=null;
+
+  async function loadPerformance(){
+    var days=document.getElementById('period-filter').value;
+    try{
+      var res=await Api.student.performance({days:days});
+      var d=(res&&res.data)||{};
+      _text('s-avg-score',(d.avg_score!=null?d.avg_score+'%':'—'));
+      _text('s-quizzes',d.quizzes_taken||'0');
+      _text('s-assignments',d.assignments_completed||'0');
+      _text('s-attendance',(d.attendance_rate!=null?d.attendance_rate+'%':'—'));
+      _text('ring-score',(d.avg_score!=null?d.avg_score+'%':'—'));
+      _text('p-highest',(d.highest_score!=null?d.highest_score+'%':'—'));
+      _text('p-lowest',(d.lowest_score!=null?d.lowest_score+'%':'—'));
+      _text('p-courses',d.courses_enrolled||'0');
+      _text('p-completed',d.courses_completed||'0');
+
+      // Animate ring
+      if(d.avg_score!=null){
+        var circle=document.getElementById('score-ring-circle');
+        var offset=314-(314*(d.avg_score/100));
+        circle.style.transition='stroke-dashoffset 1s ease';
+        circle.style.strokeDashoffset=offset;
+        circle.style.stroke=d.avg_score>=75?'#10b981':d.avg_score>=50?'#3b82f6':'#f59e0b';
+      }
+
+      // Score trend chart
+      if(d.score_trend&&d.score_trend.length){
+        var labels=d.score_trend.map(function(t){return t.label||t.date;});
+        var scores=d.score_trend.map(function(t){return t.score;});
+        if(scoreChart) scoreChart.destroy();
+        var ctx=document.getElementById('score-chart').getContext('2d');
+        scoreChart=new Chart(ctx,{
+          type:'line',
+          data:{labels:labels,datasets:[{label:'Score',data:scores,borderColor:'#1A56DB',backgroundColor:'rgba(26,86,219,0.08)',tension:0.4,fill:true,pointBackgroundColor:'#1A56DB'}]},
+          options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false,max:100,ticks:{callback:function(v){return v+'%';}}}}}
+        });
+      }
+
+      // Subject chart
+      if(d.subject_scores&&d.subject_scores.length){
+        var sLabels=d.subject_scores.map(function(s){return s.subject;});
+        var sScores=d.subject_scores.map(function(s){return s.avg_score;});
+        if(subjectChart) subjectChart.destroy();
+        var ctx2=document.getElementById('subject-chart').getContext('2d');
+        subjectChart=new Chart(ctx2,{
+          type:'bar',
+          data:{labels:sLabels,datasets:[{label:'Avg Score',data:sScores,backgroundColor:'rgba(26,86,219,0.7)',borderRadius:6}]},
+          options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:function(v){return v+'%';}}}}}
+        });
+      }
+
+      // Quizzes
+      var quizList=document.getElementById('quiz-list');
+      var quizzes=(d.recent_quizzes||[]);
+      if(!quizzes.length){quizList.innerHTML='<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);">No quizzes taken yet.</div>';}
+      else{quizList.innerHTML=quizzes.map(function(q){
+        var sc=Math.round((q.score/q.total)*100);
+        var cls=sc>=75?'score-high':sc>=50?'score-mid':'score-low';
+        return '<div class="quiz-row"><div style="flex:1;"><div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">'+_esc(q.title)+'</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+Utils.timeAgo(q.taken_at)+'</div></div><span class="quiz-score-badge '+cls+'">'+q.score+'/'+q.total+'</span></div>';
+      }).join('');}
+
+      // Assignment grades
+      var gradeList=document.getElementById('grade-list');
+      var grades=(d.assignment_grades||[]);
+      if(!grades.length){gradeList.innerHTML='<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);">No graded assignments yet.</div>';}
+      else{gradeList.innerHTML=grades.map(function(g){
+        var sc=g.score&&g.max_score?Math.round((g.score/g.max_score)*100):null;
+        var cls=sc!=null?(sc>=75?'score-high':sc>=50?'score-mid':'score-low'):'';
+        return '<div class="quiz-row"><div style="flex:1;"><div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">'+_esc(g.title)+'</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+_esc(g.course_title||'')+'</div></div>'+(sc!=null?'<span class="quiz-score-badge '+cls+'">'+g.score+'/'+g.max_score+'</span>':'<span style="font-size:var(--font-size-xs);color:var(--text-muted);">Pending</span>')+'</div>';
+      }).join('');}
+
+    }catch(err){console.error('[Performance]',err);}
+  }
+
+  document.getElementById('period-filter').addEventListener('change',loadPerformance);
+
+  function _text(id,val){var el=document.getElementById(id);if(el)el.textContent=val==null?'':val;}
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  loadPerformance();
+});
+</script>
+</body>
+</html>

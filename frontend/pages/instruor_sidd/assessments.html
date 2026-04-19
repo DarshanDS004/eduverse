@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Assessments — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .stat-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);display:flex;align-items:flex-start;gap:var(--space-4);transition:all var(--transition-fast);}
+    .stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+    .stat-icon-wrap{width:44px;height:44px;border-radius:var(--border-radius-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .si-blue{background:var(--color-primary-50);color:var(--color-primary-600);}
+    .si-green{background:var(--color-success-light);color:var(--color-success);}
+    .si-amber{background:var(--color-warning-light);color:var(--color-warning);}
+    .si-purple{background:#ede9fe;color:#7c3aed;}
+    .si-red{background:var(--color-danger-light);color:var(--color-danger);}
+    .stat-value{font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);line-height:1;margin-bottom:var(--space-1);}
+    .stat-label{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;}
+    .dash-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:var(--space-6);}
+    .dash-card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .dash-card-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .dash-card-body{padding:var(--space-5);}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:680px;max-height:92vh;overflow-y:auto;}
+    .modal-box-lg{max-width:860px;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);position:sticky;top:0;background:var(--bg-elevated);z-index:1;}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);position:sticky;bottom:0;background:var(--bg-elevated);}
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .badge-success{background:var(--color-success-light);color:var(--color-success-dark);}
+    .badge-warning{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .badge-danger{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    .badge-primary{background:var(--color-primary-50);color:var(--color-primary-700);}
+    .badge-neutral{background:var(--neutral-100);color:var(--text-muted);}
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-hint{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:80px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+    .form-check{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0;}
+    .form-check input[type="checkbox"],.form-check input[type="radio"]{width:16px;height:16px;accent-color:var(--color-primary-600);cursor:pointer;}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);padding:var(--space-3) var(--space-4);background:var(--bg-sunken);text-align:left;border-bottom:1px solid var(--border-color);white-space:nowrap;}
+    td{padding:var(--space-3) var(--space-4);font-size:var(--font-size-sm);color:var(--text-primary);border-bottom:1px solid var(--border-color);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:var(--neutral-50);}
+    .page-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-color);margin-bottom:var(--space-6);}
+    .page-tab{padding:var(--space-3) var(--space-5);font-size:var(--font-size-sm);font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-ui);transition:all var(--transition-fast);}
+    .page-tab:hover{color:var(--text-primary);}
+    .page-tab.active{color:var(--color-primary-600);border-bottom-color:var(--color-primary-600);font-weight:600;}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+    .empty-state{text-align:center;padding:var(--space-12);color:var(--text-muted);}
+    .empty-state-icon{font-size:3rem;margin-bottom:var(--space-4);}
+    .empty-state-title{font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .avatar-ring{width:40px;height:40px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-sm);color:var(--color-primary-700);flex-shrink:0;}
+
+    /* Question builder */
+    .question-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5);margin-bottom:var(--space-4);position:relative;}
+    .question-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);}
+    .question-num{width:28px;height:28px;border-radius:50%;background:var(--color-primary-600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:var(--font-size-xs);font-weight:700;flex-shrink:0;}
+    .option-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2);}
+    .correct-radio{width:18px;height:18px;accent-color:var(--color-success);cursor:pointer;flex-shrink:0;}
+    .option-input{flex:1;height:38px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .option-input:focus{border-color:var(--color-primary-600);}
+    .bank-question-row{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);background:var(--bg-sunken);border-radius:var(--border-radius-md);margin-bottom:var(--space-2);cursor:pointer;transition:background var(--transition-fast);}
+    .bank-question-row:hover{background:var(--color-primary-50);}
+    .bank-question-row input[type="checkbox"]{accent-color:var(--color-primary-600);}
+
+    /* Rubric */
+    .rubric-row{display:grid;grid-template-columns:1fr 80px 1fr;gap:var(--space-3);align-items:start;margin-bottom:var(--space-3);}
+
+    /* Batch grade */
+    .batch-row{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);background:var(--bg-sunken);border-radius:var(--border-radius-md);margin-bottom:var(--space-2);}
+    .batch-name{flex:1;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .batch-score{width:80px;height:36px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);font-family:var(--font-ui);outline:none;}
+    .batch-score:focus{border-color:var(--color-primary-600);}
+
+    /* Grade analytics */
+    .grade-dist-bar{height:24px;border-radius:4px;background:var(--color-primary-600);margin-bottom:4px;transition:width 0.8s ease;}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item active" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm" id="sidebar-avatar"></div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor Portal</div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Assessments</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm" id="navbar-avatar"></div>
+          <div class="navbar-user-info"><span class="navbar-user-name" id="navbar-user-name"></span><span class="navbar-user-role">Instructor</span></div>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-header"><div style="font-weight:600;font-size:var(--font-size-sm);color:var(--text-primary);" id="dd-user-name"></div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" style="color:var(--color-danger);width:100%;text-align:left;" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main"><div class="page-content">
+
+      <!-- Header -->
+      <div class="page-header" style="margin-bottom:var(--space-6);">
+        <div><h1 class="page-title">Assessments</h1><p class="page-subtitle">Create quizzes, assignments — grade submissions and track performance</p></div>
+        <div style="display:flex;gap:var(--space-3);">
+          <button class="btn btn-outline" onclick="openModal('question-bank-modal')"><i data-feather="database" style="width:15px;height:15px;"></i> Question Bank</button>
+          <button class="btn btn-primary" onclick="openNewAssessmentModal()"><i data-feather="plus" style="width:16px;height:16px;"></i> New Assessment</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);">
+        <div class="stat-card"><div class="stat-icon-wrap si-blue"><i data-feather="clipboard" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-quizzes">—</div><div class="stat-label">Total Quizzes</div></div></div>
+        <div class="stat-card"><div class="stat-icon-wrap si-amber"><i data-feather="file-text" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-assignments">—</div><div class="stat-label">Assignments</div></div></div>
+        <div class="stat-card"><div class="stat-icon-wrap si-red"><i data-feather="inbox" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-pending">—</div><div class="stat-label">Pending Grade</div></div></div>
+        <div class="stat-card"><div class="stat-icon-wrap si-green"><i data-feather="check-circle" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-avg">—</div><div class="stat-label">Avg Score</div></div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="page-tabs">
+        <button class="page-tab active" data-tab="quizzes">Quizzes</button>
+        <button class="page-tab" data-tab="assignments">Assignments</button>
+        <button class="page-tab" data-tab="submissions">Submissions to Grade</button>
+        <button class="page-tab" data-tab="analytics">Grade Analytics</button>
+      </div>
+
+      <!-- QUIZZES TAB -->
+      <div class="tab-panel active" id="tab-quizzes">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">All Quizzes</div>
+            <div style="display:flex;gap:var(--space-3);">
+              <input type="text" class="form-input" id="quiz-search" placeholder="Search quizzes…" style="width:200px;height:36px;"/>
+              <button class="btn btn-primary btn-sm" onclick="openNewAssessmentModal('quiz')"><i data-feather="plus" style="width:14px;height:14px;"></i> New Quiz</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Title</th><th>Course</th><th>Questions</th><th>Time Limit</th><th>Pass %</th><th>Max Attempts</th><th>Avg Score</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="quizzes-tbody"><tr><td colspan="9"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSIGNMENTS TAB -->
+      <div class="tab-panel" id="tab-assignments">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">All Assignments</div>
+            <button class="btn btn-primary btn-sm" onclick="openNewAssessmentModal('assignment')"><i data-feather="plus" style="width:14px;height:14px;"></i> New Assignment</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Title</th><th>Course</th><th>Deadline</th><th>Max Score</th><th>Submissions</th><th>Has Rubric</th><th>Actions</th></tr></thead>
+              <tbody id="assignments-tbody"><tr><td colspan="7"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMISSIONS TAB -->
+      <div class="tab-panel" id="tab-submissions">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
+          <div style="font-size:var(--font-size-sm);color:var(--text-muted);" id="submissions-count"></div>
+          <div style="display:flex;gap:var(--space-3);">
+            <button class="btn btn-outline btn-sm" id="batch-grade-btn" onclick="openBatchGrade()" style="display:none;"><i data-feather="layers" style="width:14px;height:14px;"></i> Batch Grade</button>
+            <button class="btn btn-outline btn-sm" id="release-grades-btn" onclick="releaseAllGrades()" style="display:none;"><i data-feather="send" style="width:14px;height:14px;"></i> Release All Grades</button>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header"><div class="dash-card-title">Pending Submissions</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Student</th><th>Assignment</th><th>Submitted</th><th>File</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="submissions-tbody"><tr><td colspan="6"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header"><div class="dash-card-title">Graded Submissions</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Student</th><th>Assignment</th><th>Score</th><th>Feedback</th><th>Released</th><th>Actions</th></tr></thead>
+              <tbody id="graded-tbody"><tr><td colspan="6"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRADE ANALYTICS TAB -->
+      <div class="tab-panel" id="tab-analytics">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-6);">
+          <div class="dash-card">
+            <div class="dash-card-header"><div class="dash-card-title">Score Distribution</div></div>
+            <div class="dash-card-body"><canvas id="score-dist-chart" height="180"></canvas></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-header"><div class="dash-card-title">Quiz Performance Summary</div></div>
+            <div class="dash-card-body" id="quiz-perf-list"><div class="skel" style="height:160px;"></div></div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header"><div class="dash-card-title">Assignment Submission Rate</div></div>
+          <div class="dash-card-body" id="submission-rate-list"><div class="skel" style="height:120px;"></div></div>
+        </div>
+      </div>
+
+    </div></main>
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- Create Assessment Modal (Quiz + Assignment combined) -->
+<div class="modal-overlay" id="add-assessment-modal">
+  <div class="modal-box modal-box-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title-text">New Assessment</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('add-assessment-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Type selector -->
+      <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-2);">
+        <label style="flex:1;display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4);border:2px solid var(--border-color);border-radius:var(--border-radius-lg);cursor:pointer;transition:all var(--transition-fast);" id="type-quiz-lbl">
+          <input type="radio" name="atype" value="quiz" checked onchange="switchType('quiz')" style="accent-color:var(--color-primary-600);" />
+          <div><div style="font-weight:600;color:var(--text-primary);">📝 Quiz</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Timed, auto-graded questions</div></div>
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4);border:2px solid var(--border-color);border-radius:var(--border-radius-lg);cursor:pointer;transition:all var(--transition-fast);" id="type-assign-lbl">
+          <input type="radio" name="atype" value="assignment" onchange="switchType('assignment')" style="accent-color:var(--color-primary-600);" />
+          <div><div style="font-weight:600;color:var(--text-primary);">📋 Assignment</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">File submission, manual grading</div></div>
+        </label>
+      </div>
+
+      <!-- Common fields -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Title *</label><input type="text" class="form-input" id="atitle" placeholder="e.g. Chapter 3 Quiz"/></div>
+        <div class="form-group"><label class="form-label">Course</label><select class="form-select" id="acourse"><option value="">All / No Course</option></select></div>
+        <div class="form-group"><label class="form-label">Max Score</label><input type="number" class="form-input" id="ascore" placeholder="100" min="1" value="100"/></div>
+      </div>
+
+      <!-- Quiz params -->
+      <div id="quiz-params">
+        <div style="font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--border-color);">Quiz Settings</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4);">
+          <div class="form-group"><label class="form-label">Time Limit (min)</label><input type="number" class="form-input" id="atime" placeholder="0 = unlimited" min="0"/></div>
+          <div class="form-group"><label class="form-label">Pass Percentage</label><input type="number" class="form-input" id="apass" placeholder="60" min="0" max="100" value="60"/></div>
+          <div class="form-group"><label class="form-label">Max Attempts</label><input type="number" class="form-input" id="aattempts" placeholder="1 = unlimited" min="0"/></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+          <div class="form-group"><label class="form-label">Available From</label><input type="datetime-local" class="form-input" id="aavailable"/></div>
+          <div class="form-group"><label class="form-label">Deadline</label><input type="datetime-local" class="form-input" id="adeadline"/></div>
+        </div>
+        <div style="display:flex;gap:var(--space-6);">
+          <div class="form-check"><input type="checkbox" id="shuffle-q" /><label for="shuffle-q" style="font-size:var(--font-size-sm);color:var(--text-secondary);">Shuffle questions</label></div>
+          <div class="form-check"><input type="checkbox" id="shuffle-o" /><label for="shuffle-o" style="font-size:var(--font-size-sm);color:var(--text-secondary);">Shuffle options</label></div>
+          <div class="form-check"><input type="checkbox" id="show-result" checked /><label for="show-result" style="font-size:var(--font-size-sm);color:var(--text-secondary);">Show result immediately</label></div>
+        </div>
+      </div>
+
+      <!-- Assignment params -->
+      <div id="assign-params" style="display:none;">
+        <div style="font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--border-color);">Assignment Settings</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+          <div class="form-group"><label class="form-label">Release Date</label><input type="datetime-local" class="form-input" id="arelease"/></div>
+          <div class="form-group"><label class="form-label">Deadline *</label><input type="datetime-local" class="form-input" id="adeadline2"/></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+          <div class="form-group"><label class="form-label">Allowed File Types</label><input type="text" class="form-input" id="afiletypes" placeholder="PDF, DOCX, ZIP, PNG" value="PDF, DOCX, ZIP"/></div>
+          <div class="form-group"><label class="form-label">Max File Size (MB)</label><input type="number" class="form-input" id="amaxsize" placeholder="20" value="20"/></div>
+        </div>
+        <div class="form-check"><input type="checkbox" id="allow-late" /><label for="allow-late" style="font-size:var(--font-size-sm);color:var(--text-secondary);">Accept late submissions</label></div>
+        <div class="form-group" style="margin-top:var(--space-3);">
+          <label class="form-label">Instructions</label>
+          <textarea class="form-textarea" id="ainstructions" placeholder="Describe the assignment, what to submit…" style="min-height:100px;"></textarea>
+        </div>
+        <!-- Rubric builder -->
+        <div style="margin-top:var(--space-4);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
+            <span style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Grading Rubric (optional)</span>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="addRubricRow()"><i data-feather="plus" style="width:13px;height:13px;"></i> Add Criterion</button>
+          </div>
+          <div id="rubric-rows">
+            <div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:var(--space-3);margin-bottom:var(--space-2);">
+              <span style="font-size:var(--font-size-xs);color:var(--text-muted);font-weight:700;text-transform:uppercase;">Criterion</span>
+              <span style="font-size:var(--font-size-xs);color:var(--text-muted);font-weight:700;text-transform:uppercase;">Weight %</span>
+              <span style="font-size:var(--font-size-xs);color:var(--text-muted);font-weight:700;text-transform:uppercase;">Description</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question builder (quiz) -->
+      <div id="question-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--border-color);">
+          <span style="font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);">Questions (<span id="q-count">0</span>)</span>
+          <div style="display:flex;gap:var(--space-2);">
+            <button class="btn btn-ghost btn-sm" type="button" onclick="openBankImport()"><i data-feather="database" style="width:13px;height:13px;"></i> From Bank</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="addQuestion('mcq')">+ MCQ</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="addQuestion('truefalse')">+ T/F</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="addQuestion('short')">+ Short</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="addQuestion('essay')">+ Essay</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="addQuestion('fill')">+ Fill Blank</button>
+          </div>
+        </div>
+        <div id="questions-container">
+          <div style="text-align:center;padding:var(--space-6);color:var(--text-muted);background:var(--bg-sunken);border-radius:var(--border-radius-lg);">
+            <div style="font-size:1.5rem;margin-bottom:6px;">📝</div>
+            <div style="font-size:var(--font-size-sm);">Click a button above to add your first question</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-assessment-modal')">Cancel</button>
+      <button class="btn btn-outline" id="save-to-bank-btn" onclick="saveQuestionsToBank()">Save to Bank</button>
+      <button class="btn btn-primary" id="save-assessment-btn">Create Assessment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Question Bank Modal -->
+<div class="modal-overlay" id="question-bank-modal">
+  <div class="modal-box modal-box-lg">
+    <div class="modal-header">
+      <div class="modal-title">Question Bank</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('question-bank-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4);">
+        <input type="text" class="form-input" id="bank-search" placeholder="Search questions…" style="flex:1;"/>
+        <select class="form-select" id="bank-type-filter" style="width:150px;">
+          <option value="">All types</option>
+          <option value="mcq">MCQ</option>
+          <option value="truefalse">True/False</option>
+          <option value="short">Short Answer</option>
+          <option value="essay">Essay</option>
+          <option value="fill">Fill in Blank</option>
+        </select>
+      </div>
+      <div id="bank-list"><div class="skel" style="height:200px;"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('question-bank-modal')">Close</button>
+      <button class="btn btn-primary" onclick="importFromBank()">Import Selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grade Submission Modal -->
+<div class="modal-overlay" id="grade-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Grade Submission</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('grade-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="grade-submission-info" style="background:var(--bg-sunken);border-radius:var(--border-radius-md);padding:var(--space-4);margin-bottom:var(--space-2);font-size:var(--font-size-sm);color:var(--text-muted);">Loading…</div>
+      <!-- File viewer placeholder -->
+      <div id="grade-file-preview" style="display:none;background:var(--bg-sunken);border-radius:var(--border-radius-md);padding:var(--space-3);margin-bottom:var(--space-3);font-size:var(--font-size-sm);">
+        <i data-feather="file" style="width:14px;height:14px;margin-right:4px;vertical-align:middle;"></i>
+        <a id="grade-file-link" href="#" target="_blank" style="color:var(--color-primary-600);">View submitted file</a>
+      </div>
+      <!-- Rubric scoring (if rubric exists) -->
+      <div id="rubric-scoring" style="display:none;margin-bottom:var(--space-4);">
+        <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-3);">Score by Rubric Criterion</div>
+        <div id="rubric-criteria-scores"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">Score *</label><input type="number" class="form-input" id="grade-score" placeholder="e.g. 85" min="0"/></div>
+        <div class="form-group"><label class="form-label">Max Score</label><input type="number" class="form-input" id="grade-max" readonly style="background:var(--bg-sunken);cursor:not-allowed;"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Feedback / Annotation</label><textarea class="form-textarea" id="grade-feedback" placeholder="Provide constructive feedback for the student…" style="min-height:120px;"></textarea></div>
+      <div class="form-check">
+        <input type="checkbox" id="grade-release-now" checked />
+        <label for="grade-release-now" style="font-size:var(--font-size-sm);color:var(--text-secondary);">Release grade to student immediately</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('grade-modal')">Cancel</button>
+      <button class="btn btn-primary" id="submit-grade-btn">Submit Grade</button>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Grade Modal -->
+<div class="modal-overlay" id="batch-grade-modal">
+  <div class="modal-box modal-box-lg">
+    <div class="modal-header">
+      <div class="modal-title">Batch Grade Submissions</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('batch-grade-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--color-info-light);border-radius:var(--border-radius-md);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);font-size:var(--font-size-sm);color:var(--color-info-dark);">
+        Enter scores for multiple students at once. Leave blank to skip a student.
+      </div>
+      <div class="form-group">
+        <label class="form-label">Select Assignment</label>
+        <select class="form-select" id="batch-assignment"></select>
+      </div>
+      <div id="batch-students-list">
+        <div class="skel" style="height:160px;"></div>
+      </div>
+      <div class="form-check" style="margin-top:var(--space-3);">
+        <input type="checkbox" id="batch-release" checked />
+        <label for="batch-release" style="font-size:var(--font-size-sm);color:var(--text-secondary);">Release all grades immediately on save</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('batch-grade-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-batch-btn">Save All Grades</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}
+if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+
+  // ── User ──
+  var user; try { user = JSON.parse(localStorage.getItem('ev_user')) || {}; } catch(e) { user = {}; }
+  var name = user.name || '';
+  var initials = name.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+  ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar){el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}else{el.textContent=initials;}});
+
+  // ── Sidebar ──
+  var shell = document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click', function(){ shell.classList.toggle('sidebar-open'); });
+  document.getElementById('sidebar-overlay').addEventListener('click', function(){ shell.classList.remove('sidebar-open'); });
+  var colBtn = document.getElementById('sidebar-collapse-btn');
+  if (colBtn) colBtn.addEventListener('click', function(){ var c=shell.classList.toggle('sidebar-collapsed'); try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){} });
+  try { if (localStorage.getItem('ev_sidebar_collapsed')==='true') shell.classList.add('sidebar-collapsed'); else shell.classList.remove('sidebar-collapsed'); } catch(e) {}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){ btn.addEventListener('click', function(){ var d=document.documentElement.classList.toggle('dark'); document.documentElement.setAttribute('data-theme',d?'dark':'light'); try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){} }); });
+  var trigger=document.getElementById('navbar-user-trigger'), dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){ trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;}); document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;}); }
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){ btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');localStorage.removeItem('ev_refresh_token');}catch(e){}window.location.replace('../../pages/auth/login.html');}); });
+
+  // ── Helpers ──
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function showToast(type,title,msg){var c=document.getElementById('toast-container');if(!c)return;var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">&#x2715;</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4500);}
+  window._esc=_esc; window.showToast=showToast;
+  function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+  function closeModal(id){document.getElementById(id).classList.remove('open');}
+  window.openModal=openModal; window.closeModal=closeModal;
+
+  // ── Tabs ──
+  document.querySelectorAll('.page-tab').forEach(function(t){
+    t.addEventListener('click', function(){
+      document.querySelectorAll('.page-tab').forEach(function(x){x.classList.remove('active');});
+      document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+      t.classList.add('active');
+      document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+      if (t.dataset.tab === 'analytics') loadAnalytics();
+    });
+  });
+
+  // ── State ──
+  var questions = [];
+  var rubricRows = [];
+  var selectedSubmission = null;
+  var bankQuestions = [];
+  var allSubmissions = [];
+  var coursesList = [];
+
+  // ── Load data ──
+  async function loadAll() {
+    try {
+      var [qRes, aRes, sRes, cRes, bkRes] = await Promise.all([
+        Api.get('/instructor/quizzes'),
+        Api.get('/instructor/assignments'),
+        Api.get('/instructor/submissions'),
+        Api.get('/instructor/courses'),
+        Api.get('/instructor/question-bank'),
+      ]);
+      var quizzes     = (qRes  && qRes.data)  || [];
+      var assignments = (aRes  && aRes.data)  || [];
+      allSubmissions  = (sRes  && sRes.data)  || [];
+      coursesList     = (cRes  && cRes.data)  || [];
+      bankQuestions   = (bkRes && bkRes.data) || [];
+
+      // Stats
+      var pending = allSubmissions.filter(function(s){ return s.status === 'submitted' || !s.score; });
+      var graded  = allSubmissions.filter(function(s){ return s.score != null; });
+      var avgScore = graded.length ? (graded.reduce(function(a,s){ return a + parseFloat(s.score||0); }, 0) / graded.length).toFixed(1) : '—';
+      document.getElementById('s-quizzes').textContent     = quizzes.length;
+      document.getElementById('s-assignments').textContent = assignments.length;
+      document.getElementById('s-pending').textContent     = pending.length;
+      document.getElementById('s-avg').textContent         = avgScore + (avgScore !== '—' ? '%' : '');
+
+      // Populate course dropdowns
+      var courseOpts = '<option value="">All / No Course</option>' + coursesList.map(function(c){ return '<option value="'+c.id+'">'+_esc(c.title)+'</option>'; }).join('');
+      document.getElementById('acourse').innerHTML = courseOpts;
+
+      var batchOpts = '<option value="">Select assignment…</option>' + assignments.map(function(a){ return '<option value="'+a.id+'">'+_esc(a.title)+'</option>'; }).join('');
+      document.getElementById('batch-assignment').innerHTML = batchOpts;
+
+      renderQuizzes(quizzes);
+      renderAssignments(assignments);
+      renderSubmissions(pending, graded);
+
+      if (pending.length > 0) {
+        document.getElementById('batch-grade-btn').style.display = '';
+        document.getElementById('release-grades-btn').style.display = '';
+      }
+      document.getElementById('submissions-count').textContent = pending.length + ' pending · ' + graded.length + ' graded';
+
+    } catch(e) { console.error('[Assessments]', e); }
+  }
+
+  function renderQuizzes(list) {
+    var tbody = document.getElementById('quizzes-tbody');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-title">No quizzes yet</div></div></td></tr>'; return; }
+    tbody.innerHTML = list.map(function(q) {
+      var badge = q.status === 'published' ? '<span class="badge badge-success">Live</span>' : '<span class="badge badge-neutral">Draft</span>';
+      return '<tr>' +
+        '<td style="font-weight:600;">'+_esc(q.title)+'</td>' +
+        '<td>'+_esc(q.course_title||'—')+'</td>' +
+        '<td>'+(q.question_count||0)+' Qs</td>' +
+        '<td>'+(q.time_limit_minutes?q.time_limit_minutes+' min':'Unlimited')+'</td>' +
+        '<td>'+(q.pass_percentage||60)+'%</td>' +
+        '<td>'+(q.max_attempts||'Unlimited')+'</td>' +
+        '<td>'+(q.avg_score!=null?parseFloat(q.avg_score).toFixed(1)+'%':'—')+'</td>' +
+        '<td>'+badge+'</td>' +
+        '<td><div style="display:flex;gap:var(--space-2);">' +
+          '<button class="btn btn-ghost btn-sm" onclick="editQuiz('+q.id+')" title="Edit questions"><i data-feather="edit-2" style="width:13px;height:13px;"></i></button>' +
+          '<button class="btn btn-ghost btn-sm" style="color:var(--color-danger);" onclick="deleteItem(\'quiz\','+q.id+')"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  }
+
+  function renderAssignments(list) {
+    var tbody = document.getElementById('assignments-tbody');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">No assignments yet</div></div></td></tr>'; return; }
+    tbody.innerHTML = list.map(function(a) {
+      var deadline = a.deadline ? new Date(a.deadline).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : 'No deadline';
+      var isLate = a.deadline && new Date(a.deadline) < new Date();
+      var hasRubric = a.rubric && a.rubric.length > 0 ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-neutral">No</span>';
+      return '<tr>' +
+        '<td style="font-weight:600;">'+_esc(a.title)+'</td>' +
+        '<td>'+_esc(a.course_title||'—')+'</td>' +
+        '<td style="color:'+(isLate?'var(--color-danger)':'var(--text-primary)')+';">'+deadline+'</td>' +
+        '<td>'+(a.max_score||100)+' pts</td>' +
+        '<td>'+(a.submission_count||0)+' / ? submitted</td>' +
+        '<td>'+hasRubric+'</td>' +
+        '<td><div style="display:flex;gap:var(--space-2);">' +
+          '<button class="btn btn-ghost btn-sm" onclick="viewSubmissions('+a.id+')" title="View submissions"><i data-feather="inbox" style="width:13px;height:13px;"></i></button>' +
+          '<button class="btn btn-ghost btn-sm" style="color:var(--color-danger);" onclick="deleteItem(\'assignment\','+a.id+')"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  }
+
+  function renderSubmissions(pending, graded) {
+    // Pending
+    var ptbody = document.getElementById('submissions-tbody');
+    if (!pending.length) {
+      ptbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✅</div><div class="empty-state-title">No pending submissions</div><p style="font-size:var(--font-size-sm);color:var(--text-muted);">All submissions have been graded.</p></div></td></tr>';
+    } else {
+      ptbody.innerHTML = pending.map(function(s) {
+        var ini = (s.student_name||'?').trim().split(/\s+/).map(function(p){return p[0];}).slice(0,2).join('').toUpperCase();
+        return '<tr>' +
+          '<td><div style="display:flex;align-items:center;gap:var(--space-3);"><div class="avatar-ring" style="width:32px;height:32px;font-size:10px;">'+ini+'</div><div><div style="font-weight:600;">'+_esc(s.student_name||'Student')+'</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+_esc(s.student_email||'')+'</div></div></div></td>' +
+          '<td>'+_esc(s.assignment_title||s.title||'—')+'</td>' +
+          '<td style="font-size:var(--font-size-xs);color:var(--text-muted);">'+new Date(s.submitted_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+'</td>' +
+          '<td>'+(s.file_url?'<a href="'+_esc(s.file_url)+'" target="_blank" class="btn btn-ghost btn-xs"><i data-feather="download" style="width:12px;height:12px;"></i> File</a>':'<span style="color:var(--text-muted);font-size:var(--font-size-xs);">Text only</span>')+'</td>' +
+          '<td><span class="badge badge-warning">Pending</span></td>' +
+          '<td><button class="btn btn-primary btn-sm" onclick="openGradeModal('+JSON.stringify(s).replace(/"/g,'&quot;')+')">Grade</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // Graded
+    var gtbody = document.getElementById('graded-tbody');
+    if (!graded || !graded.length) {
+      gtbody.innerHTML = '<tr><td colspan="6"><div style="text-align:center;padding:var(--space-5);color:var(--text-muted);font-size:var(--font-size-sm);">No graded submissions yet.</div></td></tr>';
+    } else {
+      gtbody.innerHTML = graded.map(function(s) {
+        var pct = s.max_score ? Math.round((s.score / s.max_score) * 100) : s.score;
+        var color = pct >= 75 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
+        return '<tr>' +
+          '<td style="font-weight:600;">'+_esc(s.student_name||'Student')+'</td>' +
+          '<td>'+_esc(s.assignment_title||'—')+'</td>' +
+          '<td style="font-weight:700;color:'+color+';">'+s.score+' / '+(s.max_score||100)+'</td>' +
+          '<td style="font-size:var(--font-size-xs);color:var(--text-muted);">'+(s.feedback?s.feedback.substring(0,60)+'…':'—')+'</td>' +
+          '<td>'+(s.released?'<span class="badge badge-success">Released</span>':'<span class="badge badge-neutral">Held</span>')+'</td>' +
+          '<td><div style="display:flex;gap:var(--space-2);">' +
+            (!s.released?'<button class="btn btn-ghost btn-sm" onclick="releaseGrade('+s.id+')">Release</button>':'') +
+            '<button class="btn btn-ghost btn-sm" onclick="editGrade('+JSON.stringify(s).replace(/"/g,'&quot;')+')"><i data-feather="edit-2" style="width:13px;height:13px;"></i></button>' +
+          '</div></td>' +
+        '</tr>';
+      }).join('');
+    }
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  }
+
+  // ── Question builder ──
+  var qTypes = { mcq: 'MCQ', truefalse: 'True / False', short: 'Short Answer', essay: 'Essay', fill: 'Fill in Blank' };
+
+  window.addQuestion = function(type) {
+    var idx = questions.length;
+    questions.push({ type: type, text: '', options: type === 'mcq' ? ['','','',''] : [], correct: 0, explanation: '', points: 1, imageUrl: '' });
+    renderQuestions();
+  };
+
+  function renderQuestions() {
+    var container = document.getElementById('questions-container');
+    document.getElementById('q-count').textContent = questions.length;
+    if (!questions.length) {
+      container.innerHTML = '<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);background:var(--bg-sunken);border-radius:var(--border-radius-lg);"><div style="font-size:1.5rem;margin-bottom:6px;">📝</div><div style="font-size:var(--font-size-sm);">Click a button above to add your first question</div></div>';
+      return;
+    }
+    container.innerHTML = questions.map(function(q, idx) {
+      var optionsHtml = '';
+      if (q.type === 'mcq') {
+        optionsHtml = '<div style="margin-top:var(--space-3);">' +
+          '<div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:var(--space-2);">Options (select correct one)</div>' +
+          q.options.map(function(opt, oi) {
+            return '<div class="option-row">' +
+              '<input type="radio" class="correct-radio" name="correct-'+idx+'" value="'+oi+'" '+(q.correct===oi?'checked':'')+'  onchange="setCorrect('+idx+','+oi+')" />' +
+              '<input type="text" class="option-input" value="'+_esc(opt)+'" placeholder="Option '+(oi+1)+'" onchange="updateOption('+idx+','+oi+',this.value)" />' +
+              (oi >= 2 ? '<button type="button" onclick="removeOption('+idx+','+oi+')" style="background:none;border:none;color:var(--color-danger);cursor:pointer;font-size:14px;">×</button>' : '') +
+            '</div>';
+          }).join('') +
+          '<button type="button" class="btn btn-ghost btn-xs" style="margin-top:4px;" onclick="addOption('+idx+')">+ Add option</button>' +
+        '</div>';
+      } else if (q.type === 'truefalse') {
+        optionsHtml = '<div style="margin-top:var(--space-3);display:flex;gap:var(--space-4);">' +
+          '<label style="display:flex;align-items:center;gap:var(--space-2);"><input type="radio" name="correct-'+idx+'" value="true" '+(q.correct==='true'||q.correct===0?'checked':'')+'  onchange="setCorrect('+idx+',\'true\')" /> True</label>' +
+          '<label style="display:flex;align-items:center;gap:var(--space-2);"><input type="radio" name="correct-'+idx+'" value="false" '+(q.correct==='false'||q.correct===1?'checked':'')+'  onchange="setCorrect('+idx+',\'false\')" /> False</label>' +
+        '</div>';
+      } else if (q.type === 'fill') {
+        optionsHtml = '<div style="margin-top:var(--space-3);"><label class="form-label" style="font-size:var(--font-size-xs);">Correct Answer</label><input type="text" class="form-input" value="'+_esc(q.correct||'')+'" placeholder="Expected answer…" onchange="setCorrect('+idx+',this.value)" style="height:36px;"/></div>';
+      }
+
+      return '<div class="question-card" id="qcard-'+idx+'">' +
+        '<div class="question-card-header">' +
+          '<div style="display:flex;align-items:center;gap:var(--space-3);">' +
+            '<div class="question-num">'+(idx+1)+'</div>' +
+            '<span style="font-size:var(--font-size-xs);font-weight:700;color:var(--text-muted);text-transform:uppercase;">'+qTypes[q.type]+'</span>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:var(--space-3);">' +
+            '<div style="display:flex;align-items:center;gap:var(--space-2);"><label style="font-size:var(--font-size-xs);color:var(--text-muted);">Pts</label><input type="number" value="'+q.points+'" min="1" style="width:56px;height:32px;border:1px solid var(--border-color);border-radius:6px;padding:0 8px;font-size:var(--font-size-sm);font-family:var(--font-ui);" onchange="updatePoints('+idx+',this.value)" /></div>' +
+            '<button type="button" onclick="removeQuestion('+idx+')" style="background:none;border:none;color:var(--color-danger);cursor:pointer;font-size:16px;">×</button>' +
+          '</div>' +
+        '</div>' +
+        '<textarea class="form-textarea" placeholder="Enter your question here…" style="min-height:70px;" onchange="updateQText('+idx+',this.value)">'+_esc(q.text)+'</textarea>' +
+        '<div style="margin-top:var(--space-2);">' +
+          '<input type="text" class="form-input" placeholder="Image URL (optional)" value="'+_esc(q.imageUrl||'')+'" onchange="updateQImage('+idx+',this.value)" style="height:34px;font-size:var(--font-size-xs);" />' +
+        '</div>' +
+        optionsHtml +
+        '<div style="margin-top:var(--space-3);">' +
+          '<input type="text" class="form-input" placeholder="Explanation shown after attempt (optional)" value="'+_esc(q.explanation||'')+'" onchange="updateExplanation('+idx+',this.value)" style="height:36px;font-size:var(--font-size-xs);" />' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  window.updateQText = function(idx, val) { questions[idx].text = val; document.getElementById('q-count').textContent = questions.length; };
+  window.updateQImage = function(idx, val) { questions[idx].imageUrl = val; };
+  window.updateOption = function(idx, oi, val) { questions[idx].options[oi] = val; };
+  window.updatePoints = function(idx, val) { questions[idx].points = parseInt(val) || 1; };
+  window.updateExplanation = function(idx, val) { questions[idx].explanation = val; };
+  window.setCorrect = function(idx, val) { questions[idx].correct = typeof val === 'string' && !isNaN(val) ? parseInt(val) : val; };
+  window.addOption = function(idx) { questions[idx].options.push(''); renderQuestions(); };
+  window.removeOption = function(idx, oi) { questions[idx].options.splice(oi, 1); renderQuestions(); };
+  window.removeQuestion = function(idx) { questions.splice(idx, 1); renderQuestions(); };
+
+  // ── Rubric ──
+  window.addRubricRow = function() {
+    var rows = document.getElementById('rubric-rows');
+    var idx = rubricRows.length;
+    rubricRows.push({ criterion: '', weight: '', description: '' });
+    var row = document.createElement('div');
+    row.className = 'rubric-row';
+    row.innerHTML = '<input type="text" class="form-input" placeholder="e.g. Code Quality" style="height:36px;" onchange="rubricRows['+idx+'].criterion=this.value"/>' +
+      '<input type="number" class="form-input" placeholder="25" min="0" max="100" style="height:36px;" onchange="rubricRows['+idx+'].weight=this.value"/>' +
+      '<input type="text" class="form-input" placeholder="What does full marks look like?" style="height:36px;" onchange="rubricRows['+idx+'].description=this.value"/>';
+    rows.appendChild(row);
+  };
+
+  // ── Type switch ──
+  window.switchType = function(type) {
+    document.getElementById('quiz-params').style.display    = type === 'quiz' ? '' : 'none';
+    document.getElementById('assign-params').style.display = type === 'assignment' ? '' : 'none';
+    document.getElementById('question-section').style.display = type === 'quiz' ? '' : 'none';
+  };
+
+  window.openNewAssessmentModal = function(prefillType) {
+    // Reset
+    questions = []; rubricRows = [];
+    renderQuestions();
+    document.getElementById('atitle').value = '';
+    document.getElementById('modal-title-text').textContent = prefillType === 'assignment' ? 'New Assignment' : prefillType === 'quiz' ? 'New Quiz' : 'New Assessment';
+    if (prefillType) {
+      document.querySelector('input[name="atype"][value="'+prefillType+'"]').checked = true;
+      switchType(prefillType);
+    }
+    openModal('add-assessment-modal');
+  };
+
+  // ── Save assessment ──
+  document.getElementById('save-assessment-btn').addEventListener('click', async function() {
+    var title = document.getElementById('atitle').value.trim();
+    if (!title) { showToast('error','Error','Title is required.'); return; }
+    var type = document.querySelector('input[name="atype"]:checked').value;
+    this.disabled = true; this.textContent = 'Creating…';
+    try {
+      var payload = {
+        title, course_id: document.getElementById('acourse').value || null,
+        max_score: parseInt(document.getElementById('ascore').value) || 100,
+      };
+      if (type === 'quiz') {
+        payload.time_limit_minutes = parseInt(document.getElementById('atime').value) || null;
+        payload.pass_percentage    = parseInt(document.getElementById('apass').value) || 60;
+        payload.max_attempts       = parseInt(document.getElementById('aattempts').value) || null;
+        payload.available_from     = document.getElementById('aavailable').value || null;
+        payload.deadline           = document.getElementById('adeadline').value || null;
+        payload.shuffle_questions  = document.getElementById('shuffle-q').checked;
+        payload.shuffle_options    = document.getElementById('shuffle-o').checked;
+        payload.show_result_immediately = document.getElementById('show-result').checked;
+        payload.questions          = questions;
+      } else {
+        payload.deadline       = document.getElementById('adeadline2').value || null;
+        payload.release_date   = document.getElementById('arelease').value || null;
+        payload.allowed_types  = document.getElementById('afiletypes').value;
+        payload.max_file_size_mb = parseInt(document.getElementById('amaxsize').value) || 20;
+        payload.accept_late    = document.getElementById('allow-late').checked;
+        payload.instructions   = document.getElementById('ainstructions').value;
+        payload.rubric         = rubricRows.filter(function(r){ return r.criterion; });
+      }
+      await Api.post('/instructor/' + (type === 'quiz' ? 'quizzes' : 'assignments'), payload);
+      closeModal('add-assessment-modal');
+      showToast('success', 'Created!', (type === 'quiz' ? 'Quiz' : 'Assignment') + ' created successfully.');
+      loadAll();
+    } catch(err) { showToast('error','Error',(err&&err.message)||'Failed to create.'); }
+    this.disabled = false; this.textContent = 'Create Assessment';
+  });
+
+  // ── Save to question bank ──
+  window.saveQuestionsToBank = async function() {
+    if (!questions.length) { showToast('error','Error','Add questions first.'); return; }
+    try {
+      await Api.post('/instructor/question-bank', { questions });
+      showToast('success','Saved to Bank!',questions.length + ' questions saved.');
+    } catch(e) { showToast('error','Error','Failed to save to bank.'); }
+  };
+
+  // ── Grade modal ──
+  window.openGradeModal = function(sub) {
+    selectedSubmission = sub;
+    var info = '<strong>'+_esc(sub.student_name||'Student')+'</strong> — '+_esc(sub.assignment_title||sub.title||'Assignment');
+    if (sub.submitted_at) info += '<br><small>Submitted: '+new Date(sub.submitted_at).toLocaleString('en-IN')+'</small>';
+    if (sub.text) info += '<br><br><em style="color:var(--text-secondary);">'+_esc(sub.text.substring(0,300))+'</em>';
+    document.getElementById('grade-submission-info').innerHTML = info;
+    document.getElementById('grade-score').value = '';
+    document.getElementById('grade-max').value = sub.max_score || 100;
+    document.getElementById('grade-feedback').value = '';
+    if (sub.file_url) {
+      document.getElementById('grade-file-preview').style.display = '';
+      document.getElementById('grade-file-link').href = sub.file_url;
+      document.getElementById('grade-file-link').textContent = 'View submitted file';
+    } else {
+      document.getElementById('grade-file-preview').style.display = 'none';
+    }
+    // Show rubric if assignment has one
+    if (sub.rubric && sub.rubric.length) {
+      document.getElementById('rubric-scoring').style.display = '';
+      document.getElementById('rubric-criteria-scores').innerHTML = sub.rubric.map(function(r, i) {
+        return '<div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2);">' +
+          '<div style="flex:1;font-size:var(--font-size-sm);">'+_esc(r.criterion)+' <span style="font-size:var(--font-size-xs);color:var(--text-muted);">('+r.weight+'%)</span></div>' +
+          '<input type="number" class="form-input" id="rubric-score-'+i+'" placeholder="0-'+(sub.max_score*r.weight/100).toFixed(0)+'" style="width:80px;height:34px;" min="0" />' +
+        '</div>';
+      }).join('');
+    } else {
+      document.getElementById('rubric-scoring').style.display = 'none';
+    }
+    openModal('grade-modal');
+  };
+
+  window.editGrade = function(sub) { window.openGradeModal(sub); };
+
+  document.getElementById('submit-grade-btn').addEventListener('click', async function() {
+    if (!selectedSubmission) return;
+    var score = document.getElementById('grade-score').value;
+    if (!score) { showToast('error','Error','Score is required.'); return; }
+    this.disabled = true; this.textContent = 'Grading…';
+    try {
+      await Api.post('/instructor/submissions/'+selectedSubmission.id+'/grade', {
+        score: parseInt(score),
+        feedback: document.getElementById('grade-feedback').value,
+        release: document.getElementById('grade-release-now').checked,
+      });
+      closeModal('grade-modal');
+      showToast('success','Graded!','Score submitted successfully.');
+      loadAll();
+    } catch(err) { showToast('error','Error',(err&&err.message)||'Failed to grade.'); }
+    this.disabled = false; this.textContent = 'Submit Grade';
+  });
+
+  // ── Release grades ──
+  window.releaseGrade = async function(id) {
+    try { await Api.post('/instructor/submissions/'+id+'/release', {}); showToast('success','Released!','Grade released to student.'); loadAll(); }
+    catch(e) { showToast('error','Error','Failed to release.'); }
+  };
+
+  window.releaseAllGrades = async function() {
+    if (!confirm('Release all held grades to students?')) return;
+    try { await Api.post('/instructor/submissions/release-all', {}); showToast('success','Released!','All grades released.'); loadAll(); }
+    catch(e) { showToast('error','Error','Failed to release all.'); }
+  };
+
+  // ── Batch grade ──
+  window.openBatchGrade = function() {
+    var pending = allSubmissions.filter(function(s){ return !s.score; });
+    var list = document.getElementById('batch-students-list');
+    list.innerHTML = pending.slice(0,20).map(function(s) {
+      return '<div class="batch-row">' +
+        '<div class="batch-name">'+_esc(s.student_name||'Student')+'<div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+_esc(s.assignment_title||'')+'</div></div>' +
+        '<input type="number" class="batch-score" data-sid="'+s.id+'" placeholder="Score" min="0" max="'+(s.max_score||100)+'" />' +
+        '<span style="font-size:var(--font-size-xs);color:var(--text-muted);">/+'+(s.max_score||100)+'</span>' +
+      '</div>';
+    }).join('');
+    openModal('batch-grade-modal');
+  };
+
+  document.getElementById('save-batch-btn').addEventListener('click', async function() {
+    var inputs = document.querySelectorAll('.batch-score');
+    var grades = [];
+    inputs.forEach(function(inp) { if (inp.value) grades.push({ submission_id: inp.dataset.sid, score: parseInt(inp.value) }); });
+    if (!grades.length) { showToast('error','Error','Enter at least one score.'); return; }
+    this.disabled = true; this.textContent = 'Saving…';
+    try {
+      await Api.post('/instructor/submissions/batch-grade', { grades, release: document.getElementById('batch-release').checked });
+      closeModal('batch-grade-modal');
+      showToast('success','Saved!', grades.length + ' grades submitted.');
+      loadAll();
+    } catch(e) { showToast('error','Error','Failed.'); }
+    this.disabled = false; this.textContent = 'Save All Grades';
+  });
+
+  // ── Question bank ──
+  window.openBankImport = function() { renderBankList(bankQuestions); openModal('question-bank-modal'); };
+
+  document.getElementById('bank-search').addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    renderBankList(bankQuestions.filter(function(bq){ return bq.text.toLowerCase().includes(q); }));
+  });
+  document.getElementById('bank-type-filter').addEventListener('change', function() {
+    var t = this.value;
+    renderBankList(t ? bankQuestions.filter(function(bq){ return bq.type === t; }) : bankQuestions);
+  });
+
+  function renderBankList(list) {
+    var el = document.getElementById('bank-list');
+    if (!list.length) { el.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);">No questions in bank yet.</div>'; return; }
+    el.innerHTML = list.map(function(bq) {
+      return '<div class="bank-question-row">' +
+        '<input type="checkbox" class="bank-chk" data-id="'+bq.id+'" style="flex-shrink:0;" />' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:var(--font-size-sm);font-weight:600;">'+_esc(bq.text.substring(0,100))+'</div>' +
+          '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+(qTypes[bq.type]||bq.type)+' · '+bq.points+' pt'+(bq.points!==1?'s':'')+'</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  window.importFromBank = function() {
+    var checked = document.querySelectorAll('.bank-chk:checked');
+    var ids = Array.from(checked).map(function(c){ return c.dataset.id; });
+    var toImport = bankQuestions.filter(function(bq){ return ids.includes(String(bq.id)); });
+    toImport.forEach(function(bq){ questions.push(Object.assign({}, bq)); });
+    renderQuestions();
+    closeModal('question-bank-modal');
+    showToast('success', 'Imported!', toImport.length + ' questions added.');
+  };
+
+  // ── Grade analytics ──
+  var distChart = null;
+  async function loadAnalytics() {
+    try {
+      var res = await Api.get('/instructor/analytics/grades');
+      var d = (res && res.data) || {};
+      // Score distribution
+      var ctx = document.getElementById('score-dist-chart').getContext('2d');
+      if (distChart) distChart.destroy();
+      distChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['0-20%','21-40%','41-60%','61-80%','81-100%'],
+          datasets: [{ label: 'Students', data: d.score_distribution || [0,0,0,0,0], backgroundColor: ['#fee2e2','#fef3c7','#dbeafe','#d1fae5','#10b981'], borderRadius: 6 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+      // Quiz perf
+      var qp = d.quiz_performance || [];
+      document.getElementById('quiz-perf-list').innerHTML = qp.length
+        ? qp.map(function(q){ var sc=parseFloat(q.avg_score||0); var color=sc>=75?'var(--color-success)':sc>=50?'var(--color-warning)':'var(--color-danger)'; return '<div style="margin-bottom:var(--space-3);"><div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);margin-bottom:4px;"><span style="font-weight:500;">'+_esc(q.title)+'</span><span style="font-weight:700;color:'+color+';">'+sc.toFixed(1)+'%</span></div><div style="height:6px;background:var(--neutral-100);border-radius:99px;overflow:hidden;"><div style="height:100%;border-radius:99px;background:'+color+';width:'+sc+'%;"></div></div><div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;">Pass rate: '+(q.pass_rate||0)+'% · '+(q.attempt_count||0)+' attempts</div></div>'; }).join('')
+        : '<div style="text-align:center;color:var(--text-muted);padding:var(--space-6);">No quiz data yet.</div>';
+      // Submission rate
+      var sr = d.submission_rates || [];
+      document.getElementById('submission-rate-list').innerHTML = sr.length
+        ? sr.map(function(a){ var pct=parseFloat(a.submission_rate||0); return '<div style="margin-bottom:var(--space-3);"><div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);margin-bottom:4px;"><span>'+_esc(a.title)+'</span><span style="font-weight:700;">'+a.submitted+' / '+a.total+' <small style="color:var(--text-muted);">('+pct.toFixed(0)+'%)</small></span></div><div style="height:6px;background:var(--neutral-100);border-radius:99px;overflow:hidden;"><div style="height:100%;background:var(--color-primary-600);width:'+pct+'%;border-radius:99px;"></div></div><div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;">On-time: '+(a.on_time||0)+'% · Late: '+(a.late||0)+'%</div></div>'; }).join('')
+        : '<div style="text-align:center;color:var(--text-muted);padding:var(--space-6);">No assignment data yet.</div>';
+    } catch(e) { console.error(e); }
+  }
+
+  // ── Delete ──
+  window.deleteItem = async function(type, id) {
+    if (!confirm('Delete this '+type+'?')) return;
+    try { await Api.delete('/instructor/'+(type==='quiz'?'quizzes':'assignments')+'/'+id); showToast('success','Deleted','Removed.'); loadAll(); }
+    catch(err) { showToast('error','Error',(err&&err.message)||'Failed.'); }
+  };
+
+  window.viewSubmissions = function(assignId) {
+    document.querySelector('.page-tab[data-tab="submissions"]').click();
+    // filter could be wired here
+  };
+
+  window.editQuiz = function(id) {
+    showToast('info','Coming soon','Open quiz builder with existing questions.');
+  };
+
+  loadAll();
+});
+</script>
+</body>
+</html>

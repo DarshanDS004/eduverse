@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Messages — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);}
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:120px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+
+    /* Messages layout */
+    .messages-layout{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - var(--navbar-height) - var(--space-12));background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;}
+    .rooms-panel{border-right:1px solid var(--border-color);display:flex;flex-direction:column;overflow:hidden;}
+    .rooms-header{padding:var(--space-4);border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;}
+    .rooms-title{font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);}
+    .rooms-search{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-color);position:relative;}
+    .rooms-search input{width:100%;height:34px;padding:0 var(--space-3) 0 var(--space-8);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-sunken);outline:none;font-family:var(--font-ui);}
+    .rooms-tabs{display:flex;border-bottom:1px solid var(--border-color);}
+    .rooms-tab{flex:1;padding:var(--space-2-5);font-size:var(--font-size-xs);font-weight:600;text-align:center;cursor:pointer;color:var(--text-muted);background:none;border:none;border-bottom:2px solid transparent;font-family:var(--font-ui);transition:all var(--transition-fast);}
+    .rooms-tab.active{color:var(--color-primary-600);border-bottom-color:var(--color-primary-600);}
+    .rooms-list{flex:1;overflow-y:auto;}
+    .room-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);cursor:pointer;transition:background var(--transition-fast);border-bottom:1px solid var(--border-color);}
+    .room-item:hover,.room-item.active{background:var(--color-primary-50);}
+    .room-avatar{width:40px;height:40px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-xs);color:var(--color-primary-700);flex-shrink:0;}
+    .room-avatar-parent{background:var(--color-success-light);color:var(--color-success-dark);}
+    .room-info{flex:1;min-width:0;}
+    .room-name{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .room-last{font-size:var(--font-size-xs);color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+    .room-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+    .room-time{font-size:10px;color:var(--text-disabled);}
+    .room-badge{background:var(--color-primary-600);color:#fff;border-radius:99px;font-size:10px;font-weight:700;padding:1px 5px;}
+    .room-role-tag{font-size:9px;font-weight:700;text-transform:uppercase;padding:1px 5px;border-radius:3px;}
+    .role-parent{background:var(--color-success-light);color:var(--color-success-dark);}
+    .role-student{background:var(--color-primary-50);color:var(--color-primary-700);}
+    .chat-panel{display:flex;flex-direction:column;overflow:hidden;}
+    .chat-header{padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .chat-messages{flex:1;overflow-y:auto;padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);}
+    .msg-bubble{max-width:72%;padding:var(--space-3) var(--space-4);border-radius:var(--border-radius-xl);font-size:var(--font-size-sm);line-height:var(--leading-relaxed);}
+    .msg-sent{background:var(--color-primary-600);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+    .msg-recv{background:var(--bg-sunken);color:var(--text-primary);align-self:flex-start;border-bottom-left-radius:4px;}
+    .msg-time{font-size:10px;color:var(--text-disabled);margin-top:2px;text-align:right;}
+    .msg-recv .msg-time{text-align:left;}
+    .chat-input-bar{padding:var(--space-4) var(--space-5);border-top:1px solid var(--border-color);display:flex;align-items:center;gap:var(--space-3);flex-shrink:0;}
+    .chat-input{flex:1;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-full);font-size:var(--font-size-sm);background:var(--bg-sunken);outline:none;font-family:var(--font-ui);}
+    .chat-input:focus{border-color:var(--color-primary-600);}
+    .chat-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--text-muted);}
+    @media(max-width:767px){.messages-layout{grid-template-columns:1fr;}.chat-panel{display:none;}.chat-panel.mobile-open{display:flex;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item active" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm" id="sidebar-avatar"></div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor Portal</div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Messages</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm" id="navbar-avatar"></div>
+          <div class="navbar-user-info"><span class="navbar-user-name" id="navbar-user-name"></span><span class="navbar-user-role">Instructor</span></div>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height)-8px);right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-header"><div style="font-weight:600;font-size:var(--font-size-sm);" id="dd-user-name"></div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" style="color:var(--color-danger);width:100%;text-align:left;" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main"><div class="page-content">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
+        <div><h1 class="page-title">Messages</h1><p class="page-subtitle">Chat with students and parents — send announcements</p></div>
+        <div style="display:flex;gap:var(--space-3);">
+          <button class="btn btn-outline btn-sm" onclick="openModal('broadcast-course-modal')"><i data-feather="radio" style="width:14px;height:14px;"></i> Broadcast to Course</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('broadcast-all-modal')"><i data-feather="send" style="width:14px;height:14px;"></i> Broadcast to All</button>
+        </div>
+      </div>
+
+      <div class="messages-layout">
+        <!-- Left: conversation list -->
+        <div class="rooms-panel">
+          <div class="rooms-header">
+            <div class="rooms-title">Inbox</div>
+            <span id="unread-count" style="font-size:var(--font-size-xs);color:var(--text-muted);"></span>
+          </div>
+          <div class="rooms-search">
+            <i data-feather="search" style="position:absolute;left:24px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-muted);pointer-events:none;"></i>
+            <input type="text" placeholder="Search conversations…" id="room-search"/>
+          </div>
+          <!-- Tab: Students / Parents -->
+          <div class="rooms-tabs">
+            <button class="rooms-tab active" id="tab-students-btn" onclick="switchRoomTab('students')">Students</button>
+            <button class="rooms-tab" id="tab-parents-btn" onclick="switchRoomTab('parents')">Parents</button>
+          </div>
+          <div class="rooms-list" id="rooms-list">
+            <div class="skel" style="height:64px;margin:8px;border-radius:8px;"></div>
+            <div class="skel" style="height:64px;margin:8px;border-radius:8px;"></div>
+          </div>
+        </div>
+
+        <!-- Right: chat panel -->
+        <div class="chat-panel" id="chat-panel">
+          <div class="chat-empty" id="chat-empty">
+            <div style="font-size:3rem;margin-bottom:var(--space-3);">💬</div>
+            <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Select a conversation</div>
+            <div style="font-size:var(--font-size-sm);margin-top:4px;">Choose a student or parent to start chatting</div>
+            <div style="margin-top:var(--space-5);display:flex;gap:var(--space-3);">
+              <button class="btn btn-outline btn-sm" onclick="openModal('broadcast-course-modal')"><i data-feather="radio" style="width:13px;height:13px;"></i> Broadcast to Course</button>
+              <button class="btn btn-primary btn-sm" onclick="openModal('broadcast-all-modal')"><i data-feather="send" style="width:13px;height:13px;"></i> Broadcast to All</button>
+            </div>
+          </div>
+          <div id="chat-active" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
+            <div class="chat-header" id="chat-header"></div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-bar">
+              <input type="text" class="chat-input" id="chat-input" placeholder="Type a message…"/>
+              <button class="btn btn-primary btn-sm" id="send-btn" style="flex-shrink:0;">
+                <i data-feather="send" style="width:14px;height:14px;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div></main>
+  </div>
+</div>
+
+<!-- Broadcast to Course Modal -->
+<div class="modal-overlay" id="broadcast-course-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">📢 Broadcast to Course</div><button class="btn btn-ghost btn-sm" onclick="closeModal('broadcast-course-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div style="background:var(--color-primary-50);border-radius:var(--border-radius-md);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-2);font-size:var(--font-size-sm);color:var(--color-primary-700);">
+        All enrolled students in the selected course will receive this announcement in-app.
+      </div>
+      <div class="form-group">
+        <label class="form-label">Select Course *</label>
+        <select class="form-select" id="bc-course"><option value="">Select a course…</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Also send to</label>
+        <div style="display:flex;gap:var(--space-4);">
+          <label style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--font-size-sm);">
+            <input type="checkbox" id="bc-include-parents" style="accent-color:var(--color-primary-600);"/>
+            Linked parents
+          </label>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Subject</label><input type="text" class="form-input" id="bc-subject" placeholder="e.g. Important update about next class"/></div>
+      <div class="form-group"><label class="form-label">Message *</label><textarea class="form-textarea" id="bc-body" placeholder="Write your announcement…" style="min-height:150px;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('broadcast-course-modal')">Cancel</button>
+      <button class="btn btn-primary" id="send-bc-course-btn"><i data-feather="radio" style="width:14px;height:14px;"></i> Send to Course</button>
+    </div>
+  </div>
+</div>
+
+<!-- Broadcast to All Modal -->
+<div class="modal-overlay" id="broadcast-all-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">📣 Broadcast to All Students</div><button class="btn btn-ghost btn-sm" onclick="closeModal('broadcast-all-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div style="background:var(--color-warning-light);border-radius:var(--border-radius-md);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-2);font-size:var(--font-size-sm);color:var(--color-warning-dark);">
+        ⚠️ This will send a message to ALL students enrolled in ALL your courses.
+      </div>
+      <div class="form-group">
+        <label class="form-label">Also send to</label>
+        <div style="display:flex;gap:var(--space-4);">
+          <label style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--font-size-sm);">
+            <input type="checkbox" id="ba-include-parents" style="accent-color:var(--color-primary-600);"/>
+            All linked parents
+          </label>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Subject</label><input type="text" class="form-input" id="ba-subject" placeholder="e.g. Announcement from your instructor"/></div>
+      <div class="form-group"><label class="form-label">Message *</label><textarea class="form-textarea" id="ba-body" placeholder="Write your announcement…" style="min-height:150px;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('broadcast-all-modal')">Cancel</button>
+      <button class="btn btn-primary" id="send-ba-btn" style="background:var(--color-warning);border-color:var(--color-warning);"><i data-feather="send" style="width:14px;height:14px;"></i> Send to All Students</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}
+if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  var name=user.name||'';
+  var initials=name.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+  ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar){el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}else{el.textContent=initials;}});
+
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  var colBtn=document.getElementById('sidebar-collapse-btn');
+  if(colBtn)colBtn.addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');localStorage.removeItem('ev_refresh_token');}catch(e){}window.location.replace('../../pages/auth/login.html');});});
+
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function showToast(type,title,msg){var c=document.getElementById('toast-container');if(!c)return;var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">&#x2715;</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4500);}
+  window._esc=_esc;window.showToast=showToast;
+  function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+  function closeModal(id){document.getElementById(id).classList.remove('open');}
+  window.openModal=openModal;window.closeModal=closeModal;
+
+  var allRooms=[];
+  var activeRoomId=null;
+  var currentTab='students';
+  var userId=(function(){try{var u=JSON.parse(localStorage.getItem('ev_user'));return u?u.id:null;}catch(e){return null;}})();
+
+  function timeAgo(d){var diff=Math.floor((new Date()-new Date(d))/1000);if(diff<60)return 'now';if(diff<3600)return Math.floor(diff/60)+'m';if(diff<86400)return Math.floor(diff/3600)+'h';return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'});}
+
+  window.switchRoomTab=function(tab){
+    currentTab=tab;
+    document.getElementById('tab-students-btn').classList.toggle('active',tab==='students');
+    document.getElementById('tab-parents-btn').classList.toggle('active',tab==='parents');
+    renderRooms(filterRooms(allRooms));
+  };
+
+  function filterRooms(rooms){
+    return rooms.filter(function(r){
+      if(currentTab==='parents')return r.room_type==='parent'||r.other_user_role==='parent';
+      return r.room_type!=='parent'&&r.other_user_role!=='parent';
+    });
+  }
+
+  async function loadRooms(){
+    try{
+      var [rRes,cRes]=await Promise.all([Api.get('/instructor/messages/rooms'),Api.get('/instructor/courses')]);
+      allRooms=(rRes&&rRes.data)||[];
+      var courses=(cRes&&cRes.data)||[];
+
+      // Unread count
+      var unread=allRooms.reduce(function(a,r){return a+(r.unread_count||0);},0);
+      document.getElementById('unread-count').textContent=unread?unread+' unread':'';
+
+      // Populate course selects
+      var opts='<option value="">Select a course…</option>'+courses.map(function(c){return '<option value="'+c.id+'">'+_esc(c.title)+'</option>';}).join('');
+      document.getElementById('bc-course').innerHTML=opts;
+
+      renderRooms(filterRooms(allRooms));
+    }catch(e){
+      document.getElementById('rooms-list').innerHTML='<div style="padding:var(--space-4);color:var(--text-muted);font-size:var(--font-size-sm);">Failed to load.</div>';
+    }
+  }
+
+  function renderRooms(rooms){
+    var list=document.getElementById('rooms-list');
+    var q=document.getElementById('room-search').value.toLowerCase();
+    var filtered=q?rooms.filter(function(r){return(r.other_user_name||r.name||'').toLowerCase().includes(q);}):rooms;
+
+    if(!filtered.length){
+      list.innerHTML='<div style="padding:var(--space-6);text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);">'+(currentTab==='parents'?'No parent conversations yet.':'No student conversations yet.')+'</div>';
+      return;
+    }
+    list.innerHTML=filtered.map(function(r){
+      var on=r.other_user_name||r.name||'User';
+      var role=r.other_user_role||r.room_type||'student';
+      var ini=on.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+      var last=r.last_message?_esc(r.last_message.content||''):'No messages yet';
+      var t=r.last_message&&r.last_message.created_at?timeAgo(r.last_message.created_at):'';
+      var unread=r.unread_count||0;
+      var isParent=role==='parent';
+      return '<div class="room-item'+(r.id===activeRoomId?' active':'')+'" data-rid="'+r.id+'" onclick="openRoom('+r.id+')">'+
+        '<div class="room-avatar'+(isParent?' room-avatar-parent':'')+'">'+ini+'</div>'+
+        '<div class="room-info">'+
+          '<div style="display:flex;align-items:center;gap:4px;">'+
+            '<div class="room-name">'+_esc(on)+'</div>'+
+            '<span class="room-role-tag '+(isParent?'role-parent':'role-student')+'">'+role+'</span>'+
+          '</div>'+
+          '<div class="room-last">'+last+'</div>'+
+        '</div>'+
+        '<div class="room-meta"><div class="room-time">'+t+'</div>'+(unread?'<div class="room-badge">'+unread+'</div>':'')+'</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  window.openRoom=async function(roomId){
+    activeRoomId=roomId;
+    document.querySelectorAll('.room-item').forEach(function(el){el.classList.toggle('active',el.dataset.rid==roomId);});
+    var room=allRooms.find(function(r){return r.id==roomId;});
+    var on=room?(room.other_user_name||room.name||'User'):'Chat';
+    var role=room?room.other_user_role||room.room_type||'student':'student';
+    var ini=on.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+    var isParent=role==='parent';
+
+    document.getElementById('chat-empty').style.display='none';
+    var active=document.getElementById('chat-active');active.style.display='flex';
+
+    document.getElementById('chat-header').innerHTML=
+      '<div style="display:flex;align-items:center;gap:var(--space-3);">'+
+        '<div style="width:38px;height:38px;border-radius:50%;background:'+(isParent?'var(--color-success-light)':'var(--color-primary-100)')+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-xs);color:'+(isParent?'var(--color-success-dark)':'var(--color-primary-700)')+';">'+ini+'</div>'+
+        '<div><div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">'+_esc(on)+'</div>'+
+          '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+_esc(role.charAt(0).toUpperCase()+role.slice(1))+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:var(--space-2);">'+
+        '<a href="messages.html" class="btn btn-ghost btn-sm" style="font-size:var(--font-size-xs);">↗ View Profile</a>'+
+      '</div>';
+
+    document.getElementById('chat-messages').innerHTML='<div class="skel" style="height:40px;width:60%;border-radius:12px;"></div>';
+
+    try{
+      var res=await Api.get('/instructor/messages/'+roomId);
+      var msgs=(res&&res.data&&res.data.messages)||(res&&res.data)||[];
+      renderMessages(msgs);
+      try{await Api.post('/instructor/messages/'+roomId+'/read');}catch(e){}
+      // Update unread in sidebar
+      allRooms=allRooms.map(function(r){if(r.id==roomId){r.unread_count=0;}return r;});
+      var totalUnread=allRooms.reduce(function(a,r){return a+(r.unread_count||0);},0);
+      document.getElementById('unread-count').textContent=totalUnread?totalUnread+' unread':'';
+    }catch(e){
+      document.getElementById('chat-messages').innerHTML='<div style="color:var(--color-danger);padding:var(--space-4);">Failed to load messages.</div>';
+    }
+  };
+
+  function renderMessages(msgs){
+    var c=document.getElementById('chat-messages');
+    if(!msgs.length){
+      c.innerHTML='<div style="text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);padding:var(--space-8);">No messages yet. Say hello!</div>';
+      return;
+    }
+    c.innerHTML=msgs.map(function(m){
+      var mine=m.sender_id==userId||m.is_mine;
+      return '<div style="display:flex;flex-direction:column;align-items:'+(mine?'flex-end':'flex-start')+'">'+
+        '<div class="msg-bubble '+(mine?'msg-sent':'msg-recv')+'">'+_esc(m.content||'')+'</div>'+
+        '<div class="msg-time">'+timeAgo(m.created_at)+'</div>'+
+      '</div>';
+    }).join('');
+    c.scrollTop=c.scrollHeight;
+  }
+
+  async function sendMessage(){
+    var input=document.getElementById('chat-input');
+    var text=input.value.trim();
+    if(!text||!activeRoomId)return;
+    input.value='';
+    // Optimistic render
+    var c=document.getElementById('chat-messages');
+    var el=document.createElement('div');
+    el.style.cssText='display:flex;flex-direction:column;align-items:flex-end;';
+    el.innerHTML='<div class="msg-bubble msg-sent">'+_esc(text)+'</div><div class="msg-time">now</div>';
+    c.appendChild(el);c.scrollTop=c.scrollHeight;
+    try{
+      await Api.post('/instructor/messages/'+activeRoomId,{content:text});
+      var res=await Api.get('/instructor/messages/'+activeRoomId);
+      renderMessages((res&&res.data&&res.data.messages)||(res&&res.data)||[]);
+    }catch(e){input.value=text;el.remove();}
+  }
+
+  document.getElementById('send-btn').addEventListener('click',sendMessage);
+  document.getElementById('chat-input').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+
+  var sd;
+  document.getElementById('room-search').addEventListener('input',function(){
+    clearTimeout(sd);var q=this.value;
+    sd=setTimeout(function(){renderRooms(filterRooms(allRooms));},200);
+  });
+
+  // ── Broadcast to course ──
+  document.getElementById('send-bc-course-btn').addEventListener('click',async function(){
+    var courseId=document.getElementById('bc-course').value;
+    var body=document.getElementById('bc-body').value.trim();
+    if(!courseId){showToast('error','Error','Please select a course.');return;}
+    if(!body){showToast('error','Error','Message cannot be empty.');return;}
+    this.disabled=true;this.textContent='Sending…';
+    try{
+      var res=await Api.post('/instructor/messages/broadcast',{
+        course_id:courseId,
+        subject:document.getElementById('bc-subject').value,
+        message:body,
+        include_parents:document.getElementById('bc-include-parents').checked,
+      });
+      var count=(res&&res.data&&res.data.sent_to)||'all';
+      closeModal('broadcast-course-modal');
+      showToast('success','Sent!','Announcement delivered to '+count+' recipients.');
+      document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed to send.');}
+    this.disabled=false;this.innerHTML='<i data-feather="radio" style="width:14px;height:14px;"></i> Send to Course';
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  });
+
+  // ── Broadcast to all ──
+  document.getElementById('send-ba-btn').addEventListener('click',async function(){
+    var body=document.getElementById('ba-body').value.trim();
+    if(!body){showToast('error','Error','Message cannot be empty.');return;}
+    if(!confirm('Send this announcement to ALL your students?'))return;
+    this.disabled=true;this.textContent='Sending…';
+    try{
+      var res=await Api.post('/instructor/messages/broadcast-all',{
+        subject:document.getElementById('ba-subject').value,
+        message:body,
+        include_parents:document.getElementById('ba-include-parents').checked,
+      });
+      var count=(res&&res.data&&res.data.sent_to)||'all';
+      closeModal('broadcast-all-modal');
+      showToast('success','Sent!','Announcement delivered to '+count+' students.');
+      document.getElementById('ba-body').value='';document.getElementById('ba-subject').value='';
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed to send.');}
+    this.disabled=false;this.innerHTML='<i data-feather="send" style="width:14px;height:14px;"></i> Send to All Students';
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  });
+
+  loadRooms();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Sessions — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <style>
+    :root{--ink:#0d0f14;--surface:#f8f7f4;--surface-2:#f0ede8;--border:#e4e0d8;--accent:#ff5c35;--accent-soft:#fff0ec;--accent-2:#1a56db;--accent-2-soft:#eef3ff;--success:#16a34a;--success-soft:#f0fdf4;--warning:#d97706;--warning-soft:#fffbeb;--danger:#dc2626;--danger-soft:#fff5f5;--text-primary:#0d0f14;--text-secondary:#4a4e5c;--text-muted:#8a8fa8;--radius:12px;--radius-sm:8px;--sidebar-w:240px;--font:'DM Sans',sans-serif;--transition:180ms cubic-bezier(0.4,0,0.2,1);}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font);background:var(--surface);color:var(--text-primary);display:flex;height:100vh;overflow:hidden;}
+    .sidebar{width:var(--sidebar-w);background:var(--ink);color:#fff;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+    .brand-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;}
+    .brand-name{font-weight:700;font-size:15px;}.brand-role{font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px;}
+    .nav-section{padding:16px 12px 8px;}.nav-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:0 8px;margin-bottom:6px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.55);font-size:13.5px;font-weight:500;text-decoration:none;transition:all var(--transition);}
+    .nav-item:hover{background:rgba(255,255,255,0.07);color:#fff;}.nav-item.active{background:var(--accent);color:#fff;}
+    .nav-item svg{width:15px;height:15px;flex-shrink:0;}
+    .sidebar-user{margin-top:auto;padding:16px 12px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+    .user-name{font-size:13px;font-weight:600;color:#fff;}.user-email{font-size:11px;color:rgba(255,255,255,0.4);}
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .topbar-title{font-size:15px;font-weight:600;}
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all var(--transition);text-decoration:none;border:none;}
+    .btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{opacity:0.88;}
+    .btn-outline{background:none;border:1px solid var(--border);color:var(--text-secondary);}.btn-outline:hover{background:var(--surface);}
+    .btn-success{background:var(--success);color:#fff;}.btn-success:hover{opacity:0.88;}
+    .btn-ghost{background:none;border:none;color:var(--text-muted);font-family:var(--font);}.btn-ghost:hover{color:var(--text-primary);}
+    .btn-danger{background:none;border:1px solid var(--danger);color:var(--danger);}.btn-danger:hover{background:var(--danger-soft);}
+    .btn svg{width:14px;height:14px;}
+    .content{flex:1;overflow-y:auto;padding:24px 28px;}
+    /* Tabs */
+    .tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;}
+    .tab{padding:10px 18px;font-size:13.5px;font-weight:600;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);}
+    .tab:hover{color:var(--text-primary);}
+    .tab.active{color:var(--accent-2);border-bottom-color:var(--accent-2);}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+    /* Session cards */
+    .sessions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;}
+    .session-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--transition);}
+    .session-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+    .session-card-top{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;}
+    .session-icon{width:44px;height:44px;border-radius:10px;background:var(--accent-2-soft);color:var(--accent-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .session-icon svg{width:20px;height:20px;}
+    .session-icon.live{background:#fff0ec;color:var(--accent);animation:pulse-live 1.5s infinite;}
+    @keyframes pulse-live{0%,100%{opacity:1}50%{opacity:0.6}}
+    .session-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+    .session-course{font-size:12px;color:var(--text-muted);}
+    .session-status{margin-left:auto;flex-shrink:0;}
+    .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;text-transform:uppercase;}
+    .badge-scheduled{background:var(--accent-2-soft);color:var(--accent-2);}
+    .badge-live{background:#fff0ec;color:var(--accent);}
+    .badge-ended{background:var(--surface-2);color:var(--text-muted);}
+    .badge-cancelled{background:var(--danger-soft);color:var(--danger);}
+    .session-card-body{padding:16px 20px;}
+    .session-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
+    .session-meta-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-muted);}
+    .session-meta-item svg{width:13px;height:13px;}
+    .session-meta-item strong{color:var(--text-primary);}
+    .session-actions{display:flex;gap:8px;flex-wrap:wrap;}
+    .live-indicator{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--accent);}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse-live 1.5s infinite;}
+    /* In-session panel */
+    .in-session-banner{background:linear-gradient(135deg,var(--accent),#ff8c6b);color:#fff;border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;}
+    .isb-left{display:flex;align-items:center;gap:14px;}
+    .isb-icon{font-size:2rem;}
+    .isb-title{font-size:17px;font-weight:700;}
+    .isb-sub{font-size:13px;opacity:0.85;}
+    .isb-right{display:flex;gap:10px;}
+    .btn-white{background:#fff;color:var(--accent);border:none;}.btn-white:hover{opacity:0.9;}
+    .btn-white-outline{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.4);}.btn-white-outline:hover{background:rgba(255,255,255,0.25);}
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#fff;border-radius:var(--radius);width:100%;max-width:560px;box-shadow:0 24px 64px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
+    .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .modal-title{font-size:16px;font-weight:700;}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--text-muted);}
+    .modal-body{padding:24px;}
+    .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+    .form-group{margin-bottom:16px;}
+    .form-label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--text-secondary);}
+    .form-label span{color:var(--danger);}
+    .form-input{width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13.5px;outline:none;transition:border-color var(--transition);}
+    .form-input:focus{border-color:var(--accent);}
+    .form-textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13.5px;outline:none;resize:vertical;min-height:80px;}
+    .form-textarea:focus{border-color:var(--accent);}
+    .form-select{width:100%;height:40px;padding:0 32px 0 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13.5px;background:#fff;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8fa8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+    .form-select:focus{border-color:var(--accent);}
+    .form-row{display:flex;gap:16px;}.form-row .form-group{flex:1;}
+    .info-box{background:var(--accent-2-soft);border:1px solid rgba(26,86,219,0.15);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--accent-2);margin-bottom:16px;}
+    .info-box strong{font-weight:700;}
+    /* Empty */
+    .empty-state{text-align:center;padding:64px 24px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);}
+    .empty-icon{font-size:3rem;margin-bottom:16px;}
+    .empty-title{font-size:18px;font-weight:700;margin-bottom:8px;}
+    .empty-desc{font-size:14px;color:var(--text-muted);margin-bottom:24px;}
+    .skel{background:linear-gradient(90deg,var(--border) 25%,var(--surface-2) 50%,var(--border) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:10px;}
+    .toast{background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.25);animation:slideUp 0.3s ease;}
+    .toast-success{border-left:4px solid var(--success);}.toast-error{border-left:4px solid var(--danger);}
+    @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-brand"><div class="brand-mark">E</div><div><div class="brand-name">EduVerse</div><div class="brand-role">Instructor Portal</div></div></div>
+  <div class="nav-section"><div class="nav-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><i data-feather="grid"></i> Dashboard</a>
+    <a class="nav-item" href="courses.html"><i data-feather="book-open"></i> My Courses</a>
+    <a class="nav-item" href="students.html"><i data-feather="users"></i> Students</a>
+    <a class="nav-item" href="analytics.html"><i data-feather="trending-up"></i> Analytics</a>
+  </div>
+  <div class="nav-section"><div class="nav-label">Teach</div>
+    <a class="nav-item active" href="live-sessions.html"><i data-feather="video"></i> Live Sessions</a>
+    <a class="nav-item" href="assessments.html"><i data-feather="edit-3"></i> Assessments</a>
+    <a class="nav-item" href="grading.html"><i data-feather="check-square"></i> Grading Center</a>
+    <a class="nav-item" href="forum.html"><i data-feather="message-square"></i> Discussion Forum</a>
+    <a class="nav-item" href="question-bank.html"><i data-feather="database"></i> Question Bank</a>
+  </div>
+  <div class="nav-section"><div class="nav-label">Business</div>
+    <a class="nav-item" href="earnings.html"><i data-feather="dollar-sign"></i> Earnings</a>
+    <a class="nav-item" href="coupons.html"><i data-feather="tag"></i> Coupons</a>
+    <a class="nav-item" href="announcements.html"><i data-feather="bell"></i> Announcements</a>
+    <a class="nav-item" href="reports.html"><i data-feather="file-text"></i> Reports</a>
+    <a class="nav-item" href="messages.html"><i data-feather="mail"></i> Messages</a>
+  </div>
+  <div class="nav-section"><div class="nav-label">Account</div>
+    <a class="nav-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+    <a class="nav-item" href="../../pages/auth/login.html" id="logout-btn"><i data-feather="log-out"></i> Sign Out</a>
+  </div>
+  <div class="sidebar-user"><div class="user-avatar" id="sidebar-avatar">I</div><div><div class="user-name" id="sidebar-name">Instructor</div><div class="user-email" id="sidebar-email">loading...</div></div></div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Live Sessions</div>
+    <button class="btn btn-primary" id="schedule-btn"><i data-feather="plus"></i> Schedule Session</button>
+  </header>
+
+  <div class="content">
+    <!-- Live session in-progress banner (shown if a session is live) -->
+    <div class="in-session-banner" id="live-banner" style="display:none;">
+      <div class="isb-left">
+        <div class="isb-icon">🔴</div>
+        <div>
+          <div class="isb-title" id="live-banner-title">Session in Progress</div>
+          <div class="isb-sub"><span class="live-dot" style="background:#fff;display:inline-block;"></span> Live now · <span id="live-banner-count">0</span> participants</div>
+        </div>
+      </div>
+      <div class="isb-right">
+        <button class="btn btn-white-outline" onclick="openPoll()"><i data-feather="bar-chart-2"></i> Run Poll</button>
+        <button class="btn btn-white" id="join-live-btn"><i data-feather="video"></i> Join Session</button>
+        <button class="btn btn-white-outline" id="end-session-btn"><i data-feather="stop-circle"></i> End</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab active" data-tab="upcoming">Upcoming</button>
+      <button class="tab" data-tab="past">Past Sessions</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-upcoming">
+      <div class="sessions-grid" id="upcoming-grid">
+        <div class="skel" style="height:200px;border-radius:12px;"></div>
+        <div class="skel" style="height:200px;border-radius:12px;"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-past">
+      <div class="sessions-grid" id="past-grid">
+        <div class="skel" style="height:200px;border-radius:12px;"></div>
+        <div class="skel" style="height:200px;border-radius:12px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="session-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Schedule Live Session</div>
+      <button class="modal-close" id="modal-close"><i data-feather="x" style="width:18px;height:18px;"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box"><strong>Jitsi Meet link</strong> will be auto-generated. Students will be notified via email and dashboard notification.</div>
+      <div class="form-group">
+        <label class="form-label">Session Title <span>*</span></label>
+        <input class="form-input" id="f-title" placeholder="e.g. Chapter 5 Doubt Clearing Session" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="f-desc" placeholder="Topics to cover, what students should prepare…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Linked Course</label>
+          <select class="form-select" id="f-course"><option value="">All Students</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (minutes)</label>
+          <select class="form-select" id="f-duration">
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="60" selected>60 min</option>
+            <option value="90">90 min</option>
+            <option value="120">2 hours</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date <span>*</span></label>
+          <input class="form-input" id="f-date" type="date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time <span>*</span></label>
+          <input class="form-input" id="f-time" type="time" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Meeting Password (optional)</label>
+        <input class="form-input" id="f-password" placeholder="Leave blank for no password" type="text" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancel-modal">Cancel</button>
+      <button class="btn btn-primary" id="save-session-btn"><i data-feather="calendar"></i> Schedule Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- Poll Modal -->
+<div class="modal-overlay" id="poll-modal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header"><div class="modal-title">Run Quick Poll</div><button class="modal-close" id="poll-close"><i data-feather="x" style="width:18px;height:18px;"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Question <span>*</span></label><input class="form-input" id="poll-q" placeholder="e.g. Which topic should we cover next?" /></div>
+      <div id="poll-options">
+        <div class="form-group"><label class="form-label">Option A</label><input class="form-input poll-opt" placeholder="Option A" /></div>
+        <div class="form-group"><label class="form-label">Option B</label><input class="form-input poll-opt" placeholder="Option B" /></div>
+      </div>
+      <button class="btn btn-outline" id="add-poll-option" style="margin-top:4px;"><i data-feather="plus"></i> Add Option</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancel-poll">Cancel</button>
+      <button class="btn btn-primary" id="launch-poll"><i data-feather="play"></i> Launch Poll</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+<script>window.EV_BASE='../../';</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  var name=user.name||'Instructor';
+  var ini=name.trim().split(/\s+/).map(function(p){return p[0];}).join('').slice(0,2).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent=ini;
+  document.getElementById('sidebar-name').textContent=name;
+  document.getElementById('sidebar-email').textContent=user.email||'';
+  document.getElementById('logout-btn').addEventListener('click',function(e){e.preventDefault();localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');window.location.replace('../../pages/auth/login.html');});
+
+  var editingId=null;
+  function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+  function toast(msg,type){var c=document.getElementById('toast-wrap');var el=document.createElement('div');el.className='toast toast-'+(type||'success');el.innerHTML=esc(msg);c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},3500);}
+
+  function fmtDate(d){if(!d)return'—';var dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+' at '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}
+
+  function renderSession(s){
+    var statusCls='badge-scheduled';
+    if(s.status==='live')statusCls='badge-live';
+    else if(s.status==='ended')statusCls='badge-ended';
+    else if(s.status==='cancelled')statusCls='badge-cancelled';
+    var isLive=s.status==='live';
+    var isUpcoming=s.status==='scheduled';
+    var isPast=s.status==='ended'||s.status==='cancelled';
+    var actions='';
+    if(isLive){
+      actions='<a href="'+esc(s.meeting_link||'#')+'" target="_blank" class="btn btn-primary"><i data-feather="video"></i> Join Session</a>'+
+        '<button class="btn btn-danger" onclick="endSession('+s.id+')"><i data-feather="stop-circle"></i> End</button>';
+    } else if(isUpcoming){
+      actions='<button class="btn btn-success" onclick="startSession('+s.id+')"><i data-feather="play-circle"></i> Start</button>'+
+        '<button class="btn btn-outline" onclick="editSession('+s.id+')"><i data-feather="edit-2"></i></button>'+
+        '<button class="btn btn-danger" onclick="deleteSession('+s.id+')"><i data-feather="trash-2"></i></button>';
+    } else {
+      actions='<button class="btn btn-outline" '+(s.recording_url?'onclick="window.open(\''+esc(s.recording_url)+'\',\'_blank\')"':'disabled')+'><i data-feather="play-circle"></i> Recording</button>'+
+        '<a href="reports.html?session='+s.id+'" class="btn btn-ghost"><i data-feather="users"></i> Attendance</a>';
+    }
+    return '<div class="session-card">'+
+      '<div class="session-card-top">'+
+        '<div class="session-icon'+(isLive?' live':'')+'"><i data-feather="video"></i></div>'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div class="session-title">'+esc(s.title)+'</div>'+
+          '<div class="session-course">'+(s.course_title||'All students')+'</div>'+
+        '</div>'+
+        '<div class="session-status"><span class="badge '+statusCls+'">'+esc(s.status)+'</span></div>'+
+      '</div>'+
+      '<div class="session-card-body">'+
+        '<div class="session-meta">'+
+          '<div class="session-meta-item"><i data-feather="calendar"></i><strong>'+fmtDate(s.scheduled_at)+'</strong></div>'+
+          '<div class="session-meta-item"><i data-feather="clock"></i>'+(s.duration_minutes||60)+' min</div>'+
+          (s.meeting_link?'<div class="session-meta-item"><i data-feather="link"></i>Jitsi link ready</div>':'')+''+
+        '</div>'+
+        '<div class="session-actions">'+actions+'</div>'+
+      '</div>'+
+    '</div>';
+  }
+
+  async function loadSessions(){
+    try{
+      var res=await Api.instructor.getLiveSessions();
+      var all=(res&&res.data)||[];
+      var upcoming=all.filter(function(s){return s.status==='scheduled'||s.status==='live';});
+      var past=all.filter(function(s){return s.status==='ended'||s.status==='cancelled';});
+      // Live banner
+      var liveSession=all.find(function(s){return s.status==='live';});
+      if(liveSession){
+        document.getElementById('live-banner').style.display='flex';
+        document.getElementById('live-banner-title').textContent=liveSession.title;
+        document.getElementById('join-live-btn').onclick=function(){window.open(liveSession.meeting_link||'#','_blank');};
+        document.getElementById('end-session-btn').onclick=function(){endSession(liveSession.id);};
+      }
+      document.getElementById('upcoming-grid').innerHTML=upcoming.length?upcoming.map(renderSession).join(''):
+        '<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No upcoming sessions</div><div class="empty-desc">Schedule a live class for your students.</div><button class="btn btn-primary" onclick="document.getElementById(\'schedule-btn\').click()"><i data-feather="plus"></i> Schedule Session</button></div>';
+      document.getElementById('past-grid').innerHTML=past.length?past.map(renderSession).join(''):
+        '<div class="empty-state"><div class="empty-icon">📹</div><div class="empty-title">No past sessions</div><div class="empty-desc">Recordings will appear here after sessions end.</div></div>';
+      if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+    }catch(e){
+      document.getElementById('upcoming-grid').innerHTML='<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No upcoming sessions</div><div class="empty-desc">Schedule a live class for your students.</div><button class="btn btn-primary" onclick="document.getElementById(\'schedule-btn\').click()"><i data-feather="plus"></i> Schedule Session</button></div>';
+      if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+    }
+  }
+
+  window.startSession=async function(id){
+    try{
+      await Api.patch('/instructor/live-sessions/'+id+'/start');
+      toast('Session started! Jitsi link is live.','success');
+      loadSessions();
+    }catch(e){toast((e&&e.message)||'Failed to start session','error');}
+  };
+  window.endSession=async function(id){
+    try{
+      await Api.patch('/instructor/live-sessions/'+id+'/end');
+      toast('Session ended. Recording will be available shortly.','success');
+      document.getElementById('live-banner').style.display='none';
+      loadSessions();
+    }catch(e){toast((e&&e.message)||'Failed to end session','error');}
+  };
+  window.deleteSession=async function(id){
+    if(!confirm('Cancel this session? Students will be notified.')) return;
+    try{
+      await Api.delete('/instructor/live-sessions/'+id);
+      toast('Session cancelled','success');
+      loadSessions();
+    }catch(e){toast((e&&e.message)||'Failed to delete','error');}
+  };
+  window.editSession=function(id){editingId=id;document.getElementById('session-modal').classList.add('open');};
+
+  // Schedule modal
+  document.getElementById('schedule-btn').addEventListener('click',function(){
+    editingId=null;
+    document.getElementById('modal-title').textContent='Schedule Live Session';
+    ['f-title','f-desc','f-date','f-time','f-password'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('f-duration').value='60';
+    document.getElementById('f-course').value='';
+    document.getElementById('session-modal').classList.add('open');
+  });
+  document.getElementById('modal-close').addEventListener('click',function(){document.getElementById('session-modal').classList.remove('open');});
+  document.getElementById('cancel-modal').addEventListener('click',function(){document.getElementById('session-modal').classList.remove('open');});
+
+  document.getElementById('save-session-btn').addEventListener('click',async function(){
+    var title=document.getElementById('f-title').value.trim();
+    var date=document.getElementById('f-date').value;
+    var time=document.getElementById('f-time').value;
+    if(!title||!date||!time){toast('Please fill required fields','error');return;}
+    var payload={
+      title:title,
+      description:document.getElementById('f-desc').value.trim(),
+      course_id:document.getElementById('f-course').value||null,
+      duration_minutes:document.getElementById('f-duration').value,
+      scheduled_at:date+'T'+time+':00',
+      meeting_password:document.getElementById('f-password').value.trim()||null,
+    };
+    this.disabled=true;this.textContent='Scheduling…';
+    try{
+      if(editingId){await Api.patch('/instructor/live-sessions/'+editingId,payload);}
+      else{await Api.post('/instructor/live-sessions',payload);}
+      toast('Session scheduled! Students notified.','success');
+      document.getElementById('session-modal').classList.remove('open');
+      loadSessions();
+    }catch(e){toast((e&&e.message)||'Failed to schedule','error');}
+    this.disabled=false;
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+    document.getElementById('save-session-btn').innerHTML='<i data-feather="calendar"></i> Schedule Session';
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  });
+
+  // Poll
+  window.openPoll=function(){document.getElementById('poll-modal').classList.add('open');};
+  document.getElementById('poll-close').addEventListener('click',function(){document.getElementById('poll-modal').classList.remove('open');});
+  document.getElementById('cancel-poll').addEventListener('click',function(){document.getElementById('poll-modal').classList.remove('open');});
+  document.getElementById('add-poll-option').addEventListener('click',function(){
+    var letters=['A','B','C','D','E','F'];
+    var count=document.querySelectorAll('.poll-opt').length;
+    if(count>=6){toast('Max 6 options','error');return;}
+    var d=document.createElement('div');d.className='form-group';
+    d.innerHTML='<label class="form-label">Option '+letters[count]+'</label><input class="form-input poll-opt" placeholder="Option '+letters[count]+'" />';
+    document.getElementById('poll-options').appendChild(d);
+  });
+  document.getElementById('launch-poll').addEventListener('click',function(){
+    var q=document.getElementById('poll-q').value.trim();
+    if(!q){toast('Enter a poll question','error');return;}
+    toast('Poll launched! Students can now vote in real-time.','success');
+    document.getElementById('poll-modal').classList.remove('open');
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click',function(){
+      document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+      document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+      tab.classList.add('active');
+      document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Load courses for modal
+  async function loadCourseSelect(){
+    try{
+      var res=await Api.instructor.getMyCourses();
+      var courses=(res&&res.data)||[];
+      var sel=document.getElementById('f-course');
+      courses.forEach(function(c){
+        var o=document.createElement('option');o.value=c.id;o.textContent=c.title;sel.appendChild(o);
+      });
+    }catch(e){}
+  }
+
+  if(window.location.search.includes('new=1')) setTimeout(function(){document.getElementById('schedule-btn').click();},300);
+
+  loadCourseSelect();
+  loadSessions();
+});
+</script>
+</body>
+</html>

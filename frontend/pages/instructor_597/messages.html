@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .messages-layout{display:grid;grid-template-columns:320px 1fr;height:calc(100vh - var(--navbar-height));overflow:hidden;background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);}
+    .rooms-panel{border-right:1px solid var(--border-color);display:flex;flex-direction:column;overflow:hidden;}
+    .rooms-header{padding:var(--space-4);border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;}
+    .rooms-search{padding:var(--space-3);border-bottom:1px solid var(--border-color);}
+    .rooms-search input{width:100%;height:36px;padding:0 var(--space-3) 0 var(--space-9);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-sunken);outline:none;font-family:var(--font-ui);color:var(--text-primary);}
+    .rooms-search input:focus{border-color:var(--color-primary-600);}
+    .rooms-search-wrap{position:relative;}
+    .rooms-search-wrap .search-icon{position:absolute;left:var(--space-3);top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;}
+    .rooms-list{flex:1;overflow-y:auto;}
+    .room-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);cursor:pointer;transition:background var(--transition-fast);border-bottom:1px solid var(--border-color);}
+    .room-item:hover{background:var(--neutral-50);}
+    .room-item.active{background:var(--color-primary-50);}
+    .room-item-info{flex:1;min-width:0;}
+    .room-item-name{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .room-item-last{font-size:var(--font-size-xs);color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+    .room-item-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+    .room-time{font-size:10px;color:var(--text-muted);}
+    .unread-badge{background:var(--color-primary-600);color:#fff;font-size:10px;font-weight:700;border-radius:99px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+    .chat-panel{display:flex;flex-direction:column;overflow:hidden;}
+    .chat-header{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);flex-shrink:0;}
+    .chat-header-info{flex:1;}
+    .chat-header-name{font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);}
+    .chat-header-sub{font-size:var(--font-size-xs);color:var(--text-muted);}
+    .chat-messages{flex:1;overflow-y:auto;padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);}
+    .msg-bubble{display:flex;gap:var(--space-2);max-width:70%;}
+    .msg-bubble.mine{align-self:flex-end;flex-direction:row-reverse;}
+    .msg-text{padding:var(--space-2-5) var(--space-3-5);border-radius:var(--border-radius-lg);font-size:var(--font-size-sm);line-height:var(--leading-relaxed);}
+    .msg-bubble:not(.mine) .msg-text{background:var(--bg-sunken);color:var(--text-primary);border-radius:var(--border-radius-xs) var(--border-radius-lg) var(--border-radius-lg) var(--border-radius-lg);}
+    .msg-bubble.mine .msg-text{background:var(--color-primary-600);color:#fff;border-radius:var(--border-radius-lg) var(--border-radius-xs) var(--border-radius-lg) var(--border-radius-lg);}
+    .msg-time{font-size:10px;color:var(--text-disabled);align-self:flex-end;margin:0 var(--space-1);flex-shrink:0;}
+    .chat-input-wrap{display:flex;align-items:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-5);border-top:1px solid var(--border-color);flex-shrink:0;}
+    .chat-input{flex:1;min-height:40px;max-height:120px;padding:var(--space-2-5) var(--space-3-5);border:1px solid var(--border-color);border-radius:var(--border-radius-lg);font-size:var(--font-size-sm);font-family:var(--font-ui);color:var(--text-primary);background:var(--bg-sunken);outline:none;resize:none;line-height:var(--leading-normal);}
+    .chat-input:focus{border-color:var(--color-primary-600);}
+    .chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:var(--space-3);}
+    .broadcast-btn{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);font-weight:600;color:var(--color-primary-600);cursor:pointer;background:none;border:none;font-family:var(--font-ui);}
+    .broadcast-btn:hover{background:var(--color-primary-50);}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    @media(max-width:767px){.messages-layout{grid-template-columns:1fr;}.rooms-panel{display:none;}.rooms-panel.show{display:flex;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item active" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div></div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="app-body">
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div><div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Messages</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Chat with your students</div></div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name">Loading…</span><i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:180px;">
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="app-main" style="padding:var(--space-6);overflow:hidden;">
+      <div class="messages-layout">
+
+        <!-- Rooms Panel -->
+        <div class="rooms-panel">
+          <div class="rooms-header">
+            <div style="font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);">Inbox</div>
+            <button class="broadcast-btn" onclick="openBroadcast()">
+              <i data-feather="megaphone" style="width:14px;height:14px;"></i> Broadcast
+            </button>
+          </div>
+          <div class="rooms-search">
+            <div class="rooms-search-wrap">
+              <i data-feather="search" class="search-icon" style="width:14px;height:14px;"></i>
+              <input type="text" id="rooms-search" placeholder="Search conversations…" />
+            </div>
+          </div>
+          <div class="rooms-list" id="rooms-list">
+            <div style="padding:var(--space-4);">
+              <div class="skel" style="height:60px;border-radius:8px;margin-bottom:8px;"></div>
+              <div class="skel" style="height:60px;border-radius:8px;margin-bottom:8px;"></div>
+              <div class="skel" style="height:60px;border-radius:8px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="chat-panel" id="chat-panel">
+          <div class="chat-empty" id="chat-empty">
+            <i data-feather="message-circle" style="width:48px;height:48px;color:var(--text-muted);opacity:0.4;"></i>
+            <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Select a conversation</div>
+            <div style="font-size:var(--font-size-sm);">Choose a student from the left to start chatting</div>
+          </div>
+          <div id="chat-active" style="display:none;flex-direction:column;height:100%;">
+            <div class="chat-header">
+              <div class="avatar avatar-md" id="chat-avatar" style="font-size:14px;"></div>
+              <div class="chat-header-info">
+                <div class="chat-header-name" id="chat-name"></div>
+                <div class="chat-header-sub" id="chat-sub"></div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="window.location.href='students.html'">
+                <i data-feather="user" style="width:14px;height:14px;"></i> View Profile
+              </button>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-wrap">
+              <textarea class="chat-input" id="chat-input" placeholder="Type a message…" rows="1"></textarea>
+              <button class="btn btn-primary btn-icon" id="send-btn" title="Send">
+                <i data-feather="send" style="width:16px;height:16px;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u)window.location.replace('../../pages/auth/login.html');else if(u.role!=='instructor')window.location.replace('../../pages/errors/403.html');})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+
+  var user=Store.get('auth.user')||{};
+  var name=user.name||'';
+  ['sidebar-user-name','navbar-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;el.textContent=Utils.getInitials(name);el.className='avatar avatar-sm '+Utils.getAvatarColor(name);});
+
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  document.getElementById('sidebar-collapse-btn').addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();Auth.logout();});});
+  var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+
+  var activeRoomId = null;
+  var allRooms     = [];
+  var myId         = user.id;
+
+  // Check URL param for direct student
+  var studentParam = Utils.getParam('student');
+
+  loadRooms();
+
+  async function loadRooms() {
+    try {
+      var res   = await Api.messages.rooms();
+      allRooms  = (res && res.data) || [];
+      renderRooms(allRooms);
+      if (studentParam) {
+        // Find or open room with this student
+        var room = allRooms.find(function(r){ return r.other_user_id == studentParam; });
+        if (room) openRoom(room);
+      }
+    } catch(err) {
+      document.getElementById('rooms-list').innerHTML =
+        '<div style="text-align:center;padding:var(--space-8);color:var(--color-danger);font-size:var(--font-size-sm);">Failed to load conversations.</div>';
+    }
+  }
+
+  function renderRooms(rooms) {
+    var list = document.getElementById('rooms-list');
+    if (!rooms.length) {
+      list.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--font-size-sm);">No conversations yet.<br/>Students will appear here when they message you.</div>';
+      return;
+    }
+    list.innerHTML = rooms.map(function(r) {
+      var initials = Utils.getInitials(r.other_user_name||'S');
+      var color    = Utils.getAvatarColor(r.other_user_name||'');
+      var lastMsg  = r.last_message ? r.last_message.content : 'No messages yet';
+      var lastTime = r.last_message ? Utils.timeAgo(r.last_message.created_at) : '';
+      return '<div class="room-item' + (r.id===activeRoomId?' active':'') + '" data-room-id="' + r.id + '" onclick="openRoomById(' + r.id + ')">' +
+        '<div class="avatar avatar-sm ' + color + '" style="font-size:11px;flex-shrink:0;">' + _esc(initials) + '</div>' +
+        '<div class="room-item-info">' +
+          '<div class="room-item-name">' + _esc(r.other_user_name||'Student') + '</div>' +
+          '<div class="room-item-last">' + _esc(Utils.truncate(lastMsg,40)) + '</div>' +
+        '</div>' +
+        '<div class="room-item-meta">' +
+          '<span class="room-time">' + lastTime + '</span>' +
+          (r.unread_count > 0 ? '<span class="unread-badge">' + r.unread_count + '</span>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  window.openRoomById = function(roomId) {
+    var room = allRooms.find(function(r){ return r.id === roomId; });
+    if (room) openRoom(room);
+  };
+
+  async function openRoom(room) {
+    activeRoomId = room.id;
+    document.getElementById('chat-empty').style.display  = 'none';
+    document.getElementById('chat-active').style.display = 'flex';
+
+    var initials = Utils.getInitials(room.other_user_name||'S');
+    var color    = Utils.getAvatarColor(room.other_user_name||'');
+    var avatarEl = document.getElementById('chat-avatar');
+    avatarEl.textContent = initials;
+    avatarEl.className   = 'avatar avatar-md ' + color;
+    document.getElementById('chat-name').textContent = room.other_user_name || 'Student';
+    document.getElementById('chat-sub').textContent  = 'Student';
+
+    // Mark active
+    document.querySelectorAll('.room-item').forEach(function(el){
+      el.classList.toggle('active', el.getAttribute('data-room-id') == room.id);
+    });
+
+    // Load messages
+    var msgEl = document.getElementById('chat-messages');
+    msgEl.innerHTML = '<div class="skel" style="height:40px;border-radius:8px;width:60%;margin-bottom:8px;"></div><div class="skel" style="height:40px;border-radius:8px;width:50%;margin-left:auto;margin-bottom:8px;"></div>';
+
+    try {
+      var res  = await Api.messages.messages(room.id);
+      var msgs = (res && res.data && res.data.messages) || [];
+      renderMessages(msgs);
+      await Api.messages.markRead(room.id);
+    } catch(err) {
+      msgEl.innerHTML = '<div style="text-align:center;color:var(--color-danger);font-size:var(--font-size-sm);">Failed to load messages.</div>';
+    }
+  }
+
+  function renderMessages(msgs) {
+    var el = document.getElementById('chat-messages');
+    if (!msgs.length) {
+      el.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--font-size-sm);">No messages yet. Send the first message!</div>';
+      return;
+    }
+    el.innerHTML = msgs.map(function(m) {
+      var mine = m.sender_id === myId || m.is_mine;
+      return '<div class="msg-bubble' + (mine?' mine':'') + '">' +
+        '<div class="msg-text">' + _esc(m.content) + '</div>' +
+        '<span class="msg-time">' + Utils.timeAgo(m.created_at) + '</span>' +
+      '</div>';
+    }).join('');
+    el.scrollTop = el.scrollHeight;
+  }
+
+  // Send message
+  var chatInput = document.getElementById('chat-input');
+  var sendBtn   = document.getElementById('send-btn');
+
+  async function sendMessage() {
+    if (!activeRoomId) return;
+    var content = chatInput.value.trim();
+    if (!content) return;
+    chatInput.value = '';
+    try {
+      var res = await Api.messages.send(activeRoomId, { content: content });
+      var msg = res && res.data;
+      if (msg) {
+        var el = document.getElementById('chat-messages');
+        var bubble = document.createElement('div');
+        bubble.className = 'msg-bubble mine';
+        bubble.innerHTML = '<div class="msg-text">' + _esc(content) + '</div><span class="msg-time">just now</span>';
+        el.appendChild(bubble);
+        el.scrollTop = el.scrollHeight;
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  chatInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  chatInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  // Search
+  document.getElementById('rooms-search').addEventListener('input', Utils.debounce(function() {
+    var q = this.value.toLowerCase();
+    var filtered = allRooms.filter(function(r){ return (r.other_user_name||'').toLowerCase().includes(q); });
+    renderRooms(filtered);
+  }, 300));
+
+  window.openBroadcast = function() {
+    alert('Broadcast feature: Send a message to all students across your courses. Coming with full backend integration.');
+  };
+
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+});
+</script>
+</body>
+</html>

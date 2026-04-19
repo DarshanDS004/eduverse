@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
 
   <link rel="stylesheet" href="../../css/variables.css" />
@@ -281,43 +281,47 @@
       <div class="sidebar-logo">E</div>
       <div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Student Portal</div></div>
     </a>
-    <nav class="sidebar-nav" role="menubar">
-      <a class="sidebar-item active" href="dashboard.html" role="menuitem" aria-current="page">
-        <span class="sidebar-item-icon"><i data-feather="grid"></i></span>
-        <span class="sidebar-item-label">Dashboard</span>
-      </a>
-      <a class="sidebar-item" href="courses.html" role="menuitem">
-        <span class="sidebar-item-icon"><i data-feather="book-open"></i></span>
-        <span class="sidebar-item-label">My Courses</span>
-      </a>
-      <a class="sidebar-item" href="assignments.html" role="menuitem">
-        <span class="sidebar-item-icon"><i data-feather="clipboard"></i></span>
-        <span class="sidebar-item-label">Assignments</span>
-        <span class="sidebar-item-badge" id="badge-assignments" style="display:none;"></span>
-      </a>
-      <a class="sidebar-item" href="performance.html" role="menuitem">
-        <span class="sidebar-item-icon"><i data-feather="trending-up"></i></span>
-        <span class="sidebar-item-label">Performance</span>
-      </a>
-      <a class="sidebar-item" href="calendar.html" role="menuitem">
-        <span class="sidebar-item-icon"><i data-feather="calendar"></i></span>
-        <span class="sidebar-item-label">Calendar</span>
-      </a>
-      <a class="sidebar-item" href="messages.html" role="menuitem">
-        <span class="sidebar-item-icon"><i data-feather="message-circle"></i></span>
-        <span class="sidebar-item-label">Messages</span>
-        <span class="sidebar-item-badge" id="badge-messages" style="display:none;"></span>
-      </a>
-      <a class="sidebar-item" href="certificates.html" role="menuitem">
-        <span class="sidebar-item-icon"><i data-feather="award"></i></span>
-        <span class="sidebar-item-label">Certificates</span>
-      </a>
-      <div class="sidebar-divider"></div>
-      <a class="sidebar-item" href="profile.html" role="menuitem">
-        <span class="sidebar-item-icon"><i data-feather="user"></i></span>
-        <span class="sidebar-item-label">My Profile</span>
-      </a>
-    </nav>
+   <nav class="sidebar-nav" role="menubar">
+  <a class="sidebar-item active" href="dashboard.html">
+    <span class="sidebar-item-icon"><i data-feather="grid"></i></span>
+    <span class="sidebar-item-label">Dashboard</span>
+  </a>
+  <a class="sidebar-item" href="courses.html">
+    <span class="sidebar-item-icon"><i data-feather="book-open"></i></span>
+    <span class="sidebar-item-label">My Courses</span>
+  </a>
+  <a class="sidebar-item" href="assignments.html">
+    <span class="sidebar-item-icon"><i data-feather="clipboard"></i></span>
+    <span class="sidebar-item-label">Assignments</span>
+    <span class="sidebar-item-badge" id="badge-assignments" style="display:none;"></span>
+  </a>
+  <a class="sidebar-item" href="performance.html">
+    <span class="sidebar-item-icon"><i data-feather="trending-up"></i></span>
+    <span class="sidebar-item-label">Performance</span>
+  </a>
+  <a class="sidebar-item" href="calendar.html">
+    <span class="sidebar-item-icon"><i data-feather="calendar"></i></span>
+    <span class="sidebar-item-label">Calendar</span>
+  </a>
+  <a class="sidebar-item" href="messages.html">
+    <span class="sidebar-item-icon"><i data-feather="message-circle"></i></span>
+    <span class="sidebar-item-label">Messages</span>
+    <span class="sidebar-item-badge" id="badge-messages" style="display:none;"></span>
+  </a>
+  <a class="sidebar-item" href="materials.html">
+    <span class="sidebar-item-icon"><i data-feather="file-text"></i></span>
+    <span class="sidebar-item-label">Study Materials</span>
+  </a>
+  <a class="sidebar-item" href="certificates.html">
+    <span class="sidebar-item-icon"><i data-feather="award"></i></span>
+    <span class="sidebar-item-label">Certificates</span>
+  </a>
+
+  <a class="sidebar-item" href="profile.html">
+    <span class="sidebar-item-icon"><i data-feather="user"></i></span>
+    <span class="sidebar-item-label">My Profile</span>
+  </a>
+</nav>
     <a class="sidebar-user" href="profile.html">
       <div class="avatar avatar-sm avatar-blue" id="sidebar-avatar">…</div>
       <div class="sidebar-user-info">
@@ -571,14 +575,7 @@
                 </div>
                 <!-- Last 7 days -->
                 <div style="display:flex;justify-content:space-between;margin-top:var(--space-4);" id="streak-days-row">
-                  <!-- Rendered by JS -->
-                  <div style="text-align:center;"><div class="streak-day sd-done">M</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">9</div></div>
-                  <div style="text-align:center;"><div class="streak-day sd-done">T</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">10</div></div>
-                  <div style="text-align:center;"><div class="streak-day sd-done">W</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">11</div></div>
-                  <div style="text-align:center;"><div class="streak-day sd-done">T</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">12</div></div>
-                  <div style="text-align:center;"><div class="streak-day sd-done">F</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">13</div></div>
-                  <div style="text-align:center;"><div class="streak-day sd-done">S</div><div style="font-size:9px;color:var(--text-muted);margin-top:3px;">14</div></div>
-                  <div style="text-align:center;"><div class="streak-day sd-today">S</div><div style="font-size:9px;color:var(--color-primary-600);font-weight:600;margin-top:3px;">15</div></div>
+                  <!-- FIX 15: Rendered dynamically by renderStreakDays() -->
                 </div>
                 <p style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:var(--space-3);text-align:center;" id="streak-msg"></p>
               </div>
@@ -622,6 +619,26 @@
               </div>
             </div>
 
+
+            <!-- Study Materials -->
+<div class="dash-card">
+  <div class="dash-card-header">
+    <div class="dash-card-title">Study Materials</div>
+    <a href="materials.html" class="dash-card-link">Browse all →</a>
+  </div>
+  <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+    <div id="materials-preview">
+      <div class="skel" style="height:48px;border-radius:8px;margin-bottom:8px;"></div>
+      <div class="skel" style="height:48px;border-radius:8px;margin-bottom:8px;"></div>
+      <div class="skel" style="height:48px;border-radius:8px;"></div>
+    </div>
+    <a href="materials.html" class="btn btn-outline btn-sm" 
+      style="width:100%;justify-content:center;margin-top:var(--space-4);display:flex;">
+      <i data-feather="file-text" style="width:14px;height:14px;"></i>
+      Browse Materials
+    </a>
+  </div>
+</div>
             <!-- Announcements -->
             <div class="dash-card">
               <div class="dash-card-header"><div class="dash-card-title">Announcements</div></div>
@@ -645,8 +662,12 @@
 <script src="../../js/utils.js"></script>
 <script src="../../js/store.js"></script>
 <script src="../../js/api.js"></script>
+<script src="../../js/router.js"></script>
 <script src="../../js/auth.js"></script>
 <script src="../../js/init.js"></script>
+<script src="../../js/sidebar.js"></script>
+
+
 <!-- Inline auth guard — runs synchronously before any module -->
 <!-- If no token in localStorage, redirect to login immediately -->
 <script>
@@ -686,8 +707,15 @@ document.addEventListener('DOMContentLoaded', function () {
   var trigger     = document.getElementById('navbar-user-trigger');
   var dropdown    = document.getElementById('user-dropdown');
 
+ 
+ 
   // Restore sidebar state
-  try { if (localStorage.getItem('ev_sidebar_collapsed') === 'true') shell.classList.add('sidebar-collapsed'); } catch(e) {}
+ try {
+  var collapsed = localStorage.getItem('ev_sidebar_collapsed');
+  if (collapsed === 'true') shell.classList.add('sidebar-collapsed');
+  else shell.classList.remove('sidebar-collapsed');
+} catch(e) {}
+
 
   collapseBtn && collapseBtn.addEventListener('click', function () {
     var c = shell.classList.toggle('sidebar-collapsed');
@@ -755,8 +783,36 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ── Welcome subtitle — update after data loads ──
+  // FIX 15: Render last 7 days dynamically from study_dates in state
+  function renderStreakDays(studyDates) {
+    var row = document.getElementById('streak-days-row');
+    if (!row) return;
+    var days = ['S','M','T','W','T','F','S'];
+    var activeDates = new Set((studyDates||[]).map(function(d){ return d.slice(0,10); }));
+    var html = '';
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var dateStr = d.toISOString().slice(0,10);
+      var dayLetter = days[d.getDay()];
+      var dayNum = d.getDate();
+      var isToday = i === 0;
+      var isDone = activeDates.has(dateStr);
+      var cls = isToday ? 'streak-day sd-today' : isDone ? 'streak-day sd-done' : 'streak-day sd-miss';
+      var numStyle = isToday ? 'color:var(--color-primary-600);font-weight:600;' : 'color:var(--text-muted);';
+      html += '<div style="text-align:center;"><div class="'+cls+'">'+dayLetter+'</div>'+
+              '<div style="font-size:9px;'+numStyle+'margin-top:3px;">'+dayNum+'</div></div>';
+    }
+    row.innerHTML = html;
+  }
+
   Store.subscribe('student', function (state) {
     var subtitleEl = document.getElementById('welcome-subtitle');
+    // Render streak days whenever state updates
+    if (state.streak !== undefined) {
+      var sc = document.getElementById('streak-count');
+      if (sc) sc.textContent = state.streak || 0;
+      renderStreakDays(state.study_dates || []);
+    }
     if (!subtitleEl || !state.enrolledCourses) return;
     var pending = (Store.get('notifications.items') || []).filter(function (n) { return !n.read; }).length;
     subtitleEl.textContent = 'You have ' + (state.enrolledCourses.length || 0) + ' enrolled courses' +

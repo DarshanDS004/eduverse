@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Courses — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    /* ── View toggle ── */
+    .view-toggle{display:flex;gap:4px;padding:4px;background:var(--neutral-100);border-radius:var(--border-radius-md);}
+    .view-btn{width:32px;height:32px;border:none;background:none;border-radius:var(--border-radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all var(--transition-fast);}
+    .view-btn.active{background:var(--bg-surface);color:var(--text-primary);box-shadow:var(--shadow-xs);}
+    /* ── Grid / List ── */
+    .courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-5);}
+    .courses-list{display:flex;flex-direction:column;gap:var(--space-3);}
+    /* ── Course card (grid) ── */
+    .ccard{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;transition:box-shadow var(--transition-base),transform var(--transition-base);display:flex;flex-direction:column;}
+    .ccard:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+    .ccard-thumb-wrap{position:relative;flex-shrink:0;}
+    .ccard-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--neutral-100);display:block;}
+    .ccard-status{position:absolute;top:var(--space-2);left:var(--space-2);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.02em;}
+    .s-published{background:#d1fae5;color:#065f46;}
+    .s-draft{background:var(--neutral-100);color:var(--text-muted);}
+    .s-review{background:#fef3c7;color:#92400e;}
+    .s-archived{background:#fee2e2;color:#991b1b;}
+    .s-rejected{background:#fee2e2;color:#991b1b;}
+    .ccard-body{padding:var(--space-4);flex:1;display:flex;flex-direction:column;}
+    .ccard-cat{font-size:var(--font-size-xs);font-weight:700;color:var(--color-primary-600);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+    .ccard-title{font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);line-height:var(--leading-snug);margin-bottom:var(--space-2);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
+    .ccard-meta{display:flex;align-items:center;gap:var(--space-3);font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:var(--space-3);}
+    .ccard-foot{display:flex;align-items:center;justify-content:space-between;padding-top:var(--space-3);border-top:1px solid var(--border-color);margin-top:auto;}
+    .ccard-price{font-size:var(--font-size-base);font-weight:800;color:var(--text-primary);}
+    .ccard-actions{display:flex;gap:4px;}
+    /* ── List card ── */
+    .clist-item{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);display:flex;align-items:center;gap:var(--space-4);padding:var(--space-4);transition:box-shadow var(--transition-fast);}
+    .clist-item:hover{box-shadow:var(--shadow-md);}
+    .clist-thumb{width:120px;height:68px;border-radius:var(--border-radius-md);object-fit:cover;background:var(--neutral-100);flex-shrink:0;}
+    .clist-info{flex:1;min-width:0;}
+    .clist-title{font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .clist-meta{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;display:flex;align-items:center;gap:var(--space-3);}
+    .clist-actions{display:flex;gap:4px;flex-shrink:0;}
+    /* ── Modal ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-start;justify-content:center;padding:var(--space-6) var(--space-4);overflow-y:auto;}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:0 24px 80px rgba(0,0,0,.2);width:100%;max-width:860px;display:flex;flex-direction:column;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);position:sticky;top:0;background:var(--bg-elevated);z-index:1;border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;}
+    .modal-title{font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-5);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);background:var(--neutral-50);border-radius:0 0 var(--border-radius-xl) var(--border-radius-xl);position:sticky;bottom:0;}
+    .form-section{display:flex;flex-direction:column;gap:var(--space-4);}
+    .form-section-title{font-size:var(--font-size-sm);font-weight:700;color:var(--text-secondary);padding-bottom:var(--space-3);border-bottom:1px solid var(--border-color);}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);}
+    .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4);}
+    .form-group{display:flex;flex-direction:column;gap:var(--space-2);}
+    .form-label{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .form-input,.form-select,.form-textarea{width:100%;font-family:var(--font-ui);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--border-radius-md);outline:none;transition:border-color var(--transition-fast);}
+    .form-input,.form-select{height:42px;padding:0 var(--space-4);}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--color-primary-600);box-shadow:0 0 0 3px rgba(26,86,219,.08);}
+    .form-textarea{padding:var(--space-3) var(--space-4);resize:vertical;min-height:80px;line-height:1.6;}
+    /* ── Thumbnail zone ── */
+    .thumb-zone-modal{border:2px dashed var(--border-color);border-radius:var(--border-radius-md);padding:var(--space-5);text-align:center;cursor:pointer;transition:all var(--transition-fast);background:var(--bg-sunken);}
+    .thumb-zone-modal:hover{border-color:var(--color-primary-400);background:var(--color-primary-50);}
+    .thumb-preview-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:var(--border-radius-md);background:var(--neutral-100);display:none;}
+    /* ── Coupon row ── */
+    .coupon-row{display:grid;grid-template-columns:1fr 100px 100px 100px 32px;gap:var(--space-2);align-items:center;margin-bottom:var(--space-2);}
+    /* ── Toast ── */
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:9999;display:flex;flex-direction:column;gap:var(--space-3);max-width:380px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:center;gap:var(--space-3);animation:slideIn .25s ease;}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-info);}
+    /* ── Skeleton ── */
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.4}}
+    /* ── Star rating ── */
+    .stars{color:#f59e0b;font-size:12px;}
+    /* ── Responsive ── */
+    @media(max-width:1279px){.courses-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:767px){.courses-grid{grid-template-columns:1fr;}.form-row-2,.form-row-3{grid-template-columns:1fr;}.coupon-row{grid-template-columns:1fr 80px 80px 80px 32px;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html">
+      <div class="sidebar-logo">E</div>
+      <div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div>
+    </a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item active" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar avatar-sm" id="sidebar-avatar"></div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-body">
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);">My Courses</div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);" id="courses-count-label">Manage your courses</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="btn btn-primary btn-sm" id="create-course-btn">
+          <i data-feather="plus" style="width:14px;height:14px;"></i> Create Course
+        </button>
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm" id="navbar-avatar"></div>
+          <span class="navbar-user-name" id="navbar-user-name">Loading…</span>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:180px;">
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebar-overlay-2"></div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Filters -->
+        <div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-5);">
+          <div style="position:relative;flex:1;min-width:200px;">
+            <i data-feather="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-muted);pointer-events:none;"></i>
+            <input type="text" id="search-input" placeholder="Search courses…"
+              style="width:100%;height:38px;padding:0 var(--space-4) 0 var(--space-9);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-surface);outline:none;font-family:var(--font-ui);color:var(--text-primary);" />
+          </div>
+          <select id="filter-status"
+            style="height:38px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-surface);outline:none;font-family:var(--font-ui);color:var(--text-primary);">
+            <option value="">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="pending_review">Under Review</option>
+            <option value="archived">Archived</option>
+          </select>
+          <select id="filter-sort"
+            style="height:38px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-surface);outline:none;font-family:var(--font-ui);color:var(--text-primary);">
+            <option value="recent">Recently Updated</option>
+            <option value="students">Most Students</option>
+            <option value="rating">Highest Rating</option>
+            <option value="revenue">Highest Revenue</option>
+          </select>
+          <div class="view-toggle">
+            <button class="view-btn active" id="grid-btn" title="Grid view" onclick="setView('grid',this)">
+              <i data-feather="grid" style="width:15px;height:15px;"></i>
+            </button>
+            <button class="view-btn" id="list-btn" title="List view" onclick="setView('list',this)">
+              <i data-feather="list" style="width:15px;height:15px;"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Courses container -->
+        <div id="courses-container">
+          <div class="courses-grid" id="courses-skeleton">
+            <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);overflow:hidden;">
+              <div class="skel" style="aspect-ratio:16/9;width:100%;"></div>
+              <div style="padding:var(--space-4);">
+                <div class="skel" style="height:12px;width:50%;margin-bottom:8px;"></div>
+                <div class="skel" style="height:18px;width:90%;margin-bottom:8px;"></div>
+                <div class="skel" style="height:12px;width:40%;"></div>
+              </div>
+            </div>
+            <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);overflow:hidden;">
+              <div class="skel" style="aspect-ratio:16/9;width:100%;"></div>
+              <div style="padding:var(--space-4);">
+                <div class="skel" style="height:12px;width:50%;margin-bottom:8px;"></div>
+                <div class="skel" style="height:18px;width:90%;margin-bottom:8px;"></div>
+                <div class="skel" style="height:12px;width:40%;"></div>
+              </div>
+            </div>
+            <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);overflow:hidden;">
+              <div class="skel" style="aspect-ratio:16/9;width:100%;"></div>
+              <div style="padding:var(--space-4);">
+                <div class="skel" style="height:12px;width:50%;margin-bottom:8px;"></div>
+                <div class="skel" style="height:18px;width:90%;margin-bottom:8px;"></div>
+                <div class="skel" style="height:12px;width:40%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CREATE / EDIT COURSE MODAL
+═══════════════════════════════════════ -->
+<div class="modal-overlay" id="course-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Create New Course</div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal()"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Basic Info -->
+      <div class="form-section">
+        <div class="form-section-title">Basic Information</div>
+        <div class="form-group">
+          <label class="form-label">Course Title *</label>
+          <input type="text" id="c-title" class="form-input" placeholder="e.g. Complete Mathematics for Class 10 CBSE" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Short Description *</label>
+          <input type="text" id="c-short-desc" class="form-input" placeholder="One-line summary shown on course cards (max 160 chars)" maxlength="160" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Description</label>
+          <textarea id="c-desc" class="form-textarea" rows="4" placeholder="Detailed course description — what students will learn, what's covered, prerequisites…"></textarea>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select id="c-category" class="form-select">
+              <option value="">Select category</option>
+              <option>Mathematics</option><option>Science</option><option>Physics</option>
+              <option>Chemistry</option><option>Biology</option><option>Computer Science</option>
+              <option>English</option><option>History</option><option>Geography</option>
+              <option>Economics</option><option>Commerce</option><option>Arts</option>
+              <option>Languages</option><option>Engineering</option><option>Medical</option>
+              <option>Law</option><option>Management</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Education Level *</label>
+            <select id="c-level" class="form-select">
+              <option value="">Select level</option>
+              <option value="preschool">Pre-School</option>
+              <option value="primary">Primary (Grade 1–5)</option>
+              <option value="middle">Middle School (Grade 6–8)</option>
+              <option value="high">High School (Grade 9–12)</option>
+              <option value="ug">Undergraduate (UG)</option>
+              <option value="pg">Postgraduate (PG)</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="professional">Professional / Certification</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Language</label>
+            <select id="c-language" class="form-select">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Kannada">Kannada</option>
+              <option value="Tamil">Tamil</option>
+              <option value="Telugu">Telugu</option>
+              <option value="Marathi">Marathi</option>
+              <option value="Bengali">Bengali</option>
+              <option value="Gujarati">Gujarati</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thumbnail -->
+      <div class="form-section">
+        <div class="form-section-title">Course Thumbnail</div>
+        <div style="display:flex;gap:var(--space-5);align-items:flex-start;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div class="thumb-zone-modal" id="thumb-zone" onclick="document.getElementById('thumb-input').click()">
+              <i data-feather="image" style="width:28px;height:28px;color:var(--text-muted);margin-bottom:var(--space-2);"></i>
+              <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Click to upload thumbnail</div>
+              <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;">JPG, PNG, WEBP — recommended 1280×720px · Max 5 MB</div>
+              <input type="file" id="thumb-input" accept="image/*" hidden />
+            </div>
+            <div id="thumb-upload-status" style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;"></div>
+          </div>
+          <div style="width:200px;flex-shrink:0;">
+            <img id="thumb-preview" class="thumb-preview-img" alt="Thumbnail preview" />
+            <div id="thumb-preview-placeholder" style="width:200px;aspect-ratio:16/9;border-radius:var(--border-radius-md);background:var(--neutral-100);display:flex;align-items:center;justify-content:center;font-size:var(--font-size-xs);color:var(--text-muted);">Preview</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="form-section">
+        <div class="form-section-title">Pricing</div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Pricing Type *</label>
+            <select id="c-price-type" class="form-select" onchange="togglePriceField()">
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+          <div class="form-group" id="price-field" style="display:none;">
+            <label class="form-label">Price (₹) *</label>
+            <input type="number" id="c-price" class="form-input" placeholder="e.g. 999" min="1" />
+          </div>
+        </div>
+        <div id="coupon-section" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
+            <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-secondary);">Coupon Codes</div>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addCouponRow()">
+              <i data-feather="plus" style="width:13px;height:13px;"></i> Add Coupon
+            </button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 90px 90px 90px 32px;gap:var(--space-2);font-size:var(--font-size-xs);font-weight:600;color:var(--text-muted);margin-bottom:4px;padding:0 2px;">
+            <span>Code</span><span>Type</span><span>Value</span><span>Max Uses</span><span></span>
+          </div>
+          <div id="coupons-list"></div>
+        </div>
+      </div>
+
+      <!-- Course Details -->
+      <div class="form-section">
+        <div class="form-section-title">Course Details</div>
+        <div class="form-group">
+          <label class="form-label">What Students Will Learn <span style="font-weight:400;color:var(--text-muted);">(one per line)</span></label>
+          <textarea id="c-outcomes" class="form-textarea" rows="3" placeholder="Master algebra and geometry&#10;Solve exam-level problems confidently&#10;Understand concepts with real-world examples"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Requirements / Prerequisites <span style="font-weight:400;color:var(--text-muted);">(one per line)</span></label>
+          <textarea id="c-requirements" class="form-textarea" rows="2" placeholder="Basic arithmetic knowledge&#10;Access to a calculator"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Audience</label>
+          <input type="text" id="c-audience" class="form-input" placeholder="e.g. Class 10 CBSE students preparing for board exams" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags <span style="font-weight:400;color:var(--text-muted);">(comma separated)</span></label>
+          <input type="text" id="c-tags" class="form-input" placeholder="algebra, class 10, cbse, maths" />
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="form-section">
+        <div class="form-section-title">Publish Settings</div>
+        <div class="form-group">
+          <label class="form-label">Course Status</label>
+          <select id="c-status" class="form-select">
+            <option value="draft">Save as Draft</option>
+            <option value="review">Submit for Review</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-outline" id="builder-btn" style="display:none;" onclick="goToBuilder()">
+        <i data-feather="layers" style="width:14px;height:14px;"></i> Open Course Builder
+      </button>
+      <button class="btn btn-primary" id="course-save-btn" onclick="saveCourse()">
+        <i data-feather="save" style="width:14px;height:14px;"></i> Save Course
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     DELETE CONFIRM MODAL
+═══════════════════════════════════ -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title">Delete Course?</div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="document.getElementById('delete-modal').classList.remove('open')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:var(--space-6);">
+      <p style="font-size:var(--font-size-sm);color:var(--text-secondary);">
+        This will permanently delete <strong id="delete-course-name"></strong> and all its content. This cannot be undone.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('delete-modal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>window.EV_BASE = '../../';</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+
+<script>
+/* ── Auth guard ── */
+(function () {
+  var t, u;
+  try { t = localStorage.getItem('ev_token'); u = t ? JSON.parse(localStorage.getItem('ev_user')) : null; } catch (e) {}
+  if (!t || !u) { window.location.replace('../../pages/auth/login.html'); return; }
+  if (u.role !== 'instructor') { window.location.replace('../../pages/errors/403.html'); }
+})();
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+
+  /* ── Init sidebar / navbar ── */
+  var user; try { user = JSON.parse(localStorage.getItem('ev_user')) || {}; } catch (e) { user = {}; }
+  var name = user.name || user.full_name || '';
+  ['sidebar-user-name','navbar-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+
+  if (typeof Utils !== 'undefined') {
+    ['sidebar-avatar','navbar-avatar'].forEach(function(id){
+      var el=document.getElementById(id); if(!el)return;
+      el.textContent=Utils.getInitials(name);
+      el.className='avatar avatar-sm '+(Utils.getAvatarColor?Utils.getAvatarColor(name):'');
+    });
+  }
+
+  var shell = document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click', function(){ shell.classList.toggle('sidebar-open'); });
+  document.getElementById('sidebar-overlay').addEventListener('click', function(){ shell.classList.remove('sidebar-open'); });
+  document.getElementById('sidebar-collapse-btn').addEventListener('click', function(){
+    var c = shell.classList.toggle('sidebar-collapsed');
+    try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}
+  });
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');}catch(e){}
+
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var d=document.documentElement.classList.toggle('dark');
+      document.documentElement.setAttribute('data-theme',d?'dark':'light');
+      try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}
+    });
+  });
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){
+    btn.addEventListener('click',function(e){e.preventDefault();if(typeof Auth!=='undefined')Auth.logout();});
+  });
+  var trigger=document.getElementById('navbar-user-trigger'), dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){
+    trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});
+    document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});
+  }
+
+  /* ════════════════════════════════════════
+     STATE
+  ════════════════════════════════════════ */
+var API_BASE = 'http://localhost:5000/api/v1'; 
+  var token        = localStorage.getItem('ev_token') || '';
+  var allCourses   = [];
+  var editingId    = null;
+  var currentView  = 'grid';
+  var thumbFile    = null;
+  var deletingId   = null;
+  var coupons      = []; // [{code, type, value, max_uses}]
+
+  /* ════════════════════════════════════════
+     HELPERS
+  ════════════════════════════════════════ */
+  function esc(s){ if(s==null)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function showToast(type, msg) {
+    var c = document.getElementById('toast-container');
+    var el = document.createElement('div');
+    el.className = 'toast toast-' + type;
+    el.innerHTML = '<div style="flex:1;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">' + esc(msg) + '</div>' +
+      '<button style="background:none;border:none;cursor:pointer;color:var(--text-muted);" onclick="this.closest(\'.toast\').remove()">✕</button>';
+    c.appendChild(el);
+    setTimeout(function(){ if(el.parentNode)el.remove(); }, 5000);
+  }
+
+  /**
+   * apiFetch — BULLETPROOF fetch wrapper.
+   * Never throws "Unexpected end of JSON" — reads text first, parses safely.
+   */
+  async function apiFetch(method, path, body) {
+    var headers = { 'Authorization': 'Bearer ' + token };
+    var opts    = { method: method, headers: headers };
+
+    if (body !== undefined && body !== null) {
+      headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+
+    var response;
+    try {
+      response = await fetch(API_BASE + path, opts);
+    } catch (netErr) {
+      throw new Error('Network error — cannot reach server. Is it running? (' + netErr.message + ')');
+    }
+
+    // ── Read as text first — safe even if body is empty ──
+    var rawText;
+    try { rawText = await response.text(); } catch (e) { rawText = ''; }
+
+    // Empty body
+    if (!rawText || !rawText.trim()) {
+      if (response.ok) return { success: true, data: null, message: 'OK' };
+      throw new Error(
+        'Server returned an empty response (HTTP ' + response.status + '). ' +
+        'Check your Node.js terminal for errors.'
+      );
+    }
+
+    // Try JSON parse
+    var data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseErr) {
+      // Server returned HTML crash page / nginx 502 / etc.
+      var hint = rawText.substring(0, 300).replace(/<[^>]+>/g, '').replace(/\s+/g,' ').trim();
+      throw new Error(
+        'Server returned non-JSON (HTTP ' + response.status + '). ' +
+        'Likely a server crash. Terminal output: ' + hint
+      );
+    }
+
+    // 401 → logout
+    if (response.status === 401) {
+      try { localStorage.removeItem('ev_token'); localStorage.removeItem('ev_user'); } catch(e){}
+      setTimeout(function(){ window.location.replace('../../pages/auth/login.html'); }, 800);
+      throw new Error(data.message || 'Session expired.');
+    }
+
+    if (!data.success) throw new Error(data.message || 'Request failed (HTTP ' + response.status + ')');
+    return data;
+  }
+
+  /**
+   * safeUpload — multipart POST with safe JSON parsing (no raw .json() call).
+   */
+  async function safeUpload(path, formData) {
+    var response;
+    try {
+      response = await fetch(API_BASE + path, {
+        method:  'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body:    formData,
+      });
+    } catch (netErr) {
+      throw new Error('Upload network error: ' + netErr.message);
+    }
+
+    var rawText;
+    try { rawText = await response.text(); } catch(e) { rawText = ''; }
+    if (!rawText || !rawText.trim()) {
+      if (response.ok) return { success: true, data: null };
+      throw new Error('Upload failed — empty server response (HTTP ' + response.status + ')');
+    }
+    var data;
+    try { data = JSON.parse(rawText); } catch(e) {
+      throw new Error('Upload response is not JSON (HTTP ' + response.status + ')');
+    }
+    if (!data.success) throw new Error(data.message || 'Upload failed');
+    return data;
+  }
+
+  /* ════════════════════════════════════════
+     LOAD COURSES
+  ════════════════════════════════════════ */
+  async function loadCourses() {
+    try {
+      var res    = await apiFetch('GET', '/instructor/courses');
+      allCourses = (res && res.data) || [];
+      document.getElementById('courses-count-label').textContent =
+        allCourses.length + ' course' + (allCourses.length !== 1 ? 's' : '');
+      applyFilters();
+    } catch (err) {
+      document.getElementById('courses-container').innerHTML =
+        '<div style="text-align:center;padding:var(--space-16);color:var(--text-muted);">' +
+        '<div style="font-size:3rem;margin-bottom:var(--space-4);opacity:.4;">📚</div>' +
+        '<div style="font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);">No courses yet</div>' +
+        '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-5);">Create your first course and start teaching</div>' +
+        '<button class="btn btn-primary" onclick="openCreateModal()">Create My First Course</button></div>';
+    }
+  }
+
+  /* ════════════════════════════════════════
+     FILTERS + RENDER
+  ════════════════════════════════════════ */
+  function applyFilters() {
+    var q      = document.getElementById('search-input').value.toLowerCase();
+    var status = document.getElementById('filter-status').value;
+    var sort   = document.getElementById('filter-sort').value;
+
+    var filtered = allCourses.filter(function(c) {
+      var mQ = !q || (c.title||'').toLowerCase().includes(q) || (c.category||'').toLowerCase().includes(q);
+      var mS = !status || c.status === status || (status === 'pending_review' && c.status === 'review');
+      return mQ && mS;
+    });
+
+    filtered.sort(function(a,b) {
+      if (sort==='students') return (b.enrollment_count||0)-(a.enrollment_count||0);
+      if (sort==='rating')   return (parseFloat(b.avg_rating)||0)-(parseFloat(a.avg_rating)||0);
+      if (sort==='revenue')  return (parseFloat(b.total_revenue)||0)-(parseFloat(a.total_revenue)||0);
+      return new Date(b.updated_at||0)-new Date(a.updated_at||0);
+    });
+
+    renderCourses(filtered);
+  }
+
+  function renderCourses(courses) {
+    var container = document.getElementById('courses-container');
+    if (!courses.length) {
+      container.innerHTML =
+        '<div style="text-align:center;padding:var(--space-12);color:var(--text-muted);">' +
+        '<div style="font-size:2.5rem;margin-bottom:var(--space-3);opacity:.4;">🔍</div>' +
+        '<div style="font-weight:700;color:var(--text-primary);">No courses found</div>' +
+        '<div style="font-size:var(--font-size-sm);margin-top:var(--space-1);">Try adjusting your filters</div></div>';
+      return;
+    }
+    if (currentView === 'list') {
+      container.innerHTML = '<div class="courses-list">' + courses.map(renderListItem).join('') + '</div>';
+    } else {
+      container.innerHTML = '<div class="courses-grid">' + courses.map(renderGridCard).join('') + '</div>';
+    }
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  }
+
+  var THUMB_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='180'%3E%3Crect fill='%23e5e7eb' width='320' height='180'/%3E%3Ctext fill='%236b7280' font-size='14' text-anchor='middle' x='160' y='96'%3ENo thumbnail%3C/text%3E%3C/svg%3E";
+
+  function statusLabel(s) {
+    return {published:'Published',draft:'Draft',pending_review:'Under Review',review:'Under Review',archived:'Archived',rejected:'Rejected'}[s]||'Draft';
+  }
+  function statusCls(s) {
+    return {published:'s-published',draft:'s-draft',pending_review:'s-review',review:'s-review',archived:'s-archived',rejected:'s-rejected'}[s]||'s-draft';
+  }
+
+  function renderGridCard(c) {
+    var thumb = c.thumbnail_url || THUMB_PLACEHOLDER;
+    var price = c.is_free || !parseFloat(c.price) ? 'Free' : '₹' + parseFloat(c.price).toLocaleString('en-IN');
+    var stars  = parseFloat(c.avg_rating) > 0 ? '⭐ ' + parseFloat(c.avg_rating).toFixed(1) : '';
+    return '<div class="ccard">' +
+      '<div class="ccard-thumb-wrap">' +
+        '<img class="ccard-thumb" src="' + esc(thumb) + '" alt="' + esc(c.title) + '" ' +
+          'onerror="this.src=\'' + THUMB_PLACEHOLDER + '\'" />' +
+        '<span class="ccard-status ' + statusCls(c.status) + '">' + statusLabel(c.status) + '</span>' +
+      '</div>' +
+      '<div class="ccard-body">' +
+        '<div class="ccard-cat">' + esc(c.category || 'Uncategorized') + '</div>' +
+        '<div class="ccard-title">' + esc(c.title) + '</div>' +
+        '<div class="ccard-meta">' +
+          '<span><i data-feather="users" style="width:11px;height:11px;display:inline;margin-right:2px;"></i>' + (c.enrollment_count||0) + ' students</span>' +
+          (stars ? '<span>' + stars + '</span>' : '') +
+          '<span>' + (c.total_videos||c.video_count||0) + ' lessons</span>' +
+        '</div>' +
+        '<div class="ccard-foot">' +
+          '<span class="ccard-price">' + esc(price) + '</span>' +
+          '<div class="ccard-actions">' +
+            '<button class="btn btn-ghost btn-xs" title="Edit" onclick="openEditModal(' + c.id + ')">' +
+              '<i data-feather="edit-2" style="width:13px;height:13px;"></i>' +
+            '</button>' +
+            '<a class="btn btn-ghost btn-xs" title="Open Builder" href="course-builder.html?course=' + c.id + '">' +
+              '<i data-feather="layers" style="width:13px;height:13px;"></i>' +
+            '</a>' +
+            '<button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" title="Delete" onclick="confirmDelete(' + c.id + ',\'' + esc(c.title) + '\')">' +
+              '<i data-feather="trash-2" style="width:13px;height:13px;"></i>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderListItem(c) {
+    var thumb = c.thumbnail_url || THUMB_PLACEHOLDER;
+    var price = c.is_free || !parseFloat(c.price) ? 'Free' : '₹' + parseFloat(c.price).toLocaleString('en-IN');
+    return '<div class="clist-item">' +
+      '<img class="clist-thumb" src="' + esc(thumb) + '" alt="' + esc(c.title) + '" ' +
+        'onerror="this.src=\'' + THUMB_PLACEHOLDER + '\'" />' +
+      '<div class="clist-info">' +
+        '<div class="clist-title">' + esc(c.title) + '</div>' +
+        '<div class="clist-meta">' +
+          '<span class="ccard-status ' + statusCls(c.status) + '">' + statusLabel(c.status) + '</span>' +
+          '<span>' + esc(c.category||'') + '</span>' +
+          '<span>' + (c.enrollment_count||0) + ' students</span>' +
+          '<span>' + price + '</span>' +
+          (parseFloat(c.avg_rating)>0 ? '<span>⭐ '+parseFloat(c.avg_rating).toFixed(1)+'</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="clist-actions">' +
+        '<button class="btn btn-outline btn-sm" onclick="openEditModal(' + c.id + ')">Edit</button>' +
+        '<a class="btn btn-primary btn-sm" href="course-builder.html?course=' + c.id + '">Builder</a>' +
+        '<button class="btn btn-ghost btn-sm" style="color:var(--color-danger);" onclick="confirmDelete(' + c.id + ',\'' + esc(c.title) + '\')"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ════════════════════════════════════════
+     VIEW TOGGLE
+  ════════════════════════════════════════ */
+  window.setView = function (v, btn) {
+    currentView = v;
+    document.getElementById('grid-btn').classList.toggle('active', v === 'grid');
+    document.getElementById('list-btn').classList.toggle('active', v === 'list');
+    applyFilters();
+  };
+
+  /* ════════════════════════════════════════
+     MODAL OPEN / CLOSE
+  ════════════════════════════════════════ */
+  window.openCreateModal = function () {
+    editingId = null; thumbFile = null; coupons = [];
+    document.getElementById('modal-title').textContent = 'Create New Course';
+    document.getElementById('builder-btn').style.display = 'none';
+    clearForm();
+    document.getElementById('course-modal').classList.add('open');
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  };
+
+  window.openEditModal = async function (id) {
+    editingId = id; thumbFile = null;
+    document.getElementById('modal-title').textContent = 'Edit Course';
+    document.getElementById('builder-btn').style.display = 'flex';
+    clearForm();
+    try {
+      var res = await apiFetch('GET', '/instructor/courses/' + id);
+      var c   = res.data;
+      if (!c) throw new Error('Course not found');
+      fillForm(c);
+      // Load coupons
+      coupons = (c.coupons || []).map(function(cp){ return { code:cp.code, type:cp.type, value:cp.value, max_uses:cp.max_uses }; });
+      renderCoupons();
+    } catch (err) {
+      showToast('error', 'Failed to load course: ' + err.message);
+    }
+    document.getElementById('course-modal').classList.add('open');
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  };
+
+  window.closeModal = function () {
+    document.getElementById('course-modal').classList.remove('open');
+  };
+
+  window.goToBuilder = function () {
+    if (editingId) window.location.href = 'course-builder.html?course=' + editingId;
+  };
+
+  /* ════════════════════════════════════════
+     FORM HELPERS
+  ════════════════════════════════════════ */
+  function clearForm() {
+    ['c-title','c-short-desc','c-desc','c-outcomes','c-requirements','c-audience','c-tags'].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.value = '';
+    });
+    document.getElementById('c-category').value  = '';
+    document.getElementById('c-level').value     = '';
+    document.getElementById('c-language').value  = 'English';
+    document.getElementById('c-price-type').value= 'free';
+    document.getElementById('c-price').value     = '';
+    document.getElementById('c-status').value    = 'draft';
+    document.getElementById('price-field').style.display   = 'none';
+    document.getElementById('coupon-section').style.display= 'none';
+    document.getElementById('coupons-list').innerHTML       = '';
+    document.getElementById('thumb-upload-status').textContent = '';
+    var preview = document.getElementById('thumb-preview');
+    var placeholder = document.getElementById('thumb-preview-placeholder');
+    if (preview) { preview.src = ''; preview.style.display = 'none'; }
+    if (placeholder) placeholder.style.display = '';
+    coupons = [];
+  }
+
+  function fillForm(c) {
+    var setVal = function(id, val){ var el=document.getElementById(id); if(el&&val!=null) el.value=val; };
+    setVal('c-title',        c.title);
+    setVal('c-short-desc',   c.description || c.short_description);
+    setVal('c-desc',         c.description);
+    setVal('c-category',     c.category);
+    setVal('c-level',        c.level);
+    setVal('c-language',     c.language || 'English');
+    setVal('c-outcomes',     c.what_you_learn);
+    setVal('c-requirements', c.requirements);
+    setVal('c-audience',     c.target_audience);
+    setVal('c-tags',         c.tags);
+    setVal('c-status',       c.status === 'published' ? 'review' : (c.status || 'draft'));
+
+    var isFree = c.is_free == 1 || !parseFloat(c.price);
+    document.getElementById('c-price-type').value = isFree ? 'free' : 'paid';
+    if (!isFree) {
+      document.getElementById('price-field').style.display = '';
+      document.getElementById('c-price').value = c.price;
+      document.getElementById('coupon-section').style.display = '';
+    }
+
+    // Thumbnail
+    if (c.thumbnail_url) {
+      var preview     = document.getElementById('thumb-preview');
+      var placeholder = document.getElementById('thumb-preview-placeholder');
+      preview.src = c.thumbnail_url;
+      preview.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+    }
+  }
+
+  /* ════════════════════════════════════════
+     PRICING TOGGLE
+  ════════════════════════════════════════ */
+  window.togglePriceField = function () {
+    var paid = document.getElementById('c-price-type').value === 'paid';
+    document.getElementById('price-field').style.display    = paid ? '' : 'none';
+    document.getElementById('coupon-section').style.display = paid ? '' : 'none';
+    if (!paid) { document.getElementById('c-price').value = ''; }
+  };
+
+  /* ════════════════════════════════════════
+     COUPON MANAGEMENT
+  ════════════════════════════════════════ */
+  window.addCouponRow = function () {
+    coupons.push({ code: '', type: 'percentage', value: 10, max_uses: '' });
+    renderCoupons();
+  };
+
+  window.removeCoupon = function (idx) {
+    coupons.splice(idx, 1);
+    renderCoupons();
+  };
+
+  function renderCoupons() {
+    var list = document.getElementById('coupons-list');
+    if (!coupons.length) { list.innerHTML = '<div style="font-size:var(--font-size-xs);color:var(--text-muted);padding:var(--space-2);">No coupons added yet.</div>'; return; }
+    list.innerHTML = coupons.map(function(cp, i) {
+      return '<div style="display:grid;grid-template-columns:1fr 90px 90px 90px 32px;gap:var(--space-2);margin-bottom:var(--space-2);align-items:center;">' +
+        '<input type="text" class="form-input" style="height:34px;text-transform:uppercase;" placeholder="SAVE20" value="' + esc(cp.code) + '" oninput="coupons[' + i + '].code=this.value.toUpperCase()" />' +
+        '<select class="form-select" style="height:34px;" onchange="coupons[' + i + '].type=this.value">' +
+          '<option value="percentage"' + (cp.type==='percentage'?' selected':'') + '>%</option>' +
+          '<option value="flat"' + (cp.type==='flat'?' selected':'') + '>₹ Flat</option>' +
+        '</select>' +
+        '<input type="number" class="form-input" style="height:34px;" placeholder="10" value="' + esc(cp.value) + '" oninput="coupons[' + i + '].value=parseFloat(this.value)||0" />' +
+        '<input type="number" class="form-input" style="height:34px;" placeholder="∞" value="' + esc(cp.max_uses||'') + '" oninput="coupons[' + i + '].max_uses=parseInt(this.value)||null" />' +
+        '<button class="btn btn-ghost btn-xs" style="color:var(--color-danger);height:34px;" onclick="removeCoupon(' + i + ')"><i data-feather="x" style="width:13px;height:13px;"></i></button>' +
+      '</div>';
+    }).join('');
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  }
+
+  /* ════════════════════════════════════════
+     THUMBNAIL UPLOAD PREVIEW
+  ════════════════════════════════════════ */
+  document.getElementById('thumb-input').addEventListener('change', function () {
+    thumbFile = this.files[0];
+    if (!thumbFile) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var preview     = document.getElementById('thumb-preview');
+      var placeholder = document.getElementById('thumb-preview-placeholder');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+      document.getElementById('thumb-upload-status').textContent = '✅ ' + thumbFile.name;
+    };
+    reader.readAsDataURL(thumbFile);
+  });
+
+  /* ════════════════════════════════════════
+     SAVE COURSE
+  ════════════════════════════════════════ */
+  window.saveCourse = async function () {
+    var btn = document.getElementById('course-save-btn');
+    var title = document.getElementById('c-title').value.trim();
+    if (!title) { showToast('error', 'Course title is required.'); return; }
+
+    btn.disabled = true; btn.textContent = editingId ? 'Saving…' : 'Creating…';
+
+    try {
+      var isPaid = document.getElementById('c-price-type').value === 'paid';
+      var price  = isPaid ? (parseFloat(document.getElementById('c-price').value) || 0) : 0;
+
+      var payload = {
+        title:           title,
+        description:     document.getElementById('c-short-desc').value.trim() || document.getElementById('c-desc').value.trim(),
+        short_description: document.getElementById('c-short-desc').value.trim(),
+        category:        document.getElementById('c-category').value,
+        level:           document.getElementById('c-level').value || 'beginner',
+        language:        document.getElementById('c-language').value,
+        price:           price,
+        is_free:         !isPaid,
+        what_you_learn:  document.getElementById('c-outcomes').value.trim(),
+        requirements:    document.getElementById('c-requirements').value.trim(),
+        target_audience: document.getElementById('c-audience').value.trim(),
+        tags:            document.getElementById('c-tags').value.trim(),
+        status:          document.getElementById('c-status').value,
+        coupons:         coupons.filter(function(cp){ return cp.code.trim(); }),
+      };
+
+      var savedId;
+      if (editingId) {
+        await apiFetch('PATCH', '/instructor/courses/' + editingId, payload);
+        savedId = editingId;
+        showToast('success', 'Course updated!');
+      } else {
+        var res = await apiFetch('POST', '/instructor/courses', payload);
+        savedId  = res.data ? res.data.id : res.id;
+        showToast('success', 'Course created! Now upload a thumbnail and add lessons.');
+      }
+
+      // Upload thumbnail if a new file was selected
+      if (thumbFile && savedId) {
+        try {
+          var fd = new FormData();
+          fd.append('thumbnail', thumbFile);
+          var td = await safeUpload('/instructor/courses/' + savedId + '/thumbnail', fd);
+          if (td.success) showToast('success', 'Thumbnail uploaded!');
+        } catch (thumbErr) {
+          showToast('error', 'Thumbnail upload failed: ' + thumbErr.message);
+        }
+      }
+
+      closeModal();
+      loadCourses();
+
+      // Offer to go to builder for new courses
+      if (!editingId && savedId) {
+        if (confirm('Course created! Open Course Builder now to add modules and lessons?')) {
+          window.location.href = 'course-builder.html?course=' + savedId;
+        }
+      }
+
+    } catch (err) {
+      showToast('error', 'Save failed: ' + err.message);
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i data-feather="save" style="width:14px;height:14px;"></i> Save Course';
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  };
+
+  /* ════════════════════════════════════════
+     DELETE COURSE
+  ════════════════════════════════════════ */
+  window.confirmDelete = function (id, title) {
+    deletingId = id;
+    document.getElementById('delete-course-name').textContent = title;
+    document.getElementById('delete-modal').classList.add('open');
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  };
+
+  document.getElementById('confirm-delete-btn').addEventListener('click', async function () {
+    if (!deletingId) return;
+    this.disabled = true; this.textContent = 'Deleting…';
+    try {
+      await apiFetch('DELETE', '/instructor/courses/' + deletingId);
+      showToast('success', 'Course deleted.');
+      document.getElementById('delete-modal').classList.remove('open');
+      loadCourses();
+    } catch (err) {
+      showToast('error', err.message || 'Delete failed.');
+    }
+    this.disabled = false; this.textContent = 'Delete';
+    deletingId = null;
+  });
+
+  /* ════════════════════════════════════════
+     FILTERS + EVENTS
+  ════════════════════════════════════════ */
+  document.getElementById('create-course-btn').addEventListener('click', openCreateModal);
+
+  var debounce;
+  document.getElementById('search-input').addEventListener('input', function(){ clearTimeout(debounce); debounce=setTimeout(applyFilters, 300); });
+  document.getElementById('filter-status').addEventListener('change', applyFilters);
+  document.getElementById('filter-sort').addEventListener('change', applyFilters);
+
+  /* ── Init ── */
+  loadCourses();
+});
+</script>
+</body>
+</html>

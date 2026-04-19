@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Courses — EduVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>
+    try {
+      if (localStorage.getItem('ev_theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.documentElement.classList.add('dark');
+      }
+    } catch(e) {}
+  </script>
+  <style>
+    .page-tabs { display:flex; gap:0; border-bottom:2px solid var(--border-color); margin-bottom:var(--space-6); }
+    .page-tab {
+      padding:var(--space-3) var(--space-5); font-size:var(--font-size-sm);
+      font-weight:var(--font-weight-medium); color:var(--text-muted);
+      border-bottom:2px solid transparent; margin-bottom:-2px;
+      cursor:pointer; background:none; border-top:none; border-left:none; border-right:none;
+      font-family:var(--font-ui); transition:all var(--transition-fast);
+    }
+    .page-tab:hover { color:var(--text-primary); }
+    .page-tab.active { color:var(--color-primary-600); border-bottom-color:var(--color-primary-600); font-weight:var(--font-weight-semibold); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    .courses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:var(--space-5); }
+    .course-card {
+      background:var(--bg-surface); border:var(--card-border); border-radius:var(--card-radius);
+      box-shadow:var(--card-shadow); overflow:hidden; transition:all var(--transition-base);
+      display:flex; flex-direction:column;
+    }
+    .course-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+    .course-card-thumb {
+      height:140px; display:flex; align-items:center; justify-content:center;
+      font-size:3rem; position:relative;
+    }
+    .course-card-body { padding:var(--space-4); flex:1; display:flex; flex-direction:column; }
+    .course-card-category {
+      font-size:var(--font-size-xs); font-weight:var(--font-weight-bold);
+      text-transform:uppercase; letter-spacing:var(--tracking-wider);
+      color:var(--color-primary-600); margin-bottom:var(--space-1);
+    }
+    .course-card-title {
+      font-size:var(--font-size-base); font-weight:var(--font-weight-semibold);
+      color:var(--text-primary); margin-bottom:var(--space-2);
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .course-card-instructor { font-size:var(--font-size-xs); color:var(--text-muted); margin-bottom:var(--space-3); }
+    .course-progress-wrap { margin-bottom:var(--space-3); }
+    .course-progress-label { display:flex; justify-content:space-between; font-size:var(--font-size-xs); color:var(--text-muted); margin-bottom:var(--space-1); }
+    .course-progress-bar { height:6px; background:var(--neutral-100); border-radius:99px; overflow:hidden; }
+    .course-progress-fill { height:100%; border-radius:99px; transition:width 0.8s ease; }
+    .course-card-footer { display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:var(--space-3); border-top:1px solid var(--border-color); }
+    .course-badge { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:700; text-transform:uppercase; }
+    .badge-enrolled { background:var(--color-primary-50); color:var(--color-primary-700); }
+    .badge-completed { background:var(--color-success-light); color:var(--color-success-dark); }
+    .badge-new { background:var(--color-warning-light); color:var(--color-warning-dark); }
+
+    .filters-bar {
+      display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;
+      margin-bottom:var(--space-6); padding:var(--space-4);
+      background:var(--bg-surface); border:var(--card-border);
+      border-radius:var(--card-radius); box-shadow:var(--card-shadow);
+    }
+    .filter-select {
+      height:36px; padding:0 var(--space-3); border:1px solid var(--border-color);
+      border-radius:var(--border-radius-md); font-size:var(--font-size-sm);
+      color:var(--text-primary); background:var(--bg-page); cursor:pointer;
+      outline:none; font-family:var(--font-ui);
+    }
+    .search-wrap { flex:1; min-width:200px; position:relative; }
+    .search-wrap input {
+      width:100%; height:36px; padding:0 var(--space-4) 0 var(--space-9);
+      border:1px solid var(--border-color); border-radius:var(--border-radius-md);
+      font-size:var(--font-size-sm); color:var(--text-primary);
+      background:var(--bg-page); outline:none; font-family:var(--font-ui);
+    }
+    .search-wrap input:focus { border-color:var(--color-primary-600); }
+    .search-wrap .search-icon { position:absolute; left:var(--space-3); top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none; }
+
+    .catalog-course-card {
+      background:var(--bg-surface); border:var(--card-border); border-radius:var(--card-radius);
+      box-shadow:var(--card-shadow); overflow:hidden; transition:all var(--transition-base);
+      display:flex; flex-direction:column;
+    }
+    .catalog-course-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+    .catalog-thumb { height:140px; display:flex; align-items:center; justify-content:center; font-size:3rem; }
+    .catalog-body { padding:var(--space-4); flex:1; display:flex; flex-direction:column; }
+    .catalog-title {
+      font-size:var(--font-size-base); font-weight:600; color:var(--text-primary);
+      margin-bottom:var(--space-1); display:-webkit-box; -webkit-line-clamp:2;
+      -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .catalog-instructor { font-size:var(--font-size-xs); color:var(--text-muted); margin-bottom:var(--space-2); }
+    .catalog-rating { display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-xs); color:var(--color-accent-500); font-weight:600; margin-bottom:var(--space-3); }
+    .catalog-footer { display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:var(--space-3); border-top:1px solid var(--border-color); }
+    .catalog-price { font-size:var(--font-size-lg); font-weight:800; color:var(--text-primary); }
+    .catalog-price-free { color:var(--color-success); }
+
+    .skel { background:var(--neutral-100); border-radius:4px; animation:shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
+    .empty-box { text-align:center; padding:var(--space-12); color:var(--text-muted); }
+    .empty-box-icon { font-size:3rem; margin-bottom:var(--space-3); }
+    .empty-box-title { font-size:var(--font-size-lg); font-weight:600; color:var(--text-primary); margin-bottom:var(--space-2); }
+    .empty-box-text { font-size:var(--font-size-sm); }
+
+    .pagination { display:flex; align-items:center; justify-content:center; gap:var(--space-2); margin-top:var(--space-8); }
+    .page-btn {
+      height:36px; min-width:36px; padding:0 var(--space-3);
+      border:1px solid var(--border-color); border-radius:var(--border-radius-md);
+      font-size:var(--font-size-sm); font-weight:500; cursor:pointer;
+      background:var(--bg-surface); color:var(--text-primary); font-family:var(--font-ui);
+      transition:all var(--transition-fast);
+    }
+    .page-btn:hover { background:var(--neutral-50); }
+    .page-btn.active { background:var(--color-primary-600); border-color:var(--color-primary-600); color:#fff; }
+    .page-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html">
+      <div class="sidebar-logo">E</div>
+      <div>
+        <div class="sidebar-brand-name">EduVerse</div>
+        <div class="sidebar-brand-tagline">Student Portal</div>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html">
+        <span class="sidebar-item-icon"><i data-feather="grid"></i></span>
+        <span class="sidebar-item-label">Dashboard</span>
+      </a>
+      <a class="sidebar-item active" href="courses.html">
+        <span class="sidebar-item-icon"><i data-feather="book-open"></i></span>
+        <span class="sidebar-item-label">My Courses</span>
+      </a>
+      <a class="sidebar-item" href="assignments.html">
+        <span class="sidebar-item-icon"><i data-feather="clipboard"></i></span>
+        <span class="sidebar-item-label">Assignments</span>
+        <span class="sidebar-item-badge" id="badge-assignments" style="display:none;"></span>
+      </a>
+      <a class="sidebar-item" href="performance.html">
+        <span class="sidebar-item-icon"><i data-feather="trending-up"></i></span>
+        <span class="sidebar-item-label">Performance</span>
+      </a>
+      <a class="sidebar-item" href="materials.html">
+        <span class="sidebar-item-icon"><i data-feather="file-text"></i></span>
+        <span class="sidebar-item-label">Study Materials</span>
+      </a>
+      <a class="sidebar-item" href="calendar.html">
+        <span class="sidebar-item-icon"><i data-feather="calendar"></i></span>
+        <span class="sidebar-item-label">Calendar</span>
+      </a>
+      <a class="sidebar-item" href="messages.html">
+        <span class="sidebar-item-icon"><i data-feather="message-circle"></i></span>
+        <span class="sidebar-item-label">Messages</span>
+      </a>
+      <a class="sidebar-item" href="certificates.html">
+        <span class="sidebar-item-icon"><i data-feather="award"></i></span>
+        <span class="sidebar-item-label">Certificates</span>
+      </a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html">
+        <span class="sidebar-item-icon"><i data-feather="user"></i></span>
+        <span class="sidebar-item-label">Profile</span>
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar avatar-sm" id="sidebar-avatar"></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+        <div class="sidebar-user-role">Student</div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-body">
+    <!-- NAVBAR -->
+    <header class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+       
+        <div class="navbar-search">
+          <i data-feather="search" class="navbar-search-icon"></i>
+          <input type="text" class="navbar-search-input" placeholder="Search courses…" id="navbar-search" />
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="btn-icon btn-ghost" data-action="toggle-theme"><i data-feather="sun"></i></button>
+        <div class="navbar-notif-wrap">
+          <button class="btn-icon btn-ghost" data-action="toggle-notif">
+            <i data-feather="bell"></i>
+            <span class="notif-badge" id="notif-badge" style="display:none;"></span>
+          </button>
+        </div>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm" id="navbar-avatar"></div>
+          <span class="navbar-user-name" id="navbar-user-name"></span>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <div class="dropdown" id="user-dropdown" hidden>
+          <div class="dropdown-header">
+            <div class="dropdown-user-name" id="dd-user-name"></div>
+            <div class="dropdown-user-role">Student</div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-item-danger" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Courses</h1>
+            <p class="page-subtitle">Browse your enrolled courses or discover new ones</p>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="page-tabs">
+          <button class="page-tab active" data-tab="enrolled">My Courses</button>
+          <button class="page-tab" data-tab="catalog">Browse Catalog</button>
+        </div>
+
+        <!-- My Courses Tab -->
+        <div class="tab-panel active" id="tab-enrolled">
+          <div class="filters-bar">
+            <div class="search-wrap">
+              <i data-feather="search" class="search-icon" style="width:16px;height:16px;"></i>
+              <input type="text" placeholder="Search your courses…" id="enrolled-search" />
+            </div>
+            <select class="filter-select" id="enrolled-filter-status">
+              <option value="">All Status</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="not_started">Not Started</option>
+            </select>
+            <select class="filter-select" id="enrolled-filter-level">
+              <option value="">All Levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          <div class="courses-grid" id="enrolled-courses-grid">
+            <div class="skel" style="height:280px;border-radius:12px;"></div>
+            <div class="skel" style="height:280px;border-radius:12px;"></div>
+            <div class="skel" style="height:280px;border-radius:12px;"></div>
+          </div>
+        </div>
+
+        <!-- Catalog Tab -->
+        <div class="tab-panel" id="tab-catalog">
+          <div class="filters-bar">
+            <div class="search-wrap">
+              <i data-feather="search" class="search-icon" style="width:16px;height:16px;"></i>
+              <input type="text" placeholder="Search all courses…" id="catalog-search" />
+            </div>
+            <select class="filter-select" id="catalog-filter-category">
+              <option value="">All Categories</option>
+            </select>
+            <select class="filter-select" id="catalog-filter-level">
+              <option value="">All Levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select class="filter-select" id="catalog-filter-price">
+              <option value="">Any Price</option>
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+            </select>
+            <select class="filter-select" id="catalog-filter-sort">
+              <option value="newest">Newest</option>
+              <option value="popular">Most Popular</option>
+              <option value="rating">Top Rated</option>
+            </select>
+          </div>
+          <div class="courses-grid" id="catalog-courses-grid">
+            <div class="skel" style="height:280px;border-radius:12px;"></div>
+            <div class="skel" style="height:280px;border-radius:12px;"></div>
+            <div class="skel" style="height:280px;border-radius:12px;"></div>
+          </div>
+          <div id="catalog-pagination" class="pagination"></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Enroll Modal -->
+<div class="modal-overlay" id="enroll-modal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title" id="enroll-modal-title">Enroll in Course</div>
+      <button class="btn-icon btn-ghost btn-sm" id="enroll-modal-close"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body" id="enroll-modal-body"></div>
+    <div class="modal-footer" style="display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);">
+      <button class="btn btn-outline" id="enroll-cancel">Cancel</button>
+      <button class="btn btn-primary" id="enroll-confirm">Enroll Now</button>
+    </div>
+  </div>
+</div>
+
+<script>window.EV_BASE = "../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+
+<script>
+// Auth guard
+(function() {
+  var token, user;
+  try { token = localStorage.getItem('ev_token'); user = token ? JSON.parse(localStorage.getItem('ev_user')) : null; } catch(e) {}
+  if (!token || !user) { window.location.replace('../../pages/auth/login.html'); return; }
+  if (user.role !== 'student') { window.location.replace('../../pages/errors/403.html'); }
+})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+
+  // ── User info ──
+  var user;
+  try { user = JSON.parse(localStorage.getItem('ev_user')) || {}; } catch(e) { user = {}; }
+  var name = user.name || '';
+  var initials = name.trim().split(/\s+/).reduce(function(acc,p,i,arr){ return i===0||i===arr.length-1 ? acc+p[0].toUpperCase() : acc; },'') || '?';
+  ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=name; });
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    if(user.avatar){ el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>'; }
+    else { el.textContent=initials; }
+  });
+
+  // ── Shell interactions ──
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){ shell.classList.toggle('sidebar-open'); });
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){ shell.classList.remove('sidebar-open'); });
+  document.getElementById('sidebar-collapse-btn').addEventListener('click',function(){
+    var c=shell.classList.toggle('sidebar-collapsed');
+    try{ localStorage.setItem('ev_sidebar_collapsed', String(c)); }catch(e){}
+  });
+  try{
+    if(localStorage.getItem('ev_sidebar_collapsed')==='true') shell.classList.add('sidebar-collapsed');
+    else shell.classList.remove('sidebar-collapsed');
+  }catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){
+    btn.addEventListener('click',function(){ var d=document.documentElement.classList.toggle('dark'); document.documentElement.setAttribute('data-theme',d?'dark':'light'); try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){} });
+  });
+  var trigger=document.getElementById('navbar-user-trigger'), dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){ trigger.addEventListener('click',function(e){ e.stopPropagation(); dropdown.hidden=!dropdown.hidden; }); document.addEventListener('click',function(){ if(dropdown) dropdown.hidden=true; }); }
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){ btn.addEventListener('click',function(e){ e.preventDefault(); try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');localStorage.removeItem('ev_refresh_token');}catch(e){} window.location.replace('../../pages/auth/login.html'); }); });
+
+  // ── Tabs ──
+  var tabs = document.querySelectorAll('.page-tab');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      if(tab.dataset.tab === 'catalog' && !catalogLoaded) loadCatalog(1);
+    });
+  });
+
+  // ── Colors ──
+  var colors = ['#dbeafe','#d1fae5','#fef3c7','#ede9fe','#fee2e2','#e0f2fe'];
+  var emojis = ['📘','📗','📙','📕','📓','🎓'];
+  function barColor(pct){ return pct>=80?'#10b981':pct>=50?'#3b82f6':pct>=25?'#f59e0b':'#9ca3af'; }
+
+  // ── Enrolled courses ──
+  var enrolledAll = [], catalogLoaded = false;
+
+  async function loadEnrolled() {
+    try {
+      var res = await Api.student.courses();
+      enrolledAll = (res && res.data) || [];
+      renderEnrolled(enrolledAll);
+    } catch(err) {
+      document.getElementById('enrolled-courses-grid').innerHTML =
+        '<div style="color:var(--color-danger);padding:var(--space-4);">Failed to load courses.</div>';
+    }
+  }
+
+  function renderEnrolled(courses) {
+    var grid = document.getElementById('enrolled-courses-grid');
+    if(!courses.length){
+      grid.innerHTML = '<div class="empty-box" style="grid-column:1/-1;"><div class="empty-box-icon">📚</div><div class="empty-box-title">No courses yet</div><div class="empty-box-text">Browse the catalog to enroll in your first course.</div></div>';
+      return;
+    }
+    grid.innerHTML = courses.map(function(c, i){
+      var pct = Math.round(c.progress || 0);
+      var bg = colors[i % colors.length];
+      var emoji = emojis[i % emojis.length];
+      var bar = barColor(pct);
+      var status = pct===100 ? 'completed' : pct>0 ? 'in_progress' : 'not_started';
+      var badgeClass = pct===100 ? 'badge-completed' : pct>0 ? 'badge-enrolled' : 'badge-new';
+      var badgeText = pct===100 ? 'Completed' : pct>0 ? 'In Progress' : 'New';
+      return '<div class="course-card">'+
+        '<div class="course-card-thumb" style="background:'+bg+';">'+emoji+'</div>'+
+        '<div class="course-card-body">'+
+          '<div class="course-card-category">'+_esc(c.category||c.level||'Course')+'</div>'+
+          '<div class="course-card-title">'+_esc(c.title)+'</div>'+
+          '<div class="course-card-instructor">By '+_esc(c.instructor_name||'Instructor')+'</div>'+
+          '<div class="course-progress-wrap">'+
+            '<div class="course-progress-label"><span>Progress</span><span style="font-weight:700;color:'+bar+';">'+pct+'%</span></div>'+
+            '<div class="course-progress-bar"><div class="course-progress-fill" style="width:'+pct+'%;background:'+bar+';"></div></div>'+
+          '</div>'+
+          '<div class="course-card-footer">'+
+            '<span class="course-badge '+badgeClass+'">'+badgeText+'</span>'+
+            '<a href="player.html?course='+encodeURIComponent(c.id)+'" class="btn btn-primary btn-sm">'+
+              (pct===0?'Start':'Continue')+'</a>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // Search/filter enrolled
+  function filterEnrolled(){
+    var q = document.getElementById('enrolled-search').value.toLowerCase();
+    var status = document.getElementById('enrolled-filter-status').value;
+    var level = document.getElementById('enrolled-filter-level').value;
+    var filtered = enrolledAll.filter(function(c){
+      var matchQ = !q || c.title.toLowerCase().includes(q) || (c.instructor_name||'').toLowerCase().includes(q);
+      var pct = Math.round(c.progress||0);
+      var cStatus = pct===100?'completed':pct>0?'in_progress':'not_started';
+      var matchStatus = !status || cStatus===status;
+      var matchLevel = !level || c.level===level;
+      return matchQ && matchStatus && matchLevel;
+    });
+    renderEnrolled(filtered);
+  }
+  var debounce;
+  document.getElementById('enrolled-search').addEventListener('input', function(){ clearTimeout(debounce); debounce=setTimeout(filterEnrolled,300); });
+  document.getElementById('enrolled-filter-status').addEventListener('change', filterEnrolled);
+  document.getElementById('enrolled-filter-level').addEventListener('change', filterEnrolled);
+
+  // ── Catalog ──
+  var catalogPage = 1, catalogTotal = 1;
+
+  async function loadCatalog(page) {
+    catalogLoaded = true;
+    var grid = document.getElementById('catalog-courses-grid');
+    grid.innerHTML = '<div class="skel" style="height:280px;border-radius:12px;"></div>'.repeat(6);
+
+    var q = document.getElementById('catalog-search').value;
+    var category = document.getElementById('catalog-filter-category').value;
+    var level = document.getElementById('catalog-filter-level').value;
+    var price = document.getElementById('catalog-filter-price').value;
+    var sort = document.getElementById('catalog-filter-sort').value;
+
+    try {
+      var res = await Api.courses.list({ q, category, level, price, sort, page: page, per_page: 9 });
+      var courses = (res && res.data && res.data.courses) || (res && res.data) || [];
+      var pagination = (res && res.data && res.data.pagination) || {};
+      catalogPage = page;
+      catalogTotal = pagination.total_pages || 1;
+      renderCatalog(courses);
+      renderPagination(catalogPage, catalogTotal);
+
+      // Load categories once
+      if(document.getElementById('catalog-filter-category').options.length === 1) {
+        try {
+          var catRes = await Api.courses.categories();
+          var cats = (catRes && catRes.data) || [];
+          var sel = document.getElementById('catalog-filter-category');
+          cats.forEach(function(cat){ var o=document.createElement('option'); o.value=cat.slug||cat; o.textContent=cat.name||cat; sel.appendChild(o); });
+        } catch(e) {}
+      }
+    } catch(err) {
+      grid.innerHTML = '<div style="color:var(--color-danger);padding:var(--space-4);">Failed to load catalog.</div>';
+    }
+  }
+
+  function renderCatalog(courses) {
+    var grid = document.getElementById('catalog-courses-grid');
+    if(!courses.length){
+      grid.innerHTML = '<div class="empty-box" style="grid-column:1/-1;"><div class="empty-box-icon">🔍</div><div class="empty-box-title">No courses found</div><div class="empty-box-text">Try different filters.</div></div>';
+      return;
+    }
+    grid.innerHTML = courses.map(function(c, i){
+      var bg = colors[i % colors.length];
+      var emoji = emojis[i % emojis.length];
+      var stars = '★'.repeat(Math.round(c.rating||0)) + '☆'.repeat(5-Math.round(c.rating||0));
+      var priceHtml = c.is_free||!c.price ? '<span class="catalog-price catalog-price-free">FREE</span>'
+        : '<span class="catalog-price">₹'+parseFloat(c.price).toFixed(0)+'</span>';
+      return '<div class="catalog-course-card">'+
+        '<div class="catalog-thumb" style="background:'+bg+';">'+emoji+'</div>'+
+        '<div class="catalog-body">'+
+          '<div class="course-card-category">'+_esc(c.category||c.level||'Course')+'</div>'+
+          '<div class="catalog-title">'+_esc(c.title)+'</div>'+
+          '<div class="catalog-instructor">By '+_esc(c.instructor_name||'Instructor')+'</div>'+
+          '<div class="catalog-rating"><span style="color:var(--color-accent-400);">'+stars+'</span> <span style="color:var(--text-muted);">('+((c.rating||0).toFixed(1))+')</span></div>'+
+          '<div class="catalog-footer">'+priceHtml+
+            '<button class="btn btn-primary btn-sm" onclick="enrollCourse('+JSON.stringify(c)+')">Enroll</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  function renderPagination(page, total) {
+    var el = document.getElementById('catalog-pagination');
+    if(total <= 1){ el.innerHTML=''; return; }
+    var html = '<button class="page-btn" onclick="loadCatalog('+Math.max(1,page-1)+')" '+(page===1?'disabled':'')+'>←</button>';
+    for(var i=Math.max(1,page-2); i<=Math.min(total,page+2); i++){
+      html += '<button class="page-btn'+(i===page?' active':'')+'" onclick="loadCatalog('+i+')">'+i+'</button>';
+    }
+    html += '<button class="page-btn" onclick="loadCatalog('+Math.min(total,page+1)+')" '+(page===total?'disabled':'')+'>→</button>';
+    el.innerHTML = html;
+  }
+  window.loadCatalog = loadCatalog;
+
+  var catalogDebounce;
+  ['catalog-search','catalog-filter-category','catalog-filter-level','catalog-filter-price','catalog-filter-sort'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener(id==='catalog-search'?'input':'change', function(){ clearTimeout(catalogDebounce); catalogDebounce=setTimeout(function(){ loadCatalog(1); },300); });
+  });
+
+  // ── Enroll ──
+  var selectedCourse = null;
+  window.enrollCourse = function(course) {
+    selectedCourse = course;
+    document.getElementById('enroll-modal-title').textContent = 'Enroll in Course';
+    document.getElementById('enroll-modal-body').innerHTML =
+      '<div style="text-align:center;padding:var(--space-4) 0;">'+
+        '<div style="font-size:3rem;margin-bottom:var(--space-3);">🎓</div>'+
+        '<div style="font-size:var(--font-size-lg);font-weight:700;margin-bottom:var(--space-2);">'+_esc(course.title)+'</div>'+
+        '<div style="font-size:var(--font-size-sm);color:var(--text-muted);margin-bottom:var(--space-4);">By '+_esc(course.instructor_name||'Instructor')+'</div>'+
+        (course.is_free||!course.price ? '<div style="font-size:var(--font-size-xl);font-weight:800;color:var(--color-success);">FREE</div>'
+          : '<div style="font-size:var(--font-size-xl);font-weight:800;">₹'+parseFloat(course.price).toFixed(0)+'</div>')+
+      '</div>';
+    document.getElementById('enroll-modal').classList.add('open');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+  document.getElementById('enroll-modal-close').addEventListener('click', closeEnrollModal);
+  document.getElementById('enroll-cancel').addEventListener('click', closeEnrollModal);
+  document.getElementById('enroll-modal').addEventListener('click', function(e){ if(e.target===this) closeEnrollModal(); });
+  function closeEnrollModal(){ document.getElementById('enroll-modal').classList.remove('open'); selectedCourse=null; }
+
+  document.getElementById('enroll-confirm').addEventListener('click', async function(){
+    if(!selectedCourse) return;
+    this.disabled=true; this.textContent='Enrolling…';
+    try {
+      await Api.post('/courses/'+selectedCourse.id+'/enroll');
+      closeEnrollModal();
+      loadEnrolled();
+      document.querySelectorAll('.page-tab')[0].click();
+    } catch(err) {
+      alert((err&&err.message)||'Enrollment failed.');
+    }
+    this.disabled=false; this.textContent='Enroll Now';
+  });
+
+  function _esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  loadEnrolled();
+});
+</script>
+</body>
+</html>

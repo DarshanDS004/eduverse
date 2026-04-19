@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Courses — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .stat-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);display:flex;align-items:flex-start;gap:var(--space-4);transition:all var(--transition-fast);}
+    .stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+    .stat-icon-wrap{width:44px;height:44px;border-radius:var(--border-radius-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .si-blue{background:var(--color-primary-50);color:var(--color-primary-600);}
+    .si-green{background:var(--color-success-light);color:var(--color-success);}
+    .si-amber{background:var(--color-warning-light);color:var(--color-warning);}
+    .si-purple{background:#ede9fe;color:#7c3aed;}
+    .stat-value{font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);line-height:1;margin-bottom:var(--space-1);}
+    .stat-label{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;}
+    /* Course grid */
+    .courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-5);}
+    @media(max-width:1199px){.courses-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:767px){.courses-grid{grid-template-columns:1fr;}}
+    .course-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;transition:all var(--transition-fast);display:flex;flex-direction:column;}
+    .course-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);}
+    .course-thumb{width:100%;height:160px;object-fit:cover;background:var(--bg-sunken);display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;}
+    .course-thumb img{width:100%;height:100%;object-fit:cover;}
+    .course-status-badge{position:absolute;top:var(--space-3);left:var(--space-3);padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .status-published{background:var(--color-success);color:#fff;}
+    .status-draft{background:rgba(0,0,0,0.5);color:#fff;}
+    .status-review{background:var(--color-warning);color:#fff;}
+    .course-body{padding:var(--space-4);flex:1;}
+    .course-cat{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-primary-600);margin-bottom:var(--space-1);}
+    .course-title{font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);line-height:var(--leading-snug);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .course-meta{display:flex;align-items:center;gap:var(--space-3);font-size:var(--font-size-xs);color:var(--text-muted);flex-wrap:wrap;}
+    .course-meta span{display:flex;align-items:center;gap:3px;}
+    .course-footer{padding:var(--space-3) var(--space-4);border-top:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;}
+    .course-price{font-size:var(--font-size-base);font-weight:800;color:var(--color-primary-600);}
+    .course-actions{display:flex;gap:var(--space-2);}
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);position:sticky;top:0;background:var(--bg-elevated);z-index:1;}
+    .modal-title{font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);position:sticky;bottom:0;background:var(--bg-elevated);}
+    .form-group{margin-bottom:0;}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-hint{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:90px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .badge-success{background:var(--color-success-light);color:var(--color-success-dark);}
+    .badge-neutral{background:var(--neutral-100);color:var(--text-muted);}
+    .badge-warning{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    /* Thumbnail upload */
+    .thumb-dropzone{width:100%;height:140px;border:2px dashed var(--border-color-strong);border-radius:var(--border-radius-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition-base);background:var(--bg-sunken);overflow:hidden;}
+    .thumb-dropzone:hover{border-color:var(--color-primary-400);background:var(--color-primary-50);}
+    /* Tags */
+    .tag-wrap{display:flex;flex-wrap:wrap;gap:4px;border:1px solid var(--border-color);border-radius:var(--border-radius-md);padding:var(--space-2);background:var(--bg-surface);min-height:44px;cursor:text;}
+    .tag-wrap:focus-within{border-color:var(--color-primary-600);}
+    .tag-chip{display:inline-flex;align-items:center;gap:4px;background:var(--color-primary-50);color:var(--color-primary-700);border-radius:99px;padding:2px 8px;font-size:var(--font-size-xs);font-weight:600;}
+    .tag-chip button{background:none;border:none;cursor:pointer;color:var(--color-primary-400);font-size:12px;padding:0;line-height:1;}
+    .tag-input{border:none;outline:none;font-size:var(--font-size-sm);font-family:var(--font-ui);background:transparent;flex:1;min-width:80px;}
+    /* Toast */
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    /* Dropdown context menu */
+    .ctx-menu{position:absolute;right:0;top:100%;background:var(--bg-elevated);border:var(--card-border);border-radius:var(--border-radius-lg);box-shadow:var(--shadow-dropdown);min-width:180px;z-index:var(--z-dropdown);padding:var(--space-1) 0;display:none;}
+    .ctx-menu.open{display:block;}
+    .ctx-item{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2-5) var(--space-4);font-size:var(--font-size-sm);color:var(--text-primary);cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:var(--font-ui);transition:background var(--transition-fast);}
+    .ctx-item:hover{background:var(--neutral-50);}
+    .ctx-item.danger{color:var(--color-danger);}
+    .ctx-divider{height:1px;background:var(--border-color);margin:var(--space-1) 0;}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item active" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm avatar-green" id="sidebar-avatar">…</div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+
+  <div class="app-body">
+    <!-- Navbar -->
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor Portal</div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">My Courses</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm avatar-green" id="navbar-avatar">…</div>
+          <div class="navbar-user-info"><span class="navbar-user-name" id="navbar-user-name">Loading…</span><span class="navbar-user-role">Instructor</span></div>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height)-8px);right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-header"><div style="font-weight:600;font-size:var(--font-size-sm);color:var(--text-primary);" id="dd-user-name"></div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Header -->
+        <div class="page-header" style="margin-bottom:var(--space-6);">
+          <div>
+            <h1 class="page-title">My Courses</h1>
+            <p class="page-subtitle">Create, manage and publish courses for your students</p>
+          </div>
+          <div style="display:flex;gap:var(--space-3);">
+            <button class="btn btn-outline" onclick="openModal('coupon-modal')">
+              <i data-feather="tag" style="width:15px;height:15px;"></i> Coupons
+            </button>
+            <button class="btn btn-primary" onclick="openCreateModal()">
+              <i data-feather="plus" style="width:16px;height:16px;"></i> Create New Course
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);">
+          <div class="stat-card"><div class="stat-icon-wrap si-blue"><i data-feather="book-open" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-total">—</div><div class="stat-label">Total Courses</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap si-green"><i data-feather="check-circle" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-published">—</div><div class="stat-label">Published</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap si-amber"><i data-feather="users" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-students">—</div><div class="stat-label">Total Students</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap si-purple"><i data-feather="star" style="width:20px;height:20px;"></i></div><div><div class="stat-value" id="s-rating">—</div><div class="stat-label">Avg Rating</div></div></div>
+        </div>
+
+        <!-- Filter bar -->
+        <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-5);flex-wrap:wrap;">
+          <input type="text" id="search-courses" class="form-input" placeholder="Search courses…" style="width:240px;height:38px;"/>
+          <select id="filter-status" class="form-select" style="width:140px;height:38px;">
+            <option value="">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="review">Under Review</option>
+          </select>
+          <select id="filter-cat" class="form-select" style="width:160px;height:38px;">
+            <option value="">All Categories</option>
+            <option value="programming">Programming</option>
+            <option value="design">Design</option>
+            <option value="mathematics">Mathematics</option>
+            <option value="science">Science</option>
+            <option value="business">Business</option>
+            <option value="language">Language</option>
+            <option value="other">Other</option>
+          </select>
+          <select id="sort-courses" class="form-select" style="width:160px;height:38px;">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="students">Most Students</option>
+            <option value="rating">Highest Rated</option>
+          </select>
+          <div style="margin-left:auto;font-size:var(--font-size-sm);color:var(--text-muted);" id="course-count"></div>
+        </div>
+
+        <!-- Courses Grid -->
+        <div class="courses-grid" id="courses-grid">
+          <!-- Skeleton -->
+          <div class="course-card"><div class="course-thumb"><div class="skel" style="width:100%;height:100%;"></div></div><div class="course-body"><div class="skel" style="height:10px;width:60px;margin-bottom:8px;"></div><div class="skel" style="height:16px;width:100%;margin-bottom:4px;"></div><div class="skel" style="height:12px;width:80%;"></div></div></div>
+          <div class="course-card"><div class="course-thumb"><div class="skel" style="width:100%;height:100%;"></div></div><div class="course-body"><div class="skel" style="height:10px;width:60px;margin-bottom:8px;"></div><div class="skel" style="height:16px;width:100%;margin-bottom:4px;"></div><div class="skel" style="height:12px;width:70%;"></div></div></div>
+          <div class="course-card"><div class="course-thumb"><div class="skel" style="width:100%;height:100%;"></div></div><div class="course-body"><div class="skel" style="height:10px;width:60px;margin-bottom:8px;"></div><div class="skel" style="height:16px;width:100%;margin-bottom:4px;"></div><div class="skel" style="height:12px;width:75%;"></div></div></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ══ CREATE / EDIT COURSE MODAL ══ -->
+<div class="modal-overlay" id="course-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="course-modal-title">Create New Course</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('course-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Thumbnail -->
+      <div class="form-group">
+        <label class="form-label">Course Thumbnail</label>
+        <div class="thumb-dropzone" id="thumb-dropzone" onclick="document.getElementById('thumb-file').click()">
+          <div id="thumb-preview-inner">
+            <i data-feather="image" style="width:28px;height:28px;color:var(--text-muted);margin-bottom:6px;"></i>
+            <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Click to upload thumbnail</div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;">JPG, PNG · 1280×720 recommended</div>
+          </div>
+        </div>
+        <input type="file" id="thumb-file" style="display:none;" accept="image/*"/>
+      </div>
+
+      <!-- Title + Category -->
+      <div class="form-group"><label class="form-label">Course Title *</label><input type="text" class="form-input" id="c-title" placeholder="e.g. Complete Python Bootcamp"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-select" id="c-category">
+            <option value="">Select category</option>
+            <option value="programming">Programming</option><option value="design">Design</option>
+            <option value="mathematics">Mathematics</option><option value="science">Science</option>
+            <option value="business">Business</option><option value="language">Language</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sub-category</label>
+          <input type="text" class="form-input" id="c-subcategory" placeholder="e.g. Web Development"/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Level</label>
+          <select class="form-select" id="c-level">
+            <option value="beginner">Beginner</option><option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option><option value="all">All Levels</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          <select class="form-select" id="c-language">
+            <option value="english">English</option><option value="hindi">Hindi</option>
+            <option value="tamil">Tamil</option><option value="telugu">Telugu</option>
+            <option value="kannada">Kannada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (₹)</label>
+          <input type="number" class="form-input" id="c-price" placeholder="0 = Free" min="0"/>
+        </div>
+      </div>
+
+      <!-- Descriptions -->
+      <div class="form-group"><label class="form-label">Short Description *</label><textarea class="form-textarea" id="c-short-desc" placeholder="1-2 sentence summary shown in course cards…" style="min-height:70px;"></textarea></div>
+      <div class="form-group"><label class="form-label">Full Description</label><textarea class="form-textarea" id="c-desc" placeholder="Detailed overview — who this is for, what they'll learn, prerequisites…" style="min-height:120px;"></textarea></div>
+
+      <!-- What you'll learn -->
+      <div class="form-group">
+        <label class="form-label">What Students Will Learn</label>
+        <div class="tag-wrap" id="learn-wrap" onclick="document.getElementById('learn-input').focus()">
+          <input type="text" id="learn-input" class="tag-input" placeholder="Type a point and press Enter…"/>
+        </div>
+        <div class="form-hint">Press Enter after each learning objective</div>
+      </div>
+
+      <!-- Requirements -->
+      <div class="form-group">
+        <label class="form-label">Requirements / Prerequisites</label>
+        <div class="tag-wrap" id="req-wrap" onclick="document.getElementById('req-input').focus()">
+          <input type="text" id="req-input" class="tag-input" placeholder="e.g. Basic Python knowledge…"/>
+        </div>
+      </div>
+
+      <!-- Target audience -->
+      <div class="form-group"><label class="form-label">Target Audience</label><input type="text" class="form-input" id="c-audience" placeholder="e.g. Beginners who want to learn web development"/></div>
+
+      <!-- Trailer URL -->
+      <div class="form-group">
+        <label class="form-label">Trailer Video URL (optional)</label>
+        <input type="url" class="form-input" id="c-trailer" placeholder="YouTube or direct MP4 link — publicly visible preview"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('course-modal')">Cancel</button>
+      <button class="btn btn-outline" id="save-draft-btn">Save as Draft</button>
+      <button class="btn btn-primary" id="save-course-btn">Create Course & Open Builder →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COUPON MODAL ══ -->
+<div class="modal-overlay" id="coupon-modal">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header"><div class="modal-title">Coupon Codes</div><button class="btn btn-ghost btn-sm" onclick="closeModal('coupon-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">Code *</label><input type="text" class="form-input" id="coup-code" placeholder="e.g. SAVE30" style="text-transform:uppercase;"/></div>
+        <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="coup-type"><option value="percent">Percentage (%)</option><option value="flat">Flat (₹)</option></select></div>
+        <div class="form-group"><label class="form-label">Value *</label><input type="number" class="form-input" id="coup-value" placeholder="30" min="1"/></div>
+        <div class="form-group"><label class="form-label">Max Uses (0=unlimited)</label><input type="number" class="form-input" id="coup-max" placeholder="100" min="0"/></div>
+        <div class="form-group"><label class="form-label">Expiry Date</label><input type="date" class="form-input" id="coup-expiry"/></div>
+        <div class="form-group"><label class="form-label">Apply to Course</label><select class="form-select" id="coup-course"><option value="">All Courses</option></select></div>
+      </div>
+      <button class="btn btn-primary" id="create-coupon-btn" style="width:100%;"><i data-feather="plus" style="width:14px;height:14px;"></i> Create Coupon</button>
+      <div id="coupon-list" style="margin-top:var(--space-4);">
+        <div style="font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.05em;margin-bottom:var(--space-2);">Active Coupons</div>
+        <div class="skel" style="height:60px;border-radius:8px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u)window.location.replace('../../pages/auth/login.html');
+else if(u.role!=='instructor')window.location.replace('../../pages/errors/403.html');})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+
+  // ── User ──
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  var uname=user.name||'';
+  function _ini(n){if(!n)return '?';var p=n.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase();}
+  ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=uname;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar)el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';else el.textContent=_ini(uname);});
+
+  // ── Shell wiring ──
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  var colBtn=document.getElementById('sidebar-collapse-btn');
+  if(colBtn)colBtn.addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');}catch(e){}window.location.replace('../../pages/auth/login.html');});});
+  var nTrig=document.getElementById('navbar-user-trigger'),nDrop=document.getElementById('user-dropdown');
+  if(nTrig&&nDrop){nTrig.addEventListener('click',function(e){e.stopPropagation();nDrop.hidden=!nDrop.hidden;});document.addEventListener('click',function(){if(nDrop)nDrop.hidden=true;});}
+
+  // ── Helpers ──
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function showToast(type,title,msg){var c=document.getElementById('toast-container');var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">✕</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4500);}
+  function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+  function closeModal(id){document.getElementById(id).classList.remove('open');}
+  window.openModal=openModal;window.closeModal=closeModal;
+
+  // ── Tags helper ──
+  function makeTagInput(wrapId,inputId){
+    var tags=[];
+    var wrap=document.getElementById(wrapId);
+    var inp=document.getElementById(inputId);
+    function render(){
+      wrap.querySelectorAll('.tag-chip').forEach(function(el){el.remove();});
+      tags.forEach(function(t,i){
+        var chip=document.createElement('span');chip.className='tag-chip';
+        chip.innerHTML=_esc(t)+'<button type="button" onclick="this.parentElement.remove()">×</button>';
+        chip.querySelector('button').addEventListener('click',function(){tags.splice(i,1);render();});
+        wrap.insertBefore(chip,inp);
+      });
+    }
+    inp.addEventListener('keydown',function(e){
+      if((e.key==='Enter'||e.key===',')&&this.value.trim()){e.preventDefault();var v=this.value.trim().replace(/,$/,'');if(v&&!tags.includes(v)){tags.push(v);render();}this.value='';}
+      if(e.key==='Backspace'&&!this.value&&tags.length){tags.pop();render();}
+    });
+    return {getTags:function(){return tags.slice();},setTags:function(arr){tags=arr||[];render();}};
+  }
+  var learnTags=makeTagInput('learn-wrap','learn-input');
+  var reqTags=makeTagInput('req-wrap','req-input');
+
+  // ── Thumbnail preview ──
+  document.getElementById('thumb-file').addEventListener('change',function(){
+    var f=this.files[0];if(!f)return;
+    var url=URL.createObjectURL(f);
+    document.getElementById('thumb-preview-inner').innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover;"/>';
+    window._thumbFile=f;
+  });
+
+  // ── State ──
+  var allCourses=[];
+  var editingId=null;
+  var thumbUrl=null;
+
+  // ── Open create modal ──
+  window.openCreateModal=function(){
+    editingId=null;thumbUrl=null;window._thumbFile=null;
+    document.getElementById('course-modal-title').textContent='Create New Course';
+    document.getElementById('save-course-btn').textContent='Create Course & Open Builder →';
+    ['c-title','c-subcategory','c-price','c-short-desc','c-desc','c-audience','c-trailer'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('c-category').value='';document.getElementById('c-level').value='beginner';document.getElementById('c-language').value='english';
+    learnTags.setTags([]);reqTags.setTags([]);
+    document.getElementById('thumb-preview-inner').innerHTML='<i data-feather="image" style="width:28px;height:28px;color:var(--text-muted);margin-bottom:6px;"></i><div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Click to upload thumbnail</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;">JPG, PNG · 1280×720 recommended</div>';
+    openModal('course-modal');
+  };
+
+  // ── Open edit modal ──
+  window.openEditModal=function(course){
+    editingId=course.id;thumbUrl=course.thumbnail_url||null;window._thumbFile=null;
+    document.getElementById('course-modal-title').textContent='Edit Course';
+    document.getElementById('save-course-btn').textContent='Save & Go to Builder →';
+    document.getElementById('c-title').value=course.title||'';
+    document.getElementById('c-category').value=course.category||'';
+    document.getElementById('c-subcategory').value=course.subcategory||'';
+    document.getElementById('c-level').value=course.level||'beginner';
+    document.getElementById('c-language').value=course.language||'english';
+    document.getElementById('c-price').value=course.price||0;
+    document.getElementById('c-short-desc').value=course.short_description||'';
+    document.getElementById('c-desc').value=course.description||'';
+    document.getElementById('c-audience').value=course.target_audience||'';
+    document.getElementById('c-trailer').value=course.trailer_url||'';
+    learnTags.setTags(course.what_you_learn||[]);
+    reqTags.setTags(course.requirements||[]);
+    if(course.thumbnail_url){document.getElementById('thumb-preview-inner').innerHTML='<img src="'+course.thumbnail_url+'" style="width:100%;height:100%;object-fit:cover;"/>';}
+    openModal('course-modal');
+  };
+
+  // ── Save course ──
+  async function saveCourse(goToBuilder){
+    var title=document.getElementById('c-title').value.trim();
+    var cat=document.getElementById('c-category').value;
+    if(!title){showToast('error','Error','Course title is required.');return;}
+    if(!cat){showToast('error','Error','Please select a category.');return;}
+    var btn=document.getElementById('save-course-btn');
+    btn.disabled=true;btn.textContent='Saving…';
+    try{
+      var payload={title:title,category:cat,subcategory:document.getElementById('c-subcategory').value,level:document.getElementById('c-level').value,language:document.getElementById('c-language').value,price:parseFloat(document.getElementById('c-price').value)||0,short_description:document.getElementById('c-short-desc').value,description:document.getElementById('c-desc').value,target_audience:document.getElementById('c-audience').value,trailer_url:document.getElementById('c-trailer').value,what_you_learn:learnTags.getTags(),requirements:reqTags.getTags(),status:goToBuilder?'draft':'draft'};
+      var res;
+      if(editingId){res=await Api.patch('/instructor/courses/'+editingId,payload);}
+      else{res=await Api.post('/instructor/courses',payload);}
+      var courseId=(res&&res.data&&res.data.id)||editingId;
+      // Upload thumbnail if selected
+      if(window._thumbFile&&courseId){
+        var fd=new FormData();fd.append('thumbnail',window._thumbFile);
+        await fetch(window.EV_BASE+'api/v1/instructor/courses/'+courseId+'/thumbnail',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('ev_token')},body:fd});
+      }
+      closeModal('course-modal');
+      if(goToBuilder&&courseId){window.location.href='course-builder.html?course='+courseId;}
+      else{showToast('success','Saved!','Course saved as draft.');loadCourses();}
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed to save.');}
+    btn.disabled=false;btn.textContent=editingId?'Save & Go to Builder →':'Create Course & Open Builder →';
+  }
+
+  document.getElementById('save-course-btn').addEventListener('click',function(){saveCourse(true);});
+  document.getElementById('save-draft-btn').addEventListener('click',function(){saveCourse(false);});
+
+  // ── Load courses ──
+  async function loadCourses(){
+    try{
+      var res=await Api.get('/instructor/courses');
+      allCourses=(res&&res.data)||[];
+      // Stats
+      var pub=allCourses.filter(function(c){return c.status==='published';});
+      var totalStu=allCourses.reduce(function(a,c){return a+(c.enrolled_count||0);},0);
+      var ratedCourses=allCourses.filter(function(c){return c.avg_rating;});
+      var avgRat=ratedCourses.length?(ratedCourses.reduce(function(a,c){return a+parseFloat(c.avg_rating);},0)/ratedCourses.length).toFixed(1):'—';
+      document.getElementById('s-total').textContent=allCourses.length;
+      document.getElementById('s-published').textContent=pub.length;
+      document.getElementById('s-students').textContent=totalStu;
+      document.getElementById('s-rating').textContent=avgRat;
+      // Coupon course dropdown
+      var cSel=document.getElementById('coup-course');
+      cSel.innerHTML='<option value="">All Courses</option>'+allCourses.map(function(c){return '<option value="'+c.id+'">'+_esc(c.title)+'</option>';}).join('');
+      filterCourses();
+    }catch(e){showToast('error','Error','Failed to load courses.');}
+  }
+
+  function filterCourses(){
+    var q=document.getElementById('search-courses').value.toLowerCase();
+    var st=document.getElementById('filter-status').value;
+    var cat=document.getElementById('filter-cat').value;
+    var sort=document.getElementById('sort-courses').value;
+    var list=allCourses.filter(function(c){
+      if(q&&!(c.title||'').toLowerCase().includes(q))return false;
+      if(st&&c.status!==st)return false;
+      if(cat&&c.category!==cat)return false;
+      return true;
+    });
+    list.sort(function(a,b){
+      if(sort==='students')return (b.enrolled_count||0)-(a.enrolled_count||0);
+      if(sort==='rating')return (parseFloat(b.avg_rating||0))-(parseFloat(a.avg_rating||0));
+      if(sort==='oldest')return new Date(a.created_at)-new Date(b.created_at);
+      return new Date(b.created_at)-new Date(a.created_at);
+    });
+    document.getElementById('course-count').textContent=list.length+' course'+(list.length!==1?'s':'');
+    renderCourses(list);
+  }
+
+  ['search-courses','filter-status','filter-cat','sort-courses'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.addEventListener('change',filterCourses);if(id==='search-courses')el.addEventListener('input',filterCourses);}
+  });
+
+  var emojis=['📘','📗','📕','📙','📓','📒','📔'];
+  var catColors={programming:'#dbeafe',design:'#ede9fe',mathematics:'#d1fae5',science:'#fef3c7',business:'#fee2e2',language:'#fce7f3',other:'#f3f4f6'};
+
+  function renderCourses(list){
+    var grid=document.getElementById('courses-grid');
+    if(!list.length){
+      grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:var(--space-16);color:var(--text-muted);"><div style="font-size:3rem;margin-bottom:var(--space-4);">📚</div><div style="font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);">No courses yet</div><p style="margin-bottom:var(--space-6);">Create your first course and start teaching!</p><button class="btn btn-primary" onclick="openCreateModal()"><i data-feather="plus" style="width:16px;height:16px;"></i> Create Course</button></div>';
+      if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+      return;
+    }
+    grid.innerHTML=list.map(function(c,i){
+      var statusBadge=c.status==='published'?'status-published':c.status==='review'?'status-review':'status-draft';
+      var statusLabel=c.status==='published'?'Published':c.status==='review'?'Under Review':'Draft';
+      var thumb=c.thumbnail_url?'<img src="'+_esc(c.thumbnail_url)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'"/>':'';
+      var emoji=emojis[i%emojis.length];
+      var bg=catColors[c.category||'other']||'#f3f4f6';
+      var rating=c.avg_rating?parseFloat(c.avg_rating).toFixed(1):'—';
+      var price=parseFloat(c.price||0)>0?'₹'+parseFloat(c.price).toFixed(0):'Free';
+      return '<div class="course-card">'+
+        '<div class="course-thumb" style="background:'+bg+';">'+
+          (thumb?thumb:'<span style="font-size:3rem;">'+emoji+'</span>')+
+          '<span class="course-status-badge '+statusBadge+'">'+statusLabel+'</span>'+
+        '</div>'+
+        '<div class="course-body">'+
+          '<div class="course-cat">'+_esc(c.category||'General')+(c.subcategory?' · '+_esc(c.subcategory):'')+'</div>'+
+          '<div class="course-title">'+_esc(c.title)+'</div>'+
+          '<div class="course-meta" style="margin-top:var(--space-2);">'+
+            '<span><i data-feather="users" style="width:11px;height:11px;"></i> '+(c.enrolled_count||0)+' students</span>'+
+            '<span><i data-feather="star" style="width:11px;height:11px;color:#f59e0b;"></i> '+rating+'</span>'+
+            '<span><i data-feather="film" style="width:11px;height:11px;"></i> '+(c.video_count||0)+' videos</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="course-footer">'+
+          '<div class="course-price">'+price+'</div>'+
+          '<div class="course-actions">'+
+            '<a href="course-builder.html?course='+c.id+'" class="btn btn-primary btn-sm" title="Open Builder"><i data-feather="edit-2" style="width:13px;height:13px;"></i> Edit</a>'+
+            '<div style="position:relative;">'+
+              '<button class="btn btn-ghost btn-sm" onclick="toggleCtx(event,'+c.id+')" title="More options"><i data-feather="more-vertical" style="width:14px;height:14px;"></i></button>'+
+              '<div class="ctx-menu" id="ctx-'+c.id+'">'+
+                '<button class="ctx-item" onclick="closeCtx();openEditModal('+JSON.stringify(c).replace(/"/g,'&quot;')+')"><i data-feather="settings" style="width:14px;height:14px;"></i> Course Settings</button>'+
+                '<button class="ctx-item" onclick="closeCtx();toggleStatus('+c.id+',\''+c.status+'\')"><i data-feather="'+(c.status==='published'?'eye-off':'globe')+'" style="width:14px;height:14px;"></i> '+(c.status==='published'?'Unpublish':'Publish')+'</button>'+
+                '<button class="ctx-item" onclick="closeCtx();duplicateCourse('+c.id+')"><i data-feather="copy" style="width:14px;height:14px;"></i> Duplicate</button>'+
+                '<button class="ctx-item" onclick="closeCtx();previewCourse('+c.id+')"><i data-feather="eye" style="width:14px;height:14px;"></i> Preview as Student</button>'+
+                '<div class="ctx-divider"></div>'+
+                '<button class="ctx-item danger" onclick="closeCtx();deleteCourse('+c.id+')"><i data-feather="trash-2" style="width:14px;height:14px;"></i> Delete Course</button>'+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  }
+
+  // ── Context menu ──
+  var openCtxId=null;
+  window.toggleCtx=function(e,id){e.stopPropagation();if(openCtxId&&openCtxId!==id){document.getElementById('ctx-'+openCtxId).classList.remove('open');}openCtxId=id;document.getElementById('ctx-'+id).classList.toggle('open');};
+  window.closeCtx=function(){if(openCtxId){document.getElementById('ctx-'+openCtxId).classList.remove('open');openCtxId=null;}};
+  document.addEventListener('click',closeCtx);
+
+  // ── Actions ──
+  window.toggleStatus=async function(id,status){
+    var newStatus=status==='published'?'draft':'published';
+    try{await Api.patch('/instructor/courses/'+id,{status:newStatus});showToast('success','Updated!','Course is now '+newStatus+'.');loadCourses();}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+  };
+  window.duplicateCourse=async function(id){
+    try{var res=await Api.post('/instructor/courses/'+id+'/duplicate',{});var newId=res&&res.data&&res.data.id;showToast('success','Duplicated!','Course copied as draft.');if(newId)setTimeout(function(){window.location.href='course-builder.html?course='+newId;},1000);else loadCourses();}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed to duplicate.');}
+  };
+  window.previewCourse=function(id){window.open('../../pages/student/player.html?course='+id+'&preview=1','_blank');};
+  window.deleteCourse=async function(id){
+    if(!confirm('Delete this course permanently? All videos and student progress will be removed.'))return;
+    try{await Api.delete('/instructor/courses/'+id);showToast('success','Deleted','Course removed.');loadCourses();}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed to delete.');}
+  };
+
+  // ── Coupons ──
+  document.getElementById('create-coupon-btn').addEventListener('click',async function(){
+    var code=document.getElementById('coup-code').value.trim().toUpperCase();
+    var val=document.getElementById('coup-value').value;
+    if(!code||!val){showToast('error','Error','Code and value required.');return;}
+    this.disabled=true;this.textContent='Creating…';
+    try{
+      await Api.post('/instructor/coupons',{code:code,type:document.getElementById('coup-type').value,value:parseFloat(val),max_uses:parseInt(document.getElementById('coup-max').value)||null,expiry:document.getElementById('coup-expiry').value||null,course_id:document.getElementById('coup-course').value||null});
+      showToast('success','Coupon Created!',code+' is ready.');loadCoupons();
+      document.getElementById('coup-code').value='';document.getElementById('coup-value').value='';
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Create Coupon';
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  });
+
+  async function loadCoupons(){
+    try{
+      var res=await Api.get('/instructor/coupons');
+      var coupons=(res&&res.data)||[];
+      var el=document.getElementById('coupon-list');
+      el.innerHTML='<div style="font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.05em;margin-bottom:var(--space-2);">Active Coupons</div>'+
+        (coupons.length?coupons.map(function(c){
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-3);background:var(--bg-sunken);border-radius:var(--border-radius-md);margin-bottom:var(--space-2);">'+
+            '<div><div style="font-family:monospace;font-weight:700;font-size:var(--font-size-sm);">'+_esc(c.code)+'</div>'+
+            '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+(c.type==='percent'?c.value+'% off':'₹'+c.value+' off')+' · '+c.used_count+' used'+(c.max_uses?' / '+c.max_uses:'')+'</div></div>'+
+            '<button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" onclick="deleteCoupon('+c.id+')"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button>'+
+          '</div>';
+        }).join(''):'<div style="text-align:center;color:var(--text-muted);padding:var(--space-4);font-size:var(--font-size-sm);">No coupons yet.</div>');
+      if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+    }catch(e){}
+  }
+  window.deleteCoupon=async function(id){try{await Api.delete('/instructor/coupons/'+id);showToast('success','Deleted','Coupon removed.');loadCoupons();}catch(e){showToast('error','Error','Failed.');}};
+  document.getElementById('coupon-modal').addEventListener('click',function(e){if(e.target===this)closeModal('coupon-modal');else{/* noop */}});
+  document.querySelectorAll('.modal-overlay').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)closeModal(m.id);});});
+
+  loadCourses();
+  loadCoupons();
+});
+</script>
+</body>
+</html>

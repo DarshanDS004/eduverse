@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instructor Dashboard — EduVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>
+    try {
+      if (localStorage.getItem('ev_theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.documentElement.classList.add('dark');
+      }
+    } catch(e) {}
+  </script>
+  <style>
+    /* Welcome banner */
+    .welcome-banner {
+      background: linear-gradient(135deg, #065f46 0%, #059669 60%, #10b981 100%);
+      border-radius: var(--border-radius-xl);
+      padding: var(--space-8);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-6); margin-bottom: var(--space-6);
+      position: relative; overflow: hidden;
+    }
+    .welcome-banner::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(255,255,255,0.06); pointer-events: none;
+    }
+    .welcome-banner::after {
+      content: ''; position: absolute; bottom: -80px; right: 120px;
+      width: 260px; height: 260px; border-radius: 50%;
+      background: rgba(255,255,255,0.04); pointer-events: none;
+    }
+    .welcome-text { position: relative; z-index: 1; }
+    .welcome-greeting { font-size: var(--font-size-xs); font-weight: 600; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: rgba(255,255,255,0.65); margin-bottom: var(--space-1); }
+    .welcome-name { font-size: var(--font-size-3xl); font-weight: 800; color: #fff; letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); margin-bottom: var(--space-2); }
+    .welcome-subtitle { font-size: var(--font-size-sm); color: rgba(255,255,255,0.70); margin-bottom: var(--space-5); }
+    .welcome-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .btn-welcome {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      height: 38px; padding: 0 var(--space-5);
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: var(--border-radius-md); color: #fff;
+      font-size: var(--font-size-sm); font-weight: 600;
+      text-decoration: none; cursor: pointer; transition: all var(--transition-fast); font-family: var(--font-ui);
+    }
+    .btn-welcome:hover { background: rgba(255,255,255,0.25); }
+    .welcome-illustration { position: relative; z-index: 1; flex-shrink: 0; font-size: 68px; line-height: 1; }
+
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-4); margin-bottom: var(--space-6); }
+    .stat-card {
+      background: var(--bg-surface); border: var(--card-border);
+      border-radius: var(--card-radius); box-shadow: var(--card-shadow);
+      padding: var(--space-5) var(--space-6);
+      display: flex; align-items: flex-start; gap: var(--space-4);
+      transition: all var(--transition-fast);
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .stat-icon { width: 44px; height: 44px; border-radius: var(--border-radius-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .si-green  { background: var(--color-success-light); color: var(--color-success); }
+    .si-blue   { background: var(--color-primary-50);    color: var(--color-primary-600); }
+    .si-amber  { background: var(--color-warning-light); color: var(--color-warning); }
+    .si-purple { background: #ede9fe; color: #7c3aed; }
+    .si-red    { background: var(--color-danger-light); color: var(--color-danger); }
+    .stat-info { flex: 1; min-width: 0; }
+    .stat-value { font-size: var(--font-size-2xl); font-weight: 800; color: var(--text-primary); line-height: 1; margin-bottom: var(--space-1); }
+    .stat-label { font-size: var(--font-size-xs); color: var(--text-muted); font-weight: 500; }
+    .stat-delta { font-size: var(--font-size-xs); margin-top: var(--space-1); display: inline-flex; align-items: center; gap: 2px; }
+    .delta-up { color: var(--color-success); font-weight: 600; }
+    .delta-down { color: var(--color-danger); font-weight: 600; }
+
+    /* Dashboard grid */
+    .dash-grid { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-6); align-items: start; }
+    .dash-left  { display: flex; flex-direction: column; gap: var(--space-6); }
+    .dash-right { display: flex; flex-direction: column; gap: var(--space-6); position: sticky; top: calc(var(--navbar-height) + var(--space-6)); }
+
+    /* Cards */
+    .dash-card { background: var(--bg-surface); border: var(--card-border); border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow: hidden; }
+    .dash-card-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border-color); }
+    .dash-card-title { font-size: var(--font-size-base); font-weight: 600; color: var(--text-primary); }
+    .dash-card-body  { padding: var(--space-5); }
+    .dash-card-link  { font-size: var(--font-size-sm); font-weight: 500; color: var(--color-primary-600); text-decoration: none; }
+    .dash-card-link:hover { color: var(--color-primary-700); }
+
+    /* Course row */
+    .course-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) 0; border-bottom: 1px solid var(--border-color); }
+    .course-row:last-child { border-bottom: none; }
+    .course-thumb { width: 48px; height: 48px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .course-info { flex: 1; min-width: 0; }
+    .course-title { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .course-meta { font-size: var(--font-size-xs); color: var(--text-muted); }
+    .course-stats { display: flex; gap: var(--space-4); flex-shrink: 0; }
+    .course-stat { text-align: center; }
+    .course-stat-val { font-size: var(--font-size-sm); font-weight: 700; color: var(--text-primary); }
+    .course-stat-lbl { font-size: 10px; color: var(--text-muted); }
+
+    /* Enrollment item */
+    .enroll-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-color); }
+    .enroll-item:last-child { border-bottom: none; }
+    .enroll-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xs); font-weight: 700; flex-shrink: 0; }
+    .enroll-info { flex: 1; min-width: 0; }
+    .enroll-name { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); }
+    .enroll-course { font-size: var(--font-size-xs); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .enroll-time { font-size: 10px; color: var(--text-disabled); flex-shrink: 0; }
+
+    /* Pending task item */
+    .task-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-color); }
+    .task-item:last-child { border-bottom: none; }
+    .task-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .task-info { flex: 1; min-width: 0; }
+    .task-title { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); }
+    .task-meta  { font-size: var(--font-size-xs); color: var(--text-muted); }
+    .task-count { background: var(--color-danger-light); color: var(--color-danger-dark); border-radius: 99px; font-size: 10px; font-weight: 700; padding: 2px 8px; flex-shrink: 0; }
+
+    /* Upcoming session item */
+    .session-item { background: var(--bg-sunken); border-radius: var(--border-radius-lg); padding: var(--space-4); margin-bottom: var(--space-3); }
+    .session-item:last-child { margin-bottom: 0; }
+    .session-time { font-size: var(--font-size-xs); font-weight: 700; color: var(--color-primary-600); margin-bottom: var(--space-1); }
+    .session-title { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .session-meta { font-size: var(--font-size-xs); color: var(--text-muted); }
+    .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--color-danger); animation: pls 1.4s ease infinite; margin-right: 4px; }
+    @keyframes pls { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Earnings card */
+    .earnings-card { background: linear-gradient(135deg, #1e1b4b, #312e81); border-radius: var(--card-radius); padding: var(--space-5); color: #fff; }
+    .earnings-amount { font-size: var(--font-size-4xl); font-weight: 800; letter-spacing: var(--tracking-tight); line-height: 1; margin: var(--space-2) 0; }
+    .earnings-label  { font-size: var(--font-size-xs); color: rgba(255,255,255,0.60); margin-bottom: var(--space-1); }
+    .earnings-sub    { font-size: var(--font-size-xs); color: rgba(255,255,255,0.50); margin-top: var(--space-1); }
+
+    /* Performance snapshot */
+    .perf-course-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-color); }
+    .perf-course-row:last-child { border-bottom: none; }
+    .perf-rank { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .rank-1 { background: #fef3c7; color: #92400e; }
+    .rank-2 { background: var(--neutral-100); color: var(--text-muted); }
+    .rank-3 { background: #fde8d8; color: #9a3412; }
+    .perf-course-info { flex: 1; min-width: 0; }
+    .perf-course-title { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .perf-course-sub { font-size: var(--font-size-xs); color: var(--text-muted); }
+    .perf-course-rev { font-size: var(--font-size-sm); font-weight: 700; color: var(--color-success); flex-shrink: 0; }
+
+    /* Quick actions */
+    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .quick-action {
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+      padding: var(--space-4); background: var(--bg-sunken);
+      border: 1px solid var(--border-color); border-radius: var(--border-radius-lg);
+      cursor: pointer; text-decoration: none; transition: all var(--transition-fast); text-align: center;
+    }
+    .quick-action:hover { background: var(--color-primary-50); border-color: var(--color-primary-300); }
+    .qa-icon { width: 40px; height: 40px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .qa-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--text-secondary); }
+
+    /* Profile strength */
+    .profile-tip { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-xs); color: var(--text-muted); }
+    .profile-tip-done { color: var(--color-success); }
+
+    /* Material row */
+    .material-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-color); }
+    .material-row:last-child { border-bottom: none; }
+
+    /* Rating stars */
+    .stars { color: #f59e0b; font-size: var(--font-size-sm); letter-spacing: 1px; }
+
+    /* Skeleton */
+    .skel { background: var(--neutral-100); border-radius: 4px; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: var(--space-6); right: var(--space-6); z-index: var(--z-toast); display: flex; flex-direction: column; gap: var(--space-3); max-width: 360px; }
+    .toast { background: var(--bg-elevated); border: var(--card-border); border-radius: var(--card-radius); box-shadow: var(--shadow-lg); padding: var(--space-4); display: flex; align-items: flex-start; gap: var(--space-3); }
+    .toast-success { border-left: 4px solid var(--color-success); }
+    .toast-error   { border-left: 4px solid var(--color-danger); }
+    .toast-content { flex: 1; }
+    .toast-title   { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); }
+    .toast-msg     { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 2px; }
+    .toast-close   { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; }
+
+    @media (max-width: 1199px) { .dash-grid { grid-template-columns: 1fr; } .dash-right { position: static; } .stats-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 767px)  { .stats-grid { grid-template-columns: repeat(2,1fr); } .welcome-illustration { display: none; } }
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html">
+      <div class="sidebar-logo">E</div>
+      <div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div>
+    </a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item active" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span><span class="sidebar-item-badge" id="badge-students" style="display:none;"></span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span><span class="sidebar-item-badge" id="badge-grade" style="display:none;"></span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span><span class="sidebar-item-badge" id="badge-messages" style="display:none;"></span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm avatar-green" id="sidebar-avatar">…</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+        <div class="sidebar-user-role">Instructor</div>
+      </div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar">
+      <i data-feather="chevron-left"></i>
+    </button>
+  </aside>
+
+  <!-- MAIN BODY -->
+  <div class="app-body">
+
+    <!-- Navbar -->
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);" id="navbar-date"></div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Dashboard</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme" title="Toggle theme"><i data-feather="moon"></i></button>
+        <button class="navbar-icon-btn" data-action="toggle-notif" title="Notifications">
+          <i data-feather="bell"></i>
+          <span class="badge-count" id="notif-badge" style="display:none;"></span>
+        </button>
+        <div class="navbar-user" id="navbar-user-trigger" role="button" tabindex="0">
+          <div class="avatar avatar-sm avatar-green" id="navbar-avatar">…</div>
+          <div class="navbar-user-info">
+            <span class="navbar-user-name" id="navbar-user-name">Loading…</span>
+            <span class="navbar-user-role">Instructor</span>
+          </div>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-header">
+            <div style="font-weight:600;font-size:var(--font-size-sm);color:var(--text-primary);" id="dd-user-name"></div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor</div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> My Profile</a>
+          <a class="dropdown-item" href="courses.html"><i data-feather="book-open"></i> My Courses</a>
+          <a class="dropdown-item" href="earnings.html"><i data-feather="dollar-sign"></i> Earnings</a>
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Notification panel -->
+    <div class="notif-panel" id="notif-panel">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notifications</span>
+        <button class="btn btn-ghost btn-sm" id="mark-all-read">Mark all read</button>
+      </div>
+      <div class="notif-panel-body scroll-area" id="notif-panel-body">
+        <div class="notif-panel-empty">
+          <div style="font-size:2rem;margin-bottom:8px;">🔔</div>
+          <div style="font-size:var(--font-size-sm);color:var(--text-muted);">No notifications</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+
+    <!-- PAGE CONTENT -->
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <div class="welcome-greeting" id="welcome-greeting">Good morning</div>
+            <div class="welcome-name" id="welcome-name">…</div>
+            <div class="welcome-subtitle" id="welcome-subtitle">Ready to inspire your students today?</div>
+            <div class="welcome-actions">
+              <a href="course-builder.html" class="btn-welcome">
+                <i data-feather="plus" style="width:15px;height:15px;"></i> Create Course
+              </a>
+              <a href="live-sessions.html" class="btn-welcome">
+                <i data-feather="video" style="width:15px;height:15px;"></i> Schedule Class
+              </a>
+              <a href="assessments.html" class="btn-welcome">
+                <i data-feather="clipboard" style="width:15px;height:15px;"></i> View Submissions
+              </a>
+            </div>
+          </div>
+          <div class="welcome-illustration" aria-hidden="true">👨‍🏫</div>
+        </div>
+
+        <!-- Stats Row — 5 cards -->
+        <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">
+          <div class="stat-card">
+            <div class="stat-icon si-blue"><i data-feather="book-open" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-courses"><div class="skel" style="height:28px;width:40px;"></div></div>
+              <div class="stat-label">Total Courses</div>
+              <div class="stat-delta" id="stat-courses-delta"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-green"><i data-feather="users" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-students"><div class="skel" style="height:28px;width:40px;"></div></div>
+              <div class="stat-label">Total Students</div>
+              <div class="stat-delta delta-up" id="stat-students-delta"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-amber"><i data-feather="dollar-sign" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-earnings"><div class="skel" style="height:28px;width:60px;"></div></div>
+              <div class="stat-label">Total Earnings</div>
+              <div class="stat-delta delta-up" id="stat-earnings-delta"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-purple"><i data-feather="star" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-rating"><div class="skel" style="height:28px;width:40px;"></div></div>
+              <div class="stat-label">Avg Rating</div>
+              <div class="stars" id="stat-rating-stars" style="font-size:10px;margin-top:2px;"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-red"><i data-feather="clock" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-pending"><div class="skel" style="height:28px;width:40px;"></div></div>
+              <div class="stat-label">Pending Tasks</div>
+              <div style="font-size:var(--font-size-xs);color:var(--color-danger);font-weight:500;margin-top:2px;" id="stat-pending-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dash-grid">
+
+          <!-- LEFT -->
+          <div class="dash-left">
+
+            <!-- Course Performance Snapshot -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Course Performance Snapshot</div>
+                <a href="analytics.html" class="dash-card-link">Full Analytics →</a>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="courses-list">
+                  <div style="display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:48px;height:48px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                      <div class="skel" style="height:14px;width:70%;"></div>
+                      <div class="skel" style="height:11px;width:50%;"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:16px;padding:16px 0;">
+                    <div class="skel" style="width:48px;height:48px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                      <div class="skel" style="height:14px;width:60%;"></div>
+                      <div class="skel" style="height:11px;width:45%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Enrollments -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Recent Enrollments</div>
+                <a href="students.html" class="dash-card-link">View all →</a>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="enrollments-list">
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                      <div class="skel" style="height:13px;width:60%;"></div>
+                      <div class="skel" style="height:11px;width:40%;"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                      <div class="skel" style="height:13px;width:55%;"></div>
+                      <div class="skel" style="height:11px;width:35%;"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:12px 0;">
+                    <div class="skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                      <div class="skel" style="height:13px;width:50%;"></div>
+                      <div class="skel" style="height:11px;width:38%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pending Tasks -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Pending Tasks</div>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="tasks-list">
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                      <div class="skel" style="height:13px;width:70%;"></div>
+                      <div class="skel" style="height:11px;width:40%;"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:12px 0;">
+                    <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                      <div class="skel" style="height:13px;width:65%;"></div>
+                      <div class="skel" style="height:11px;width:35%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Study Materials -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Recent Study Materials</div>
+                <a href="materials.html" class="dash-card-link">Manage →</a>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="materials-list">
+                  <div class="skel" style="height:44px;border-radius:8px;margin-bottom:8px;"></div>
+                  <div class="skel" style="height:44px;border-radius:8px;"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT -->
+          <div class="dash-right">
+
+            <!-- Upcoming Live Sessions -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Upcoming Sessions</div>
+                <a href="live-sessions.html" class="dash-card-link">View all →</a>
+              </div>
+              <div class="dash-card-body" id="upcoming-sessions-panel">
+                <div class="skel" style="height:80px;border-radius:8px;margin-bottom:8px;"></div>
+                <div class="skel" style="height:80px;border-radius:8px;"></div>
+              </div>
+            </div>
+
+            <!-- Earnings Overview -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Earnings Overview</div>
+                <a href="earnings.html" class="dash-card-link">Details →</a>
+              </div>
+              <div class="dash-card-body">
+                <div class="earnings-card">
+                  <div class="earnings-label">Total Earnings</div>
+                  <div class="earnings-amount" id="earnings-total">₹0</div>
+                  <div class="earnings-sub" id="earnings-sub">From courses and study materials</div>
+                </div>
+                <div style="display:flex;gap:var(--space-4);margin-top:var(--space-4);">
+                  <div style="flex:1;text-align:center;padding:var(--space-3);background:var(--bg-sunken);border-radius:var(--border-radius-md);">
+                    <div style="font-size:var(--font-size-lg);font-weight:800;color:var(--color-success);" id="earnings-courses">₹0</div>
+                    <div style="font-size:10px;color:var(--text-muted);">From Courses</div>
+                  </div>
+                  <div style="flex:1;text-align:center;padding:var(--space-3);background:var(--bg-sunken);border-radius:var(--border-radius-md);">
+                    <div style="font-size:var(--font-size-lg);font-weight:800;color:var(--color-primary-600);" id="earnings-materials">₹0</div>
+                    <div style="font-size:10px;color:var(--text-muted);">From Materials</div>
+                  </div>
+                </div>
+                <div style="margin-top:var(--space-3);padding:var(--space-3);background:var(--bg-sunken);border-radius:var(--border-radius-md);display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:var(--font-size-xs);color:var(--text-muted);">Pending Payout</span>
+                  <span style="font-size:var(--font-size-sm);font-weight:700;color:var(--color-warning);" id="earnings-pending">₹0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dash-card">
+              <div class="dash-card-header"><div class="dash-card-title">Quick Actions</div></div>
+              <div class="dash-card-body">
+                <div class="quick-grid">
+                  <a href="courses.html" class="quick-action"><div class="qa-icon" style="background:#d1fae5;">📚</div><span class="qa-label">Create Course</span></a>
+                  <a href="materials.html" class="quick-action"><div class="qa-icon" style="background:#dbeafe;">📝</div><span class="qa-label">Upload Notes</span></a>
+                  <a href="live-sessions.html" class="quick-action"><div class="qa-icon" style="background:#ede9fe;">🎥</div><span class="qa-label">Live Session</span></a>
+                  <a href="assessments.html" class="quick-action"><div class="qa-icon" style="background:#fef3c7;">📋</div><span class="qa-label">Create Quiz</span></a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile strength -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Profile Strength</div>
+                <a href="profile.html" class="dash-card-link">Edit →</a>
+              </div>
+              <div class="dash-card-body">
+                <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                  <span style="font-size:var(--font-size-sm);color:var(--text-secondary);">Complete</span>
+                  <span style="font-size:var(--font-size-sm);font-weight:700;color:var(--color-primary-600);" id="profile-pct">—</span>
+                </div>
+                <div style="height:8px;background:var(--neutral-100);border-radius:99px;overflow:hidden;">
+                  <div id="profile-bar" style="height:100%;background:var(--color-primary-600);border-radius:99px;transition:width 1s;width:0%;"></div>
+                </div>
+                <div id="profile-tips" style="margin-top:var(--space-4);display:flex;flex-direction:column;gap:var(--space-2);"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Foundation JS -->
+<script>window.EV_BASE = "../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/router.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+
+<!-- Auth guard -->
+<script>
+(function() {
+  var token, user;
+  try { token = localStorage.getItem('ev_token'); user = token ? JSON.parse(localStorage.getItem('ev_user')) : null; } catch(e) {}
+  if (!token || !user) window.location.replace('../../pages/auth/login.html');
+  else if (user.role !== 'instructor') window.location.replace('../../pages/errors/403.html');
+})();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+
+  // ── User info ──
+  var user = Store.get('auth.user') || {};
+  var name = user.name || '';
+
+  function _ini(n) {
+    if (!n) return '?';
+    var p = n.trim().split(/\s+/).filter(Boolean);
+    if (p.length === 1) return p[0].slice(0,2).toUpperCase();
+    return (p[0][0] + p[p.length-1][0]).toUpperCase();
+  }
+  function _color(n) {
+    var colors = ['avatar-blue','avatar-green','avatar-amber','avatar-red'];
+    if (!n) return colors[0];
+    var h = 0;
+    for (var i = 0; i < n.length; i++) h = n.charCodeAt(i) + ((h << 5) - h);
+    return colors[Math.abs(h) % colors.length];
+  }
+
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (user.avatar) {
+      el.innerHTML = '<img src="' + user.avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />';
+    } else {
+      el.textContent = _ini(name);
+      el.className = 'avatar avatar-sm ' + _color(name);
+    }
+  });
+  ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.textContent = name;
+  });
+
+  var h = new Date().getHours();
+  var greet = h < 12 ? 'Good morning ☀️' : h < 17 ? 'Good afternoon 🌤️' : 'Good evening 🌙';
+  _text('welcome-greeting', greet);
+  _text('welcome-name', 'Hi, ' + (name.split(' ')[0] || 'Instructor') + '!');
+
+  // Date
+  var dateEl = document.getElementById('navbar-date');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  // ── Sidebar wiring ──
+  var shell   = document.getElementById('app-shell');
+  var menuBtn = document.getElementById('navbar-menu-btn');
+  var overlay = document.getElementById('sidebar-overlay');
+  var colBtn  = document.getElementById('sidebar-collapse-btn');
+
+  try { if (localStorage.getItem('ev_sidebar_collapsed') === 'true') shell.classList.add('sidebar-collapsed'); } catch(e) {}
+  colBtn  && colBtn.addEventListener('click', function() { var c = shell.classList.toggle('sidebar-collapsed'); try { localStorage.setItem('ev_sidebar_collapsed', c); } catch(e) {} });
+  menuBtn && menuBtn.addEventListener('click', function() { shell.classList.toggle('sidebar-open'); });
+  overlay && overlay.addEventListener('click', function() { shell.classList.remove('sidebar-open'); });
+
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var d = document.documentElement.classList.toggle('dark');
+      document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+      try { localStorage.setItem('ev_theme', d ? 'dark' : 'light'); } catch(e) {}
+    });
+  });
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) { e.preventDefault(); if (typeof Auth !== 'undefined') Auth.logout(); });
+  });
+
+  // Notification panel
+  var notifBtn = document.querySelector('[data-action="toggle-notif"]');
+  var notifPanel = document.getElementById('notif-panel');
+  if (notifBtn && notifPanel) {
+    notifBtn.addEventListener('click', function(e) { e.stopPropagation(); notifPanel.classList.toggle('open'); });
+    document.addEventListener('click', function(e) {
+      if (!notifPanel.contains(e.target) && !notifBtn.contains(e.target)) notifPanel.classList.remove('open');
+    });
+  }
+
+  // Dropdown
+  var trigger  = document.getElementById('navbar-user-trigger');
+  var dropdown = document.getElementById('user-dropdown');
+  if (trigger && dropdown) {
+    trigger.addEventListener('click', function(e) { e.stopPropagation(); dropdown.hidden = !dropdown.hidden; });
+    document.addEventListener('click', function(e) {
+      if (!trigger.contains(e.target) && !dropdown.contains(e.target)) dropdown.hidden = true;
+    });
+  }
+
+  // ── Profile strength ──
+  _renderProfileStrength(user);
+
+  // ── Load all dashboard data ──
+  loadDashboard();
+
+  async function loadDashboard() {
+    try {
+      var [coursesRes, studentsRes, pendingRes, sessionsRes, earningsRes, enrollsRes, matsRes] = await Promise.all([
+        Api.get('/instructor/courses'),
+        Api.get('/instructor/students'),
+        Api.get('/instructor/submissions?status=pending'),
+        Api.get('/instructor/live-sessions?status=upcoming'),
+        Api.get('/instructor/earnings?days=30'),
+        Api.get('/instructor/enrollments/recent'),
+        Api.get('/instructor/materials/my/materials'),
+      ]);
+
+      var courses   = (coursesRes  && coursesRes.data)  || [];
+      var students  = (studentsRes && studentsRes.data)  || [];
+      var pending   = (pendingRes  && pendingRes.data)   || [];
+      var sessions  = (sessionsRes && sessionsRes.data)  || [];
+      var earnings  = (earningsRes && earningsRes.data)  || {};
+      var enrolls   = (enrollsRes  && enrollsRes.data)   || [];
+      var mats      = (matsRes     && matsRes.data)      || [];
+
+      // Stats
+      var pubCourses = courses.filter(function(c) { return c.status === 'published'; });
+      var totalStudents = courses.reduce(function(a, c) { return a + (c.enrolled_count || 0); }, 0) || students.length;
+      var avgRating = courses.filter(function(c) { return c.avg_rating; }).reduce(function(a, c, _, arr) {
+        return a + parseFloat(c.avg_rating) / arr.length;
+      }, 0);
+
+      _text('stat-courses', courses.length);
+      _text('stat-students', totalStudents);
+      _text('stat-earnings', '₹' + (parseFloat(earnings.total_earnings || 0)).toFixed(0));
+      _text('stat-rating', avgRating ? avgRating.toFixed(1) : '—');
+      if (avgRating) {
+        var stars = Math.round(avgRating);
+        document.getElementById('stat-rating-stars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+      }
+
+      // Pending tasks count
+      var msgCount = 0; // will be updated if messages endpoint available
+      var totalPending = pending.length;
+      _text('stat-pending', totalPending);
+      if (totalPending > 0) _text('stat-pending-sub', totalPending + ' to grade');
+
+      // Badges in sidebar
+      if (pending.length > 0) {
+        var gb = document.getElementById('badge-grade');
+        if (gb) { gb.textContent = pending.length; gb.style.display = ''; }
+      }
+
+      // Earnings panel
+      _text('earnings-total', '₹' + parseFloat(earnings.total_earnings || 0).toFixed(0));
+      _text('earnings-courses', '₹' + parseFloat(earnings.course_earnings || 0).toFixed(0));
+      _text('earnings-materials', '₹' + parseFloat(earnings.material_earnings || 0).toFixed(0));
+      _text('earnings-pending', '₹' + parseFloat(earnings.pending_payout || 0).toFixed(0));
+
+      // Welcome subtitle
+      _text('welcome-subtitle',
+        pubCourses.length + ' published course' + (pubCourses.length !== 1 ? 's' : '') + ' · ' +
+        totalStudents + ' student' + (totalStudents !== 1 ? 's' : '') +
+        (pending.length ? ' · ' + pending.length + ' pending grade' + (pending.length !== 1 ? 's' : '') : ''));
+
+      renderCourses(courses);
+      renderEnrollments(enrolls.length ? enrolls : students.slice(0, 5).map(function(s) {
+        return { student_name: s.name, student_email: s.email, course_title: s.course_title, enrolled_at: s.enrolled_at };
+      }));
+      renderTasks(pending);
+      renderSessions(sessions);
+      renderMaterials(mats);
+
+    } catch(err) {
+      console.error('[Dashboard]', err);
+      // Show zeros on error
+      ['stat-courses','stat-students','stat-earnings','stat-pending'].forEach(function(id) { _text(id, '0'); });
+    }
+  }
+
+  // ── Render courses (performance snapshot) ──
+  function renderCourses(courses) {
+    var list = document.getElementById('courses-list');
+    if (!list) return;
+    if (!courses.length) {
+      list.innerHTML = '<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);">' +
+        '<div style="font-size:1.5rem;margin-bottom:8px;">📚</div>' +
+        '<div style="font-size:var(--font-size-sm);">No courses yet. <a href="courses.html" style="color:var(--color-primary-600);">Create your first course</a></div>' +
+        '</div>';
+      return;
+    }
+    // Sort by enrollment desc
+    var sorted = courses.slice().sort(function(a, b) { return (b.enrolled_count || 0) - (a.enrolled_count || 0); });
+    list.innerHTML = sorted.slice(0, 4).map(function(c, i) {
+      var emojis = ['📘','📗','📕','📙'];
+      var bgs    = ['#dbeafe','#d1fae5','#fee2e2','#fef3c7'];
+      var rating = c.avg_rating ? parseFloat(c.avg_rating).toFixed(1) : '—';
+      var rev    = c.revenue != null ? '₹' + parseFloat(c.revenue).toFixed(0) : '—';
+      var badge  = c.status === 'published'
+        ? '<span style="background:var(--color-success-light);color:var(--color-success-dark);padding:2px 6px;border-radius:99px;font-size:9px;font-weight:700;">LIVE</span>'
+        : '<span style="background:var(--neutral-100);color:var(--text-muted);padding:2px 6px;border-radius:99px;font-size:9px;font-weight:700;">DRAFT</span>';
+      return '<div class="course-row">' +
+        '<div class="course-thumb" style="background:' + bgs[i % 4] + ';">' + emojis[i % 4] + '</div>' +
+        '<div class="course-info">' +
+          '<div class="course-title">' + _esc(c.title) + ' ' + badge + '</div>' +
+          '<div class="course-meta">' + _esc(c.category || c.level || '') + '</div>' +
+        '</div>' +
+        '<div class="course-stats">' +
+          '<div class="course-stat"><div class="course-stat-val">' + (c.enrolled_count || 0) + '</div><div class="course-stat-lbl">Students</div></div>' +
+          '<div class="course-stat"><div class="course-stat-val" style="color:var(--color-accent-500);">★' + rating + '</div><div class="course-stat-lbl">Rating</div></div>' +
+          '<div class="course-stat"><div class="course-stat-val" style="color:var(--color-success);">' + rev + '</div><div class="course-stat-lbl">Revenue</div></div>' +
+        '</div>' +
+        '<a href="course-builder.html?course=' + c.id + '" class="btn btn-ghost btn-sm" style="flex-shrink:0;"><i data-feather="edit-2" style="width:14px;height:14px;"></i></a>' +
+      '</div>';
+    }).join('');
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  }
+
+  // ── Render recent enrollments ──
+  function renderEnrollments(list) {
+    var el = document.getElementById('enrollments-list');
+    if (!el) return;
+    if (!list.length) {
+      el.innerHTML = '<div style="text-align:center;padding:var(--space-5);color:var(--text-muted);font-size:var(--font-size-sm);">No enrollments yet.</div>';
+      return;
+    }
+    var colors = ['#dbeafe','#d1fae5','#ede9fe','#fef3c7','#fee2e2'];
+    el.innerHTML = list.slice(0, 6).map(function(e, i) {
+      var n = e.student_name || 'Student';
+      var ini = n.trim().split(/\s+/).map(function(p) { return p[0]; }).slice(0, 2).join('').toUpperCase();
+      var ago = e.enrolled_at ? _timeAgo(new Date(e.enrolled_at)) : '';
+      return '<div class="enroll-item">' +
+        '<div class="enroll-avatar" style="background:' + colors[i % 5] + ';color:var(--text-primary);">' + ini + '</div>' +
+        '<div class="enroll-info">' +
+          '<div class="enroll-name">' + _esc(n) + '</div>' +
+          '<div class="enroll-course">enrolled in <strong>' + _esc(e.course_title || '—') + '</strong></div>' +
+        '</div>' +
+        '<div class="enroll-time">' + ago + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ── Render pending tasks ──
+  function renderTasks(pending) {
+    var el = document.getElementById('tasks-list');
+    if (!el) return;
+    var tasks = [];
+    if (pending.length) tasks.push({ icon: '📋', color: '#fef3c7', title: 'Assignments to grade', sub: pending.length + ' submissions waiting', count: pending.length, href: 'assessments.html' });
+    // Could add quiz reviews, messages unanswered from API
+    // Placeholder tasks for unread messages
+    tasks.push({ icon: '💬', color: '#dbeafe', title: 'Check messages', sub: 'Reply to student questions', count: null, href: 'messages.html' });
+    tasks.push({ icon: '📅', color: '#d1fae5', title: 'Review upcoming sessions', sub: 'Prepare for scheduled classes', count: null, href: 'live-sessions.html' });
+
+    el.innerHTML = tasks.map(function(t, i) {
+      var isLast = i === tasks.length - 1;
+      return '<a href="' + t.href + '" class="task-item" style="text-decoration:none;' + (isLast ? '' : '') + '">' +
+        '<div class="task-dot" style="background:' + t.color + ';">' + t.icon + '</div>' +
+        '<div class="task-info">' +
+          '<div class="task-title">' + _esc(t.title) + '</div>' +
+          '<div class="task-meta">' + _esc(t.sub) + '</div>' +
+        '</div>' +
+        (t.count ? '<div class="task-count">' + t.count + '</div>' : '') +
+      '</a>';
+    }).join('');
+  }
+
+  // ── Render upcoming sessions ──
+  function renderSessions(sessions) {
+    var el = document.getElementById('upcoming-sessions-panel');
+    if (!el) return;
+    if (!sessions.length) {
+      el.innerHTML = '<div style="text-align:center;padding:var(--space-5);color:var(--text-muted);">' +
+        '<div style="font-size:1.5rem;margin-bottom:6px;">📅</div>' +
+        '<div style="font-size:var(--font-size-sm);">No upcoming sessions</div>' +
+        '<a href="live-sessions.html" style="font-size:var(--font-size-xs);color:var(--color-primary-600);">Schedule one →</a>' +
+      '</div>';
+      return;
+    }
+    el.innerHTML = sessions.slice(0, 3).map(function(s) {
+      var dt = new Date(s.scheduled_at);
+      var isToday = dt.toDateString() === new Date().toDateString();
+      var diff = Math.ceil((dt - new Date()) / 60000);
+      var timeStr = isToday && diff > 0
+        ? '<span class="live-dot"></span>Starting in ' + diff + ' min'
+        : dt.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      return '<div class="session-item">' +
+        '<div class="session-time">' + timeStr + '</div>' +
+        '<div class="session-title">' + _esc(s.title) + '</div>' +
+        '<div class="session-meta">' + _esc(s.course_title || '') + (s.duration_minutes ? ' · ' + s.duration_minutes + ' min' : '') + '</div>' +
+        (s.meeting_link ? '<a href="' + _esc(s.meeting_link) + '" target="_blank" class="btn btn-primary btn-sm" style="margin-top:var(--space-3);width:100%;display:flex;align-items:center;justify-content:center;gap:4px;"><i data-feather="video" style="width:13px;height:13px;"></i> Start Session</a>' : '') +
+      '</div>';
+    }).join('');
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+  }
+
+  // ── Render materials ──
+  function renderMaterials(mats) {
+    var list = document.getElementById('materials-list');
+    if (!list) return;
+    var typeConfig = { notes: { emoji: '📝', bg: '#dbeafe' }, question_paper: { emoji: '📋', bg: '#fef3c7' }, study_guide: { emoji: '📖', bg: '#d1fae5' }, assignment: { emoji: '✏️', bg: '#ede9fe' }, other: { emoji: '📄', bg: '#f3f4f6' } };
+    if (!mats.length) {
+      list.innerHTML = '<div style="text-align:center;padding:var(--space-5);color:var(--text-muted);font-size:var(--font-size-sm);">No materials yet. <a href="materials.html" style="color:var(--color-primary-600);">Upload one</a></div>';
+      return;
+    }
+    list.innerHTML = mats.slice(0, 4).map(function(m) {
+      var tc = typeConfig[m.type] || typeConfig.other;
+      return '<div class="material-row">' +
+        '<div style="width:36px;height:36px;border-radius:8px;background:' + tc.bg + ';display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">' + tc.emoji + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + _esc(m.title) + '</div>' +
+          '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">' + (m.purchase_count || 0) + ' purchases · ' + (m.download_count || 0) + ' downloads</div>' +
+        '</div>' +
+        '<div style="font-size:var(--font-size-sm);font-weight:700;color:' + (m.is_free ? 'var(--color-success)' : 'var(--text-primary)') + ';flex-shrink:0;">' + (m.is_free ? 'FREE' : '₹' + parseFloat(m.price).toFixed(0)) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ── Profile strength (extended) ──
+  function _renderProfileStrength(u) {
+    var fields = [
+      { label: 'Full name',      done: !!u.name },
+      { label: 'Bio',            done: !!u.bio },
+      { label: 'Avatar/Photo',   done: !!u.avatar },
+      { label: 'Specialization', done: !!u.specialization },
+      { label: 'Social links',   done: !!(u.linkedin_url || u.website) },
+    ];
+    var done = fields.filter(function(f) { return f.done; }).length;
+    var pct  = Math.round((done / fields.length) * 100);
+    var bar  = document.getElementById('profile-bar');
+    var pctEl = document.getElementById('profile-pct');
+    var tips  = document.getElementById('profile-tips');
+
+    if (bar)   bar.style.width   = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+
+    if (tips) {
+      var missing = fields.filter(function(f) { return !f.done; });
+      tips.innerHTML = missing.length === 0
+        ? '<div class="profile-tip profile-tip-done">✅ Profile is complete!</div>'
+        : missing.slice(0, 4).map(function(f) {
+            return '<div class="profile-tip">○ Add your ' + f.label.toLowerCase() + '</div>';
+          }).join('');
+    }
+  }
+
+  // ── Helpers ──
+  function _text(id, val) { var el = document.getElementById(id); if (el) el.textContent = val == null ? '' : val; }
+  function _esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function _timeAgo(d) {
+    var diff = Math.floor((new Date() - d) / 1000);
+    if (diff < 60)     return 'Just now';
+    if (diff < 3600)   return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400)  return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  }
+});
+</script>
+
+</body>
+</html>

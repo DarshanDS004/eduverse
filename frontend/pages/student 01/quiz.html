@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    body{background:var(--bg-page);min-height:100vh;display:flex;flex-direction:column;}
+    .quiz-topbar{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-8);background:var(--bg-surface);border-bottom:1px solid var(--border-color);position:sticky;top:0;z-index:100;}
+    .quiz-brand{font-size:var(--font-size-lg);font-weight:800;color:var(--text-primary);}
+    .quiz-timer{display:flex;align-items:center;gap:var(--space-2);font-size:var(--font-size-xl);font-weight:800;color:var(--color-primary-600);}
+    .quiz-timer.urgent{color:var(--color-danger);}
+    .quiz-progress-bar-wrap{position:relative;height:4px;background:var(--neutral-100);margin-top:0;}
+    .quiz-progress-bar-fill{height:100%;background:var(--color-primary-600);transition:width 0.5s ease;}
+    .quiz-body{max-width:720px;margin:0 auto;width:100%;padding:var(--space-8) var(--space-6);flex:1;}
+    .quiz-q-num{font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:var(--space-3);}
+    .quiz-question{font-size:var(--font-size-xl);font-weight:700;color:var(--text-primary);line-height:var(--leading-snug);margin-bottom:var(--space-6);}
+    .quiz-options{display:flex;flex-direction:column;gap:var(--space-3);}
+    .quiz-option{display:flex;align-items:center;gap:var(--space-4);padding:var(--space-4) var(--space-5);border:2px solid var(--border-color);border-radius:var(--border-radius-lg);cursor:pointer;transition:all var(--transition-fast);background:var(--bg-surface);}
+    .quiz-option:hover{border-color:var(--color-primary-400);background:var(--color-primary-50);}
+    .quiz-option.selected{border-color:var(--color-primary-600);background:var(--color-primary-50);}
+    .quiz-option.correct{border-color:var(--color-success);background:var(--color-success-light);}
+    .quiz-option.wrong{border-color:var(--color-danger);background:var(--color-danger-light);}
+    .quiz-option-letter{width:32px;height:32px;border-radius:50%;border:2px solid var(--border-color);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-sm);flex-shrink:0;transition:all var(--transition-fast);}
+    .quiz-option.selected .quiz-option-letter{background:var(--color-primary-600);border-color:var(--color-primary-600);color:#fff;}
+    .quiz-option-text{font-size:var(--font-size-base);color:var(--text-primary);}
+    .quiz-nav{display:flex;align-items:center;justify-content:space-between;margin-top:var(--space-8);}
+    .result-box{text-align:center;padding:var(--space-12) var(--space-6);}
+    .result-score{font-size:5rem;font-weight:800;line-height:1;margin:var(--space-4) 0;}
+    .result-label{font-size:var(--font-size-xl);font-weight:700;color:var(--text-primary);}
+    .result-sub{font-size:var(--font-size-sm);color:var(--text-muted);margin-top:var(--space-2);}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+  </style>
+</head>
+<body>
+  <div class="quiz-topbar">
+    <div class="quiz-brand">EduVerse Quiz</div>
+    <div class="quiz-timer" id="quiz-timer"><span id="timer-val">—</span></div>
+    <a href="courses.html" id="exit-btn" class="btn btn-outline btn-sm">Exit</a>
+  </div>
+  <div class="quiz-progress-bar-wrap"><div class="quiz-progress-bar-fill" id="progress-fill" style="width:0%;"></div></div>
+
+  <div class="quiz-body" id="quiz-body">
+    <div style="text-align:center;padding:var(--space-12);">
+      <div class="skel" style="height:32px;width:60%;margin:0 auto var(--space-6);"></div>
+      <div class="skel" style="height:80px;margin-bottom:var(--space-4);"></div>
+      <div class="skel" style="height:56px;margin-bottom:var(--space-3);"></div>
+      <div class="skel" style="height:56px;margin-bottom:var(--space-3);"></div>
+      <div class="skel" style="height:56px;"></div>
+    </div>
+  </div>
+
+  <script>window.EV_BASE="../../";</script>
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/store.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/init.js"></script>
+  <script>
+  (function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}if(u.role!=='student'){window.location.replace('../../pages/errors/403.html');}})();
+  document.addEventListener('DOMContentLoaded',async function(){
+    var quizId=Utils.getParam('quiz');
+    if(!quizId){ document.getElementById('quiz-body').innerHTML='<div style="text-align:center;padding:var(--space-12);color:var(--text-muted);">No quiz ID provided.</div>'; return; }
+    var questions=[], currentIndex=0, answers={}, timeLeft=0, timerInterval=null, attemptId=null;
+    var letters=['A','B','C','D','E'];
+    try{
+      var res=await Api.quizzes.start(quizId);
+      var data=(res&&res.data)||{};
+      questions=data.questions||[];
+      timeLeft=data.duration_seconds||data.time_limit_seconds||(questions.length*60);
+      attemptId=data.attempt_id;
+      if(!questions.length){ document.getElementById('quiz-body').innerHTML='<div style="text-align:center;padding:var(--space-12);color:var(--text-muted);">No questions available.</div>'; return; }
+      startTimer();
+      showQuestion(0);
+    }catch(err){ document.getElementById('quiz-body').innerHTML='<div style="text-align:center;padding:var(--space-12);color:var(--color-danger);">'+(err&&err.message||'Failed to load quiz.')+'</div>'; }
+
+    function startTimer(){
+      updateTimer();
+      timerInterval=setInterval(function(){
+        timeLeft--;
+        updateTimer();
+        if(timeLeft<=0){ clearInterval(timerInterval); submitQuiz(); }
+      },1000);
+    }
+    function updateTimer(){
+      var m=Math.floor(timeLeft/60), s=timeLeft%60;
+      document.getElementById('timer-val').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      document.getElementById('quiz-timer').classList.toggle('urgent',timeLeft<=60);
+    }
+    function showQuestion(idx){
+      currentIndex=idx;
+      var q=questions[idx];
+      var pct=((idx)/questions.length)*100;
+      document.getElementById('progress-fill').style.width=pct+'%';
+      var opts=(q.options||[]).map(function(opt,i){
+        var sel=answers[q.id]===opt.id;
+        return '<div class="quiz-option'+(sel?' selected':'')+'" onclick="selectOpt(\''+q.id+'\',\''+opt.id+'\')">'+
+          '<div class="quiz-option-letter">'+letters[i]+'</div>'+
+          '<div class="quiz-option-text">'+_esc(opt.text||opt)+'</div>'+
+        '</div>';
+      }).join('');
+      var isLast=idx===questions.length-1;
+      document.getElementById('quiz-body').innerHTML=
+        '<div class="quiz-q-num">Question '+(idx+1)+' of '+questions.length+'</div>'+
+        '<div class="quiz-question">'+_esc(q.question||q.text)+'</div>'+
+        '<div class="quiz-options" id="options-wrap">'+opts+'</div>'+
+        '<div class="quiz-nav">'+
+          '<button class="btn btn-outline" onclick="showQuestion('+(idx-1)+')" '+(idx===0?'disabled:':'')+'style="visibility:'+(idx===0?'hidden':'visible')+';">← Previous</button>'+
+          (isLast
+            ?'<button class="btn btn-primary" onclick="submitQuiz()">Submit Quiz</button>'
+            :'<button class="btn btn-primary" onclick="showQuestion('+(idx+1)+')">Next →</button>')+
+        '</div>';
+    }
+    window.selectOpt=function(qId,optId){
+      answers[qId]=optId;
+      showQuestion(currentIndex);
+    };
+    async function submitQuiz(){
+      clearInterval(timerInterval);
+      document.getElementById('quiz-body').innerHTML='<div style="text-align:center;padding:var(--space-12);"><div class="skel" style="height:120px;width:200px;margin:0 auto;border-radius:12px;"></div></div>';
+      try{
+        var payload={attempt_id:attemptId,answers:Object.keys(answers).map(function(qId){return {question_id:qId,selected_option_id:answers[qId]};})};
+        var res=await Api.quizzes.submit(quizId,payload);
+        var result=(res&&res.data)||{};
+        showResult(result);
+      }catch(err){ document.getElementById('quiz-body').innerHTML='<div style="text-align:center;padding:var(--space-12);color:var(--color-danger);">Submission failed.</div>'; }
+    }
+    function showResult(result){
+      var score=result.score||0, total=result.total_questions||questions.length;
+      var pct=total?Math.round((score/total)*100):0;
+      var emoji=pct>=80?'🎉':pct>=50?'👍':'📖';
+      var color=pct>=80?'var(--color-success)':pct>=50?'var(--color-warning)':'var(--color-danger)';
+      document.getElementById('progress-fill').style.width='100%';
+      document.getElementById('exit-btn').textContent='Back to Courses';
+      document.getElementById('quiz-body').innerHTML=
+        '<div class="result-box">'+
+          '<div style="font-size:4rem;">'+emoji+'</div>'+
+          '<div class="result-score" style="color:'+color+';">'+pct+'%</div>'+
+          '<div class="result-label">'+(pct>=80?'Excellent!':pct>=50?'Good Job!':'Keep Practicing')+'</div>'+
+          '<div class="result-sub">You scored '+score+' out of '+total+' questions correctly.</div>'+
+          '<div style="margin-top:var(--space-8);display:flex;gap:var(--space-3);justify-content:center;">'+
+            '<a href="courses.html" class="btn btn-outline">Back to Courses</a>'+
+            '<a href="performance.html" class="btn btn-primary">View Performance</a>'+
+          '</div>'+
+        '</div>';
+    }
+    function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  });
+  </script>
+</body>
+</html>

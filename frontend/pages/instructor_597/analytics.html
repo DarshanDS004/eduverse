@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .analytics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);}
+    .stat-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);}
+    .stat-val{font-size:var(--font-size-2xl);font-weight:800;line-height:1;margin-bottom:4px;}
+    .stat-lbl{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;}
+    .stat-change{font-size:var(--font-size-xs);margin-top:var(--space-1);font-weight:600;}
+    .stat-up{color:var(--color-success);}
+    .stat-down{color:var(--color-danger);}
+    .chart-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:var(--space-5);}
+    .chart-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .chart-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .chart-body{padding:var(--space-5);}
+    .chart-wrap{position:relative;height:240px;}
+    .chart-wrap-sm{position:relative;height:180px;}
+    .review-item{padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-color);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .review-item:last-child{border-bottom:none;}
+    .review-stars{color:#f59e0b;font-size:var(--font-size-sm);letter-spacing:1px;}
+    .review-text{font-size:var(--font-size-sm);color:var(--text-secondary);line-height:var(--leading-relaxed);}
+    .review-meta{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;}
+    .heatmap-grid{display:grid;grid-template-columns:repeat(24,1fr);gap:3px;margin-top:var(--space-3);}
+    .heatmap-cell{aspect-ratio:1;border-radius:3px;background:var(--neutral-100);}
+    .heatmap-labels{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text-muted);}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .period-btn{height:28px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-xs);font-weight:600;cursor:pointer;background:var(--bg-page);color:var(--text-muted);font-family:var(--font-ui);transition:all var(--transition-fast);}
+    .period-btn.active,.period-btn:hover{background:var(--color-primary-600);border-color:var(--color-primary-600);color:#fff;}
+    @media(max-width:1023px){.analytics-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:767px){.analytics-grid{grid-template-columns:repeat(2,1fr);}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item active" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div></div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="app-body">
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div><div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Analytics & Insights</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Track your performance and student engagement</div></div>
+      </div>
+      <div class="navbar-right">
+        <div style="display:flex;gap:var(--space-1);">
+          <button class="period-btn active" onclick="setPeriod(30,this)">30d</button>
+          <button class="period-btn" onclick="setPeriod(90,this)">90d</button>
+          <button class="period-btn" onclick="setPeriod(365,this)">1y</button>
+        </div>
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name">Loading…</span><i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:180px;">
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Key Metrics -->
+        <div class="analytics-grid">
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--color-primary-600);" id="m-enrollments">—</div>
+            <div class="stat-lbl">Total Enrollments</div>
+            <div class="stat-change stat-up" id="m-enroll-change"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--color-success);" id="m-completion">—</div>
+            <div class="stat-lbl">Completion Rate</div>
+            <div class="stat-change" id="m-completion-change"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--color-warning);" id="m-quiz-pass">—</div>
+            <div class="stat-lbl">Quiz Pass Rate</div>
+            <div class="stat-change" id="m-quiz-change"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--text-primary);" id="m-rating">—</div>
+            <div class="stat-lbl">Avg Course Rating</div>
+            <div class="stat-change" style="color:var(--color-accent-500);" id="m-rating-change"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--space-5);">
+          <!-- LEFT -->
+          <div>
+            <!-- Enrollment Trend -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Enrollment Trend</div>
+                <div style="font-size:var(--font-size-xs);color:var(--text-muted);" id="enroll-period-label">Last 30 days</div>
+              </div>
+              <div class="chart-body"><div class="chart-wrap"><canvas id="enrollment-chart"></canvas></div></div>
+            </div>
+
+            <!-- Video Completion -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Video Completion Rate by Lesson</div>
+                <div style="font-size:var(--font-size-xs);color:var(--text-muted);">% of students who watched each video</div>
+              </div>
+              <div class="chart-body"><div class="chart-wrap"><canvas id="video-chart"></canvas></div></div>
+            </div>
+
+            <!-- Student Activity Heatmap -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Student Activity — Hour of Day</div>
+                <div style="font-size:var(--font-size-xs);color:var(--text-muted);">When your students are most active</div>
+              </div>
+              <div class="chart-body">
+                <div id="heatmap-container">
+                  <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+                    <div id="heatmap"></div>
+                    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);padding:0 2px;">
+                      <span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:var(--space-2);font-size:10px;color:var(--text-muted);margin-top:var(--space-1);">
+                      <span>Less</span>
+                      <div style="display:flex;gap:3px;">
+                        <div style="width:12px;height:12px;border-radius:2px;background:var(--neutral-100);"></div>
+                        <div style="width:12px;height:12px;border-radius:2px;background:rgba(26,86,219,0.2);"></div>
+                        <div style="width:12px;height:12px;border-radius:2px;background:rgba(26,86,219,0.4);"></div>
+                        <div style="width:12px;height:12px;border-radius:2px;background:rgba(26,86,219,0.7);"></div>
+                        <div style="width:12px;height:12px;border-radius:2px;background:#1A56DB;"></div>
+                      </div>
+                      <span>More</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <!-- Course comparison -->
+            <div class="chart-card" style="margin-bottom:var(--space-5);">
+              <div class="chart-header"><div class="chart-title">Course Comparison</div></div>
+              <div class="chart-body"><div class="chart-wrap-sm"><canvas id="course-compare-chart"></canvas></div></div>
+            </div>
+
+            <!-- Quiz stats -->
+            <div class="chart-card" style="margin-bottom:var(--space-5);">
+              <div class="chart-header"><div class="chart-title">Quiz Performance</div></div>
+              <div class="chart-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+                  <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                    <span style="color:var(--text-muted);">Avg Score</span>
+                    <span style="font-weight:700;" id="quiz-avg-score">—</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                    <span style="color:var(--text-muted);">Pass Rate</span>
+                    <span style="font-weight:700;color:var(--color-success);" id="quiz-pass-rate">—</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                    <span style="color:var(--text-muted);">Total Attempts</span>
+                    <span style="font-weight:700;" id="quiz-total">—</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                    <span style="color:var(--text-muted);">Avg Attempts/Student</span>
+                    <span style="font-weight:700;" id="quiz-avg-attempts">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Reviews -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Recent Reviews</div>
+                <div style="font-size:var(--font-size-sm);font-weight:700;color:var(--color-accent-500);" id="avg-rating-display">—</div>
+              </div>
+              <div id="reviews-container">
+                <div style="padding:var(--space-5);">
+                  <div class="skel" style="height:60px;border-radius:8px;margin-bottom:8px;"></div>
+                  <div class="skel" style="height:60px;border-radius:8px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment Stats -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Assignment Submission Rate</div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);">On-time vs late vs missing submissions</div>
+          </div>
+          <div class="chart-body"><div class="chart-wrap-sm"><canvas id="assignment-chart"></canvas></div></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u)window.location.replace('../../pages/auth/login.html');else if(u.role!=='instructor')window.location.replace('../../pages/errors/403.html');})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+
+  var user=Store.get('auth.user')||{};
+  var name=user.name||'';
+  ['sidebar-user-name','navbar-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;el.textContent=Utils.getInitials(name);el.className='avatar avatar-sm '+Utils.getAvatarColor(name);});
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  document.getElementById('sidebar-collapse-btn').addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();Auth.logout();});});
+  var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+
+  var charts = {};
+  var activePeriod = 30;
+
+  loadAnalytics();
+
+  async function loadAnalytics() {
+    try {
+      var res  = await Api.instructor.analytics({ days: activePeriod });
+      var data = (res && res.data) || {};
+      renderMetrics(data);
+      if (typeof Chart !== 'undefined') {
+        renderEnrollmentChart(data);
+        renderVideoChart(data);
+        renderCourseCompare(data);
+        renderAssignmentChart(data);
+      } else {
+        setTimeout(function() {
+          renderEnrollmentChart(data);
+          renderVideoChart(data);
+          renderCourseCompare(data);
+          renderAssignmentChart(data);
+        }, 800);
+      }
+      renderHeatmap(data);
+      renderReviews(data);
+      renderQuizStats(data);
+    } catch(err) {
+      renderDemoData();
+    }
+  }
+
+  function renderDemoData() {
+    _t('m-enrollments', '—');
+    _t('m-completion',  '—');
+    _t('m-quiz-pass',   '—');
+    _t('m-rating',      '—');
+    var demoEnroll = Array.from({length:30},function(_,i){ return Math.floor(Math.random()*5); });
+    var demoLabels = Array.from({length:30},function(_,i){ var d=new Date(); d.setDate(d.getDate()-29+i); return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}); });
+    if (typeof Chart !== 'undefined') {
+      buildChart('enrollment-chart','line',demoLabels,demoEnroll,'Enrollments','#1A56DB');
+      buildChart('video-chart','bar',['Intro','L1','L2','L3','L4','L5'],[92,85,78,65,71,88],'Completion %','#10b981');
+      buildDoughnut('course-compare-chart',['No courses yet'],[1],['#e5e7eb']);
+      buildChart('assignment-chart','bar',['On Time','Late','Missing'],[65,20,15],'Submissions','#f59e0b');
+    }
+    renderHeatmap({});
+    document.getElementById('reviews-container').innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--font-size-sm);">No reviews yet</div>';
+  }
+
+  function renderMetrics(data) {
+    _t('m-enrollments', data.total_enrollments || 0);
+    _t('m-completion',  (data.completion_rate || 0) + '%');
+    _t('m-quiz-pass',   (data.quiz_pass_rate || 0) + '%');
+    _t('m-rating',      data.avg_rating ? parseFloat(data.avg_rating).toFixed(1) + ' ★' : '—');
+  }
+
+  function renderEnrollmentChart(data) {
+    var days   = data.enrollment_trend || [];
+    var labels = days.map(function(d){ return Utils.formatDate(d.date,'default'); });
+    var values = days.map(function(d){ return d.count || 0; });
+    if (!labels.length) {
+      labels = Array.from({length:activePeriod},function(_,i){ var d=new Date(); d.setDate(d.getDate()-activePeriod+1+i); return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}); });
+      values = labels.map(function(){ return Math.floor(Math.random()*3); });
+    }
+    buildChart('enrollment-chart','line',labels,values,'Enrollments','#1A56DB');
+  }
+
+  function renderVideoChart(data) {
+    var videos = data.video_completion || [];
+    var labels = videos.map(function(v){ return Utils.truncate(v.title,20); });
+    var values = videos.map(function(v){ return v.completion_rate || 0; });
+    if (!labels.length) { labels=['No data']; values=[0]; }
+    buildChart('video-chart','bar',labels,values,'Completion %','#10b981');
+  }
+
+  function renderCourseCompare(data) {
+    var courses = data.courses || [];
+    if (!courses.length) { buildDoughnut('course-compare-chart',['No courses'],[1],['#e5e7eb']); return; }
+    var labels  = courses.map(function(c){ return Utils.truncate(c.title,18); });
+    var values  = courses.map(function(c){ return c.enrollment_count || 0; });
+    var colors  = ['#1A56DB','#10b981','#f59e0b','#ef4444','#8b5cf6'];
+    buildDoughnut('course-compare-chart', labels, values, colors.slice(0,labels.length));
+  }
+
+  function renderAssignmentChart(data) {
+    var onTime  = data.assignments_on_time  || 65;
+    var late    = data.assignments_late     || 20;
+    var missing = data.assignments_missing  || 15;
+    buildChart('assignment-chart','bar',['On Time','Late','Missing'],[onTime,late,missing],'Submissions',['#10b981','#f59e0b','#ef4444']);
+  }
+
+  function renderHeatmap(data) {
+    var activity = data.hourly_activity || Array.from({length:24},function(){ return Math.floor(Math.random()*100); });
+    var max      = Math.max.apply(null, activity) || 1;
+    var html     = '<div class="heatmap-grid">';
+    for (var h = 0; h < 24; h++) {
+      var intensity = activity[h] / max;
+      var alpha     = Math.round(intensity * 10) / 10;
+      var bg        = alpha < 0.1 ? 'var(--neutral-100)' : 'rgba(26,86,219,' + alpha + ')';
+      html += '<div class="heatmap-cell" style="background:' + bg + ';" title="' + h + ':00 — ' + activity[h] + ' activities"></div>';
+    }
+    html += '</div>';
+    document.getElementById('heatmap').innerHTML = html;
+  }
+
+  function renderReviews(data) {
+    var reviews = data.recent_reviews || [];
+    var avgRating = data.avg_rating ? parseFloat(data.avg_rating).toFixed(1) : '—';
+    _t('avg-rating-display', avgRating + ' ★');
+    document.getElementById('reviews-container').innerHTML = reviews.length
+      ? reviews.slice(0,4).map(function(r) {
+          return '<div class="review-item">' +
+            '<div class="avatar avatar-xs ' + Utils.getAvatarColor(r.student_name||'S') + '" style="font-size:10px;flex-shrink:0;">' + Utils.getInitials(r.student_name||'S') + '</div>' +
+            '<div><div class="review-stars">' + '★'.repeat(r.rating) + '☆'.repeat(5-r.rating) + '</div>' +
+            '<div class="review-text">' + _esc(r.review_text||'') + '</div>' +
+            '<div class="review-meta">' + _esc(r.student_name||'Student') + ' · ' + Utils.timeAgo(r.created_at) + '</div></div>' +
+          '</div>';
+        }).join('')
+      : '<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--font-size-sm);">No reviews yet</div>';
+  }
+
+  function renderQuizStats(data) {
+    _t('quiz-avg-score',    (data.quiz_avg_score || 0) + '%');
+    _t('quiz-pass-rate',    (data.quiz_pass_rate || 0) + '%');
+    _t('quiz-total',        data.quiz_total_attempts || 0);
+    _t('quiz-avg-attempts', data.quiz_avg_attempts ? parseFloat(data.quiz_avg_attempts).toFixed(1) : '—');
+  }
+
+  // ── Chart builders ──
+  function buildChart(id, type, labels, data, label, color) {
+    var ctx = document.getElementById(id);
+    if (!ctx) return;
+    if (charts[id]) { charts[id].destroy(); }
+    var isMultiColor = Array.isArray(color);
+    charts[id] = new Chart(ctx, {
+      type: type,
+      data: {
+        labels: labels,
+        datasets: [{
+          label: label,
+          data:  data,
+          backgroundColor: isMultiColor ? color.map(function(c){ return c+'cc'; }) : (type==='line' ? color+'20' : color+'cc'),
+          borderColor:     isMultiColor ? color : color,
+          borderWidth:     type==='line' ? 2 : 0,
+          borderRadius:    type==='bar' ? 6 : 0,
+          fill:            type==='line',
+          tension:         0.4,
+          pointRadius:     type==='line' ? 2 : 0,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { size: 11 } } },
+          y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 11 } }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  function buildDoughnut(id, labels, data, colors) {
+    var ctx = document.getElementById(id);
+    if (!ctx) return;
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 2, borderColor: 'var(--bg-surface)' }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 12 } } }
+      }
+    });
+  }
+
+  window.setPeriod = function(days, btn) {
+    activePeriod = days;
+    document.querySelectorAll('.period-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    _t('enroll-period-label', 'Last ' + days + ' days');
+    loadAnalytics();
+  };
+
+  function _t(id,val){var el=document.getElementById(id);if(el)el.textContent=val==null?'':val;}
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instructor Dashboard — EduVerse</title>
+  <meta name="robots" content="noindex" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Icons + Chart -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+
+  <!-- Theme restore — before paint -->
+  <script>
+    try {
+      if (localStorage.getItem('ev_theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.documentElement.classList.add('dark');
+      }
+    } catch(e) {}
+  </script>
+
+  <style>
+    /* ══════════════════════════════════════════════════════════
+       INSTRUCTOR DASHBOARD — Page-specific styles
+       Mirrors student dashboard patterns for visual consistency
+    ══════════════════════════════════════════════════════════ */
+
+    /* ── Welcome banner (green for instructor, blue for student) ── */
+    .welcome-banner {
+      background: linear-gradient(135deg, #065f46 0%, #059669 55%, #10b981 100%);
+      border-radius: var(--border-radius-xl);
+      padding: var(--space-8);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-6); margin-bottom: var(--space-6);
+      position: relative; overflow: hidden;
+    }
+    .welcome-banner::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(255,255,255,0.06); pointer-events: none;
+    }
+    .welcome-banner::after {
+      content: ''; position: absolute; bottom: -80px; right: 120px;
+      width: 260px; height: 260px; border-radius: 50%;
+      background: rgba(255,255,255,0.04); pointer-events: none;
+    }
+    .welcome-text { position: relative; z-index: 1; }
+    .welcome-greeting {
+      font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--tracking-wider); text-transform: uppercase;
+      color: rgba(255,255,255,0.65); margin-bottom: var(--space-1);
+    }
+    .welcome-name {
+      font-size: var(--font-size-3xl); font-weight: var(--font-weight-extrabold);
+      color: #fff; letter-spacing: var(--tracking-tight);
+      line-height: var(--leading-tight); margin-bottom: var(--space-2);
+      min-height: 2.4rem;
+    }
+    .welcome-subtitle {
+      font-size: var(--font-size-sm); color: rgba(255,255,255,0.70);
+      margin-bottom: var(--space-5);
+    }
+    .welcome-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .btn-welcome {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      height: 38px; padding: 0 var(--space-5);
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: var(--border-radius-md); color: #fff;
+      font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+      text-decoration: none; cursor: pointer;
+      transition: all var(--transition-fast); font-family: var(--font-ui);
+    }
+    .btn-welcome:hover { background: rgba(255,255,255,0.25); }
+    .welcome-illustration {
+      position: relative; z-index: 1; flex-shrink: 0;
+      font-size: 68px; line-height: 1;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.2));
+    }
+
+    /* ── Stats grid — 5 cards ── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(5,1fr);
+      gap: var(--space-4); margin-bottom: var(--space-6);
+    }
+    .stat-card {
+      background: var(--bg-surface); border: var(--card-border);
+      border-radius: var(--card-radius); box-shadow: var(--card-shadow);
+      padding: var(--space-5) var(--space-5);
+      display: flex; align-items: flex-start; gap: var(--space-4);
+      position: relative; overflow: hidden;
+      transition: all var(--transition-fast);
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .stat-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+    }
+    .sc-blue::before   { background: var(--color-primary-600); }
+    .sc-green::before  { background: var(--color-success); }
+    .sc-amber::before  { background: var(--color-warning); }
+    .sc-purple::before { background: #7c3aed; }
+    .sc-red::before    { background: var(--color-danger); }
+    .stat-icon-wrap {
+      width: 44px; height: 44px; border-radius: var(--border-radius-lg);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .si-blue   { background: var(--color-primary-50);    color: var(--color-primary-600); }
+    .si-green  { background: var(--color-success-light); color: var(--color-success); }
+    .si-amber  { background: var(--color-warning-light); color: var(--color-warning); }
+    .si-purple { background: #ede9fe; color: #7c3aed; }
+    .si-red    { background: var(--color-danger-light);  color: var(--color-danger); }
+    .stat-info { flex: 1; min-width: 0; }
+    .stat-value {
+      font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold);
+      color: var(--text-primary); line-height: 1; margin-bottom: var(--space-1);
+      min-height: 1.8rem;
+    }
+    .stat-label { font-size: var(--font-size-xs); color: var(--text-muted); font-weight: var(--font-weight-medium); }
+    .stat-delta {
+      display: inline-flex; align-items: center; gap: 2px;
+      font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);
+      margin-top: var(--space-1); padding: 2px 6px;
+      border-radius: var(--border-radius-full);
+    }
+    .delta-up   { background: var(--color-success-light); color: var(--color-success-dark); }
+    .delta-down { background: var(--color-danger-light);  color: var(--color-danger-dark); }
+    .stat-rating-stars { font-size: 11px; color: var(--color-accent-500); margin-top: 3px; }
+
+    /* ── Dashboard grid ── */
+    .dash-grid {
+      display: grid; grid-template-columns: 1fr 320px;
+      gap: var(--space-6); align-items: start;
+    }
+    .dash-left  { display: flex; flex-direction: column; gap: var(--space-6); }
+    .dash-right {
+      display: flex; flex-direction: column; gap: var(--space-6);
+      position: sticky; top: calc(var(--navbar-height) + var(--space-6));
+    }
+
+    /* ── Card ── */
+    .dash-card { background: var(--bg-surface); border: var(--card-border); border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow: hidden; }
+    .dash-card-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border-color); }
+    .dash-card-title  { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-primary); display: flex; align-items: center; gap: var(--space-2); }
+    .dash-card-body   { padding: var(--space-5); }
+    .dash-card-link   { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-primary-600); text-decoration: none; }
+    .dash-card-link:hover { color: var(--color-primary-700); }
+
+    /* ── Chart ── */
+    .chart-wrap { position: relative; height: 200px; }
+    .chart-period-select {
+      font-size: var(--font-size-xs); font-family: var(--font-ui);
+      color: var(--text-secondary); border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-sm); padding: var(--space-1) var(--space-2);
+      background: var(--bg-surface); cursor: pointer; outline: none;
+    }
+
+    /* ── Course performance row ── */
+    .course-row {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) 0; border-bottom: 1px solid var(--border-color);
+    }
+    .course-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .course-thumb {
+      width: 48px; height: 48px; border-radius: var(--border-radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .course-info { flex: 1; min-width: 0; }
+    .course-title-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: 2px; }
+    .course-name {
+      font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+      color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .course-meta { font-size: var(--font-size-xs); color: var(--text-muted); margin-bottom: var(--space-1-5); }
+    .course-progress-bar { height: 4px; background: var(--neutral-100); border-radius: 99px; overflow: hidden; }
+    .course-progress-fill { height: 100%; background: var(--color-primary-600); border-radius: 99px; transition: width 1s ease; }
+    .course-stats { display: flex; gap: var(--space-4); flex-shrink: 0; }
+    .course-stat { text-align: center; }
+    .course-stat-val { font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: var(--text-primary); }
+    .course-stat-lbl { font-size: 10px; color: var(--text-muted); }
+    .badge-live  { background: var(--color-success-light); color: var(--color-success-dark); padding: 1px 6px; border-radius: 99px; font-size: 9px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
+    .badge-draft { background: var(--neutral-100); color: var(--text-muted); padding: 1px 6px; border-radius: 99px; font-size: 9px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
+
+    /* ── Enrollment item ── */
+    .enroll-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-color); }
+    .enroll-item:last-child { border-bottom: none; }
+    .enroll-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xs); font-weight: 700; flex-shrink: 0; }
+    .enroll-info { flex: 1; min-width: 0; }
+    .enroll-name  { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); }
+    .enroll-course{ font-size: var(--font-size-xs); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .enroll-time  { font-size: 10px; color: var(--text-disabled); flex-shrink: 0; }
+
+    /* ── Task item ── */
+    .task-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border-color); text-decoration: none; }
+    .task-item:last-child { border-bottom: none; }
+    .task-icon { width: 34px; height: 34px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .task-info { flex: 1; min-width: 0; }
+    .task-title { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .task-sub   { font-size: var(--font-size-xs); color: var(--text-muted); }
+    .task-count { font-size: var(--font-size-xs); font-weight: 700; padding: 3px 9px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+
+    /* ── Session item ── */
+    .session-item { padding: var(--space-4); background: var(--bg-sunken); border-radius: var(--border-radius-lg); border-left: 3px solid var(--color-primary-600); margin-bottom: var(--space-3); }
+    .session-item:last-child { margin-bottom: 0; }
+    .session-time { font-size: var(--font-size-xs); font-weight: 700; color: var(--color-primary-600); margin-bottom: var(--space-1); display: flex; align-items: center; gap: var(--space-1); }
+    .session-title{ font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .session-meta { font-size: var(--font-size-xs); color: var(--text-muted); }
+    .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--color-danger); animation: pulseDot 1.4s ease infinite; flex-shrink: 0; }
+    @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+    /* ── Earnings gradient card ── */
+    .earnings-gradient-card {
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border-radius: var(--card-radius); padding: var(--space-5); color: #fff;
+    }
+    .earnings-amount { font-size: var(--font-size-4xl); font-weight: 800; letter-spacing: var(--tracking-tight); line-height: 1; margin: var(--space-2) 0; }
+    .earnings-label  { font-size: var(--font-size-xs); color: rgba(255,255,255,0.60); }
+    .earnings-sub    { font-size: var(--font-size-xs); color: rgba(255,255,255,0.45); margin-top: 2px; }
+    .earnings-split  { display: flex; gap: var(--space-4); margin-top: var(--space-4); }
+    .earnings-split-box { flex: 1; text-align: center; padding: var(--space-3); background: var(--bg-sunken); border-radius: var(--border-radius-md); }
+    .earnings-split-val { font-size: var(--font-size-lg); font-weight: 800; }
+    .earnings-split-lbl { font-size: 10px; color: var(--text-muted); }
+    .earnings-pending-row { margin-top: var(--space-3); padding: var(--space-3); background: var(--bg-sunken); border-radius: var(--border-radius-md); display: flex; justify-content: space-between; align-items: center; }
+
+    /* ── Quick actions ── */
+    .quick-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-3); }
+    .quick-action {
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+      padding: var(--space-4) var(--space-3); background: var(--bg-sunken);
+      border: 1px solid var(--border-color); border-radius: var(--border-radius-lg);
+      cursor: pointer; text-decoration: none; transition: all var(--transition-fast); text-align: center;
+    }
+    .quick-action:hover { background: var(--color-primary-50); border-color: var(--color-primary-300); }
+    .qa-icon { width: 40px; height: 40px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; }
+    .qa-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--text-secondary); line-height: var(--leading-snug); }
+
+    /* ── Profile strength ── */
+    .profile-tip { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-xs); color: var(--text-muted); }
+    .profile-tip-done { color: var(--color-success); }
+
+    /* ── Sidebar section labels ── */
+    .sidebar-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: var(--tracking-widest);
+      text-transform: uppercase; color: rgba(255,255,255,0.28);
+      padding: var(--space-4) var(--space-4) var(--space-1); display: block;
+    }
+    .sidebar-section-label:first-child { padding-top: var(--space-2); }
+
+    /* ── Skeleton ── */
+    .skel { background: var(--neutral-100); border-radius: 4px; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ── Toast ── */
+    .toast-container { position: fixed; bottom: var(--space-6); right: var(--space-6); z-index: var(--z-toast); display: flex; flex-direction: column; gap: var(--space-3); max-width: 360px; }
+    .toast { background: var(--bg-elevated); border: var(--card-border); border-radius: var(--card-radius); box-shadow: var(--shadow-lg); padding: var(--space-4); display: flex; align-items: flex-start; gap: var(--space-3); animation: slideUp 0.25s ease; }
+    .toast-success { border-left: 4px solid var(--color-success); }
+    .toast-error   { border-left: 4px solid var(--color-danger); }
+    .toast-info    { border-left: 4px solid var(--color-primary-600); }
+    .toast-content { flex: 1; }
+    .toast-title   { font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); }
+    .toast-msg     { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 2px; }
+    .toast-close   { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 0; }
+    @keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    /* ── Responsive ── */
+    @media (max-width: 1279px) { .stats-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (max-width: 1199px) { .dash-grid { grid-template-columns: 1fr; } .dash-right { position: static; } }
+    @media (max-width: 767px)  { .stats-grid { grid-template-columns: repeat(2,1fr); } .welcome-illustration { display: none; } .quick-grid { grid-template-columns: repeat(2,1fr); } }
+  </style>
+</head>
+
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- ══════════════════════════════════════════
+       SIDEBAR — 4 grouped sections with badges
+  ══════════════════════════════════════════ -->
+  <aside class="app-sidebar" id="app-sidebar" role="navigation" aria-label="Instructor navigation">
+    <a class="sidebar-brand" href="../../index.html">
+      <div class="sidebar-logo">E</div>
+      <div>
+        <div class="sidebar-brand-name">EduVerse</div>
+        <div class="sidebar-brand-tagline">Instructor Portal</div>
+      </div>
+    </a>
+
+    <nav class="sidebar-nav" role="menubar">
+
+      <!-- MAIN -->
+      <span class="sidebar-section-label">Main</span>
+      <a class="sidebar-item active" href="dashboard.html">
+        <span class="sidebar-item-icon"><i data-feather="grid"></i></span>
+        <span class="sidebar-item-label">Dashboard</span>
+      </a>
+      <a class="sidebar-item" href="courses.html">
+        <span class="sidebar-item-icon"><i data-feather="book-open"></i></span>
+        <span class="sidebar-item-label">My Courses</span>
+        <span class="sidebar-item-badge" id="badge-courses" style="display:none;"></span>
+      </a>
+      <a class="sidebar-item" href="students.html">
+        <span class="sidebar-item-icon"><i data-feather="users"></i></span>
+        <span class="sidebar-item-label">Students</span>
+        <span class="sidebar-item-badge" id="badge-students" style="display:none;"></span>
+      </a>
+      <a class="sidebar-item" href="analytics.html">
+        <span class="sidebar-item-icon"><i data-feather="trending-up"></i></span>
+        <span class="sidebar-item-label">Analytics</span>
+      </a>
+
+      <!-- TEACH -->
+      <span class="sidebar-section-label">Teach</span>
+      <a class="sidebar-item" href="live-sessions.html">
+        <span class="sidebar-item-icon"><i data-feather="video"></i></span>
+        <span class="sidebar-item-label">Live Sessions</span>
+        <span class="sidebar-item-badge" id="badge-sessions" style="display:none;"></span>
+      </a>
+      <a class="sidebar-item" href="assessments.html">
+        <span class="sidebar-item-icon"><i data-feather="edit-3"></i></span>
+        <span class="sidebar-item-label">Assessments</span>
+        <span class="sidebar-item-badge" id="badge-grade" style="display:none;"></span>
+      </a>
+      <a class="sidebar-item" href="materials.html">
+        <span class="sidebar-item-icon"><i data-feather="file-text"></i></span>
+        <span class="sidebar-item-label">Study Materials</span>
+      </a>
+
+      <!-- BUSINESS -->
+      <span class="sidebar-section-label">Business</span>
+      <a class="sidebar-item" href="earnings.html">
+        <span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span>
+        <span class="sidebar-item-label">Earnings</span>
+      </a>
+      <a class="sidebar-item" href="messages.html">
+        <span class="sidebar-item-icon"><i data-feather="mail"></i></span>
+        <span class="sidebar-item-label">Messages</span>
+        <span class="sidebar-item-badge" id="badge-messages" style="display:none;"></span>
+      </a>
+
+      <!-- ACCOUNT -->
+      <span class="sidebar-section-label">Account</span>
+      <a class="sidebar-item" href="profile.html">
+        <span class="sidebar-item-icon"><i data-feather="user"></i></span>
+        <span class="sidebar-item-label">My Profile</span>
+      </a>
+      <a class="sidebar-item" href="#" data-action="logout">
+        <span class="sidebar-item-icon"><i data-feather="log-out"></i></span>
+        <span class="sidebar-item-label">Sign Out</span>
+      </a>
+
+    </nav>
+
+    <!-- Sidebar user -->
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm avatar-green" id="sidebar-avatar">I</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+        <div class="sidebar-user-role" id="sidebar-user-email">Instructor</div>
+      </div>
+    </a>
+
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar">
+      <i data-feather="chevron-left"></i>
+    </button>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       MAIN BODY
+  ══════════════════════════════════════════ -->
+  <div class="app-body">
+
+    <!-- Navbar -->
+    <nav class="app-navbar" role="navigation" aria-label="Top navigation">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn" aria-label="Toggle menu">
+          <i data-feather="menu"></i>
+        </button>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);" id="navbar-date"></div>
+          <div style="font-size:var(--font-size-base);font-weight:var(--font-weight-semibold);color:var(--text-primary);">Dashboard</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme" title="Toggle theme">
+          <i data-feather="moon"></i>
+        </button>
+        <button class="navbar-icon-btn" data-action="toggle-notif" title="Notifications" aria-label="Notifications">
+          <i data-feather="bell"></i>
+          <span class="badge-count" id="notif-badge" style="display:none;"></span>
+        </button>
+        <div class="navbar-user" id="navbar-user-trigger" role="button" tabindex="0" aria-haspopup="true">
+          <div class="avatar avatar-sm avatar-green" id="navbar-avatar">I</div>
+          <div class="navbar-user-info">
+            <span class="navbar-user-name" id="navbar-user-name">Loading…</span>
+            <span class="navbar-user-role">Instructor</span>
+          </div>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <!-- Dropdown -->
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden
+          style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:210px;">
+          <div class="dropdown-header">
+            <div style="font-weight:600;font-size:var(--font-size-sm);color:var(--text-primary);" id="dd-user-name"></div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);" id="dd-user-email">Instructor</div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> My Profile</a>
+          <a class="dropdown-item" href="courses.html"><i data-feather="book-open"></i> My Courses</a>
+          <a class="dropdown-item" href="earnings.html"><i data-feather="dollar-sign"></i> Earnings</a>
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout">
+            <i data-feather="log-out"></i> Sign Out
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Notification panel -->
+    <div class="notif-panel" id="notif-panel" role="dialog" aria-label="Notifications">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notifications</span>
+        <button class="btn btn-ghost btn-sm" id="mark-all-read">Mark all read</button>
+      </div>
+      <div class="notif-panel-body scroll-area" id="notif-panel-body">
+        <div class="notif-panel-empty">
+          <div style="font-size:2rem;margin-bottom:8px;">🔔</div>
+          <div style="font-size:var(--font-size-sm);color:var(--text-muted);">No notifications</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+
+    <!-- ══════════════════════════════════════════
+         PAGE CONTENT
+    ══════════════════════════════════════════ -->
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <div class="welcome-greeting" id="welcome-greeting">Good morning</div>
+            <div class="welcome-name" id="welcome-name">…</div>
+            <div class="welcome-subtitle" id="welcome-subtitle">Ready to inspire your students today?</div>
+            <div class="welcome-actions">
+              <a href="course-builder.html" class="btn-welcome">
+                <i data-feather="plus" style="width:15px;height:15px;"></i> Create Course
+              </a>
+              <a href="live-sessions.html" class="btn-welcome">
+                <i data-feather="video" style="width:15px;height:15px;"></i> Schedule Class
+              </a>
+              <a href="assessments.html" class="btn-welcome">
+                <i data-feather="clipboard" style="width:15px;height:15px;"></i> View Submissions
+              </a>
+            </div>
+          </div>
+          <div class="welcome-illustration" aria-hidden="true">👨‍🏫</div>
+        </div>
+
+        <!-- Stats — 5 cards -->
+        <div class="stats-grid">
+          <div class="stat-card sc-blue">
+            <div class="stat-icon-wrap si-blue"><i data-feather="book-open" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-courses"><div class="skel" style="height:28px;width:40px;"></div></div>
+              <div class="stat-label">Total Courses</div>
+              <div class="stat-delta delta-up" id="stat-courses-delta" style="display:none;"></div>
+            </div>
+          </div>
+          <div class="stat-card sc-green">
+            <div class="stat-icon-wrap si-green"><i data-feather="users" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-students"><div class="skel" style="height:28px;width:40px;"></div></div>
+              <div class="stat-label">Total Students</div>
+              <div class="stat-delta delta-up" id="stat-students-delta" style="display:none;"></div>
+            </div>
+          </div>
+          <div class="stat-card sc-amber">
+            <div class="stat-icon-wrap si-amber"><i data-feather="dollar-sign" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-earnings"><div class="skel" style="height:28px;width:60px;"></div></div>
+              <div class="stat-label">Total Earnings</div>
+              <div class="stat-delta delta-up" id="stat-earnings-delta" style="display:none;"></div>
+            </div>
+          </div>
+          <div class="stat-card sc-purple">
+            <div class="stat-icon-wrap si-purple"><i data-feather="star" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-rating"><div class="skel" style="height:28px;width:40px;"></div></div>
+              <div class="stat-label">Avg Rating</div>
+              <div class="stat-rating-stars" id="stat-rating-stars"></div>
+            </div>
+          </div>
+          <div class="stat-card sc-red">
+            <div class="stat-icon-wrap si-red"><i data-feather="clock" style="width:20px;height:20px;"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-pending"><div class="skel" style="height:28px;width:40px;"></div></div>
+              <div class="stat-label">Pending Tasks</div>
+              <div style="font-size:var(--font-size-xs);color:var(--color-danger);font-weight:500;margin-top:2px;" id="stat-pending-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dash-grid">
+
+          <!-- LEFT COLUMN -->
+          <div class="dash-left">
+
+            <!-- Earnings Trend Chart -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">
+                  <i data-feather="trending-up" style="width:16px;height:16px;color:var(--color-primary-600);"></i>
+                  Earnings Trend
+                </div>
+                <select class="chart-period-select" id="earnings-period">
+                  <option value="6">Last 6 months</option>
+                  <option value="12">Last 12 months</option>
+                </select>
+              </div>
+              <div class="dash-card-body">
+                <div class="chart-wrap" id="chart-wrap">
+                  <canvas id="earnings-chart"></canvas>
+                </div>
+                <div id="chart-empty" style="display:none;text-align:center;padding:var(--space-8);color:var(--text-muted);">
+                  <div style="font-size:1.5rem;margin-bottom:8px;">📈</div>
+                  <div style="font-size:var(--font-size-sm);">No earnings data yet. Start selling courses to see your trend.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Course Performance -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Course Performance</div>
+                <a href="analytics.html" class="dash-card-link">Full Analytics →</a>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="courses-list">
+                  <div style="display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:48px;height:48px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                      <div class="skel" style="height:13px;width:65%;"></div>
+                      <div class="skel" style="height:10px;width:40%;"></div>
+                      <div class="skel" style="height:4px;width:100%;border-radius:99px;"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:16px;padding:16px 0;">
+                    <div class="skel" style="width:48px;height:48px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                      <div class="skel" style="height:13px;width:55%;"></div>
+                      <div class="skel" style="height:10px;width:35%;"></div>
+                      <div class="skel" style="height:4px;width:100%;border-radius:99px;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Enrollments -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Recent Enrollments</div>
+                <a href="students.html" class="dash-card-link">View all →</a>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="enrollments-list">
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:12px;width:55%;"></div><div class="skel" style="height:10px;width:40%;"></div></div>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:12px;width:50%;"></div><div class="skel" style="height:10px;width:35%;"></div></div>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:12px 0;">
+                    <div class="skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:12px;width:60%;"></div><div class="skel" style="height:10px;width:38%;"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions — 6 items 3-col -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Quick Actions</div>
+              </div>
+              <div class="dash-card-body">
+                <div class="quick-grid">
+                  <a href="course-builder.html" class="quick-action">
+                    <div class="qa-icon" style="background:var(--color-success-light);"><i data-feather="plus-circle" style="width:18px;height:18px;color:var(--color-success);"></i></div>
+                    <span class="qa-label">Create Course</span>
+                  </a>
+                  <a href="live-sessions.html" class="quick-action">
+                    <div class="qa-icon" style="background:var(--color-primary-50);"><i data-feather="video" style="width:18px;height:18px;color:var(--color-primary-600);"></i></div>
+                    <span class="qa-label">Schedule Session</span>
+                  </a>
+                  <a href="materials.html" class="quick-action">
+                    <div class="qa-icon" style="background:#ede9fe;"><i data-feather="upload-cloud" style="width:18px;height:18px;color:#7c3aed;"></i></div>
+                    <span class="qa-label">Upload Material</span>
+                  </a>
+                  <a href="assessments.html" class="quick-action">
+                    <div class="qa-icon" style="background:var(--color-warning-light);"><i data-feather="edit-3" style="width:18px;height:18px;color:var(--color-warning);"></i></div>
+                    <span class="qa-label">Create Quiz</span>
+                  </a>
+                  <a href="assessments.html" class="quick-action">
+                    <div class="qa-icon" style="background:var(--color-primary-50);"><i data-feather="clipboard" style="width:18px;height:18px;color:var(--color-primary-600);"></i></div>
+                    <span class="qa-label">New Assignment</span>
+                  </a>
+                  <a href="analytics.html" class="quick-action">
+                    <div class="qa-icon" style="background:var(--neutral-100);"><i data-feather="bar-chart-2" style="width:18px;height:18px;color:var(--text-secondary);"></i></div>
+                    <span class="qa-label">View Analytics</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /.dash-left -->
+
+          <!-- RIGHT COLUMN -->
+          <div class="dash-right">
+
+            <!-- Pending Tasks -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Pending Tasks</div>
+                <span style="font-size:var(--font-size-xs);font-weight:700;background:var(--color-danger-light);color:var(--color-danger-dark);padding:2px 8px;border-radius:99px;" id="tasks-total">0</span>
+              </div>
+              <div class="dash-card-body" style="padding-top:var(--space-2);padding-bottom:var(--space-2);">
+                <div id="tasks-list">
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:34px;height:34px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:12px;width:65%;"></div><div class="skel" style="height:10px;width:45%;"></div></div>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-color);">
+                    <div class="skel" style="width:34px;height:34px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:12px;width:60%;"></div><div class="skel" style="height:10px;width:40%;"></div></div>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:12px 0;">
+                    <div class="skel" style="width:34px;height:34px;border-radius:8px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:6px;"><div class="skel" style="height:12px;width:55%;"></div><div class="skel" style="height:10px;width:38%;"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upcoming Sessions -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Upcoming Sessions</div>
+                <a href="live-sessions.html" class="dash-card-link">View all →</a>
+              </div>
+              <div class="dash-card-body" id="sessions-list">
+                <div class="skel" style="height:80px;border-radius:8px;margin-bottom:10px;"></div>
+                <div class="skel" style="height:80px;border-radius:8px;"></div>
+              </div>
+            </div>
+
+            <!-- Earnings Overview -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Earnings Overview</div>
+                <a href="earnings.html" class="dash-card-link">Details →</a>
+              </div>
+              <div class="dash-card-body">
+                <div class="earnings-gradient-card">
+                  <div class="earnings-label">Total Earnings</div>
+                  <div class="earnings-amount" id="earnings-total">₹—</div>
+                  <div class="earnings-sub">From courses and study materials</div>
+                </div>
+                <div class="earnings-split">
+                  <div class="earnings-split-box">
+                    <div class="earnings-split-val" style="color:var(--color-success);" id="earnings-courses">₹—</div>
+                    <div class="earnings-split-lbl">From Courses</div>
+                  </div>
+                  <div class="earnings-split-box">
+                    <div class="earnings-split-val" style="color:var(--color-primary-600);" id="earnings-materials">₹—</div>
+                    <div class="earnings-split-lbl">From Materials</div>
+                  </div>
+                </div>
+                <div class="earnings-pending-row">
+                  <span style="font-size:var(--font-size-xs);color:var(--text-muted);">Pending Payout</span>
+                  <span style="font-size:var(--font-size-sm);font-weight:700;color:var(--color-warning);" id="earnings-pending">₹—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Strength -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <div class="dash-card-title">Profile Strength</div>
+                <a href="profile.html" class="dash-card-link">Edit →</a>
+              </div>
+              <div class="dash-card-body">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-2);">
+                  <span style="font-size:var(--font-size-sm);color:var(--text-secondary);">Complete</span>
+                  <span style="font-size:var(--font-size-sm);font-weight:700;color:var(--color-primary-600);" id="profile-pct">—</span>
+                </div>
+                <div style="height:8px;background:var(--neutral-100);border-radius:99px;overflow:hidden;">
+                  <div id="profile-bar" style="height:100%;background:var(--color-primary-600);border-radius:99px;transition:width 1s ease;width:0%;"></div>
+                </div>
+                <div id="profile-tips" style="margin-top:var(--space-4);display:flex;flex-direction:column;gap:var(--space-2);"></div>
+              </div>
+            </div>
+
+          </div><!-- /.dash-right -->
+        </div><!-- /.dash-grid -->
+      </div><!-- /.page-content -->
+    </main>
+  </div><!-- /.app-body -->
+</div><!-- /.app-shell -->
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS — correct load order
+══════════════════════════════════════════ -->
+<script>window.EV_BASE = "../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/router.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+
+<!-- Auth guard — runs before DOMContentLoaded -->
+<script>
+(function () {
+  var token, user;
+  try {
+    token = localStorage.getItem('ev_token');
+    user  = token ? JSON.parse(localStorage.getItem('ev_user')) : null;
+  } catch (e) {}
+  if (!token || !user) {
+    window.location.replace('../../pages/auth/login.html');
+    return;
+  }
+  if (user.role !== 'instructor') {
+    window.location.replace('../../pages/errors/403.html');
+  }
+})();
+</script>
+
+<!-- Dashboard module -->
+<script src="../../js/modules/instructor-dashboard.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ─── Feather icons ─── */
+  function _icons() { if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 }); }
+  _icons();
+
+  /* ─── Sidebar (uses sidebar.js) ─── */
+  Sidebar.init();
+  Sidebar.initTheme();
+  Sidebar.initLogout('../../pages/auth/login.html');
+  Sidebar.initDropdown();
+  Sidebar.initNotifPanel();
+
+  /* ─── Date in navbar ─── */
+  var dateEl = document.getElementById('navbar-date');
+  if (dateEl) {
+    dateEl.textContent = new Date().toLocaleDateString('en-IN', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+  }
+
+  /* ─── Mark all read ─── */
+  var markAllBtn = document.getElementById('mark-all-read');
+  if (markAllBtn) {
+    markAllBtn.addEventListener('click', async function () {
+      try {
+        await Api.post('/notifications/read-all');
+        var badge = document.getElementById('notif-badge');
+        if (badge) badge.style.display = 'none';
+        var body = document.getElementById('notif-panel-body');
+        if (body) body.innerHTML =
+          '<div class="notif-panel-empty">' +
+            '<div style="font-size:2rem;margin-bottom:8px;">🔔</div>' +
+            '<div style="font-size:var(--font-size-sm);color:var(--text-muted);">No new notifications</div>' +
+          '</div>';
+      } catch(e) {}
+    });
+  }
+
+  /* ─── Launch dashboard module ─── */
+  if (typeof InstructorDashboard !== 'undefined') {
+    InstructorDashboard.init();
+  }
+
+  /* ─── Cleanup ─── */
+  window.addEventListener('beforeunload', function () {
+    if (typeof InstructorDashboard !== 'undefined') InstructorDashboard.destroy();
+  });
+
+});
+</script>
+
+</body>
+</html>

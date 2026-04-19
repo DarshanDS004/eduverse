@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Lesson — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    *{box-sizing:border-box;}
+    body{background:var(--neutral-900);min-height:100vh;display:flex;flex-direction:column;}
+    .player-topbar{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--neutral-900);border-bottom:1px solid rgba(255,255,255,0.08);}
+    .player-brand{display:flex;align-items:center;gap:var(--space-2);text-decoration:none;}
+    .player-brand-logo{width:32px;height:32px;background:var(--color-primary-600);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:var(--font-size-sm);}
+    .player-brand-name{font-size:var(--font-size-base);font-weight:700;color:#fff;}
+    .player-course-title{font-size:var(--font-size-sm);color:rgba(255,255,255,0.6);flex:1;text-align:center;padding:0 var(--space-4);}
+    .player-main{display:flex;flex:1;overflow:hidden;}
+    .player-video-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .player-video-wrap{background:#000;aspect-ratio:16/9;position:relative;display:flex;align-items:center;justify-content:center;}
+    .player-video-wrap video{width:100%;height:100%;object-fit:contain;}
+    .player-video-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);gap:var(--space-3);}
+    .player-info{padding:var(--space-5) var(--space-6);background:var(--neutral-800);flex:1;overflow-y:auto;}
+    .player-lesson-title{font-size:var(--font-size-xl);font-weight:700;color:#fff;margin-bottom:var(--space-2);}
+    .player-lesson-meta{display:flex;align-items:center;gap:var(--space-4);font-size:var(--font-size-sm);color:rgba(255,255,255,0.5);}
+    .player-sidebar{width:320px;background:var(--neutral-800);border-left:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;overflow:hidden;}
+    .player-sidebar-header{padding:var(--space-4) var(--space-5);border-bottom:1px solid rgba(255,255,255,0.08);font-size:var(--font-size-sm);font-weight:600;color:#fff;}
+    .player-lesson-list{flex:1;overflow-y:auto;}
+    .lesson-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-5);cursor:pointer;transition:background var(--transition-fast);border-bottom:1px solid rgba(255,255,255,0.04);}
+    .lesson-item:hover{background:rgba(255,255,255,0.06);}
+    .lesson-item.active{background:rgba(26,86,219,0.2);border-left:3px solid var(--color-primary-400);}
+    .lesson-num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:var(--font-size-xs);font-weight:600;color:#fff;flex-shrink:0;}
+    .lesson-num.done{background:var(--color-success);}
+    .lesson-info{flex:1;min-width:0;}
+    .lesson-title{font-size:var(--font-size-sm);font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .lesson-dur{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;}
+    .skel{background:rgba(255,255,255,0.07);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.4}}
+    @media(max-width:767px){.player-sidebar{display:none;}.player-topbar .player-course-title{display:none;}}
+  </style>
+</head>
+<body>
+  <div class="player-topbar">
+    <a class="player-brand" href="courses.html">
+      <div class="player-brand-logo">E</div>
+      <span class="player-brand-name">EduVerse</span>
+    </a>
+    <div class="player-course-title" id="course-title-top">Loading…</div>
+    <a href="courses.html" class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,0.6);font-size:var(--font-size-sm);"><i data-feather="x" style="width:14px;height:14px;"></i> Exit</a>
+  </div>
+  <div class="player-main">
+    <div class="player-video-area">
+      <div class="player-video-wrap" id="video-wrap">
+        <div class="player-video-placeholder" id="video-placeholder">
+          <i data-feather="play-circle" style="width:64px;height:64px;opacity:0.3;"></i>
+          <div style="font-size:var(--font-size-sm);">Select a lesson to start</div>
+        </div>
+        <video id="video-el" style="display:none;" controls></video>
+      </div>
+      <div class="player-info">
+        <div class="player-lesson-title" id="lesson-title">Select a lesson from the list</div>
+        <div class="player-lesson-meta">
+          <span id="lesson-duration" style="display:none;"><i data-feather="clock" style="width:12px;height:12px;"></i> <span id="lesson-dur-val"></span></span>
+        </div>
+      </div>
+    </div>
+    <div class="player-sidebar">
+      <div class="player-sidebar-header">Course Content</div>
+      <div class="player-lesson-list" id="lesson-list">
+        <div class="skel" style="height:56px;margin:8px;border-radius:8px;"></div>
+        <div class="skel" style="height:56px;margin:8px;border-radius:8px;"></div>
+        <div class="skel" style="height:56px;margin:8px;border-radius:8px;"></div>
+      </div>
+    </div>
+  </div>
+  <script>window.EV_BASE="../../";</script>
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/store.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/init.js"></script>
+  <script>
+  (function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}if(u.role!=='student'){window.location.replace('../../pages/errors/403.html');}})();
+  document.addEventListener('DOMContentLoaded',function(){
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+    var courseId=Utils.getParam('course');
+    var lessonId=Utils.getParam('lesson');
+    if(!courseId){ document.getElementById('lesson-list').innerHTML='<div style="color:rgba(255,255,255,0.4);padding:var(--space-4);font-size:var(--font-size-sm);">No course selected.</div>'; return; }
+    async function loadCourse(){
+      try{
+        var res=await Api.courses.detail(courseId);
+        var course=(res&&res.data)||{};
+        document.getElementById('course-title-top').textContent=course.title||'Course';
+        var lessons=(course.lessons)||[];
+        if(!lessons.length){ document.getElementById('lesson-list').innerHTML='<div style="color:rgba(255,255,255,0.4);padding:var(--space-4);font-size:var(--font-size-sm);">No lessons yet.</div>'; return; }
+        document.getElementById('lesson-list').innerHTML=lessons.map(function(l,i){
+          var done=l.watched||false;
+          return '<div class="lesson-item'+(l.id==lessonId?' active':'')+'" data-lid="'+l.id+'" onclick="playLesson('+JSON.stringify(l).replace(/"/g,'&quot;')+')">'+
+            '<div class="lesson-num'+(done?' done':'')+'>'+(done?'✓':(i+1))+'</div>'+
+            '<div class="lesson-info"><div class="lesson-title">'+_esc(l.title)+'</div><div class="lesson-dur">'+(l.duration?l.duration+' min':'')+'</div></div>'+
+          '</div>';
+        }).join('');
+        if(lessonId){ var found=lessons.find(function(l){return l.id==lessonId;}); if(found) playLesson(found); }
+      }catch(e){ document.getElementById('lesson-list').innerHTML='<div style="color:rgba(255,255,255,0.4);padding:var(--space-4);">Failed to load course.</div>'; }
+    }
+    window.playLesson=function(lesson){
+      document.querySelectorAll('.lesson-item').forEach(function(el){el.classList.toggle('active',el.dataset.lid==lesson.id);});
+      document.getElementById('lesson-title').textContent=lesson.title||'Lesson';
+      if(lesson.duration){ document.getElementById('lesson-dur-val').textContent=lesson.duration+' min'; document.getElementById('lesson-duration').style.display='flex'; }
+      var vid=document.getElementById('video-el');
+      if(lesson.video_url||lesson.url){
+        document.getElementById('video-placeholder').style.display='none';
+        vid.style.display='block';
+        vid.src=lesson.video_url||lesson.url;
+        vid.play().catch(function(){});
+      } else {
+        vid.style.display='none';
+        document.getElementById('video-placeholder').style.display='flex';
+      }
+      history.replaceState(null,'','?course='+courseId+'&lesson='+lesson.id);
+      try{ Api.post('/student/lessons/'+lesson.id+'/progress',{progress:0}); }catch(e){}
+    };
+    function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    loadCourse();
+  });
+  </script>
+</body>
+</html>

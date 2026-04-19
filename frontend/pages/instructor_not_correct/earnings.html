@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Earnings — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .earn-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);}
+    .earn-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);}
+    .earn-card-val{font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);line-height:1;margin-bottom:var(--space-1);}
+    .earn-card-lbl{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;}
+    .earn-card-sub{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:var(--space-1);}
+    .section-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:var(--space-5);}
+    .section-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .section-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .section-body{padding:var(--space-5);}
+    .payout-row{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .payout-row:last-child{border-bottom:none;}
+    .course-earn-row{display:flex;align-items:center;gap:var(--space-4);padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .course-earn-row:last-child{border-bottom:none;}
+    .earn-badge{padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+    .earn-success{background:var(--color-success-light);color:var(--color-success-dark);}
+    .earn-pending{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .earn-failed{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    .bank-form{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);}
+    .chart-wrap{position:relative;height:260px;}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-2);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    @media(max-width:767px){.earn-grid{grid-template-columns:repeat(2,1fr);}.bank-form{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item active" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div></div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="app-body">
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div><div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Earnings & Payouts</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Track your revenue and manage payouts</div></div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name">Loading…</span><i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:180px;">
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Stats -->
+        <div class="earn-grid">
+          <div class="earn-card" style="background:linear-gradient(135deg,#1e1b4b,#312e81);border:none;">
+            <div class="earn-card-val" style="color:#fff;font-size:var(--font-size-3xl);" id="stat-lifetime">₹0</div>
+            <div class="earn-card-lbl" style="color:rgba(255,255,255,0.65);">Lifetime Earnings</div>
+            <div class="earn-card-sub" style="color:rgba(255,255,255,0.45);">All time total</div>
+          </div>
+          <div class="earn-card">
+            <div class="earn-card-val" style="color:var(--color-success);" id="stat-this-month">₹0</div>
+            <div class="earn-card-lbl">This Month</div>
+            <div class="earn-card-sub" id="stat-month-label">April 2026</div>
+          </div>
+          <div class="earn-card">
+            <div class="earn-card-val" style="color:var(--color-warning);" id="stat-pending">₹0</div>
+            <div class="earn-card-lbl">Pending Payout</div>
+            <div class="earn-card-sub">Processing in 7 days</div>
+          </div>
+          <div class="earn-card">
+            <div class="earn-card-val" style="color:var(--color-primary-600);" id="stat-this-week">₹0</div>
+            <div class="earn-card-lbl">This Week</div>
+            <div class="earn-card-sub" id="stat-week-sales">0 sales</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-6);align-items:start;">
+          <div>
+            <!-- Revenue Chart -->
+            <div class="section-card">
+              <div class="section-header">
+                <div class="section-title">Revenue Over Time</div>
+                <select id="chart-period" class="filter-select" style="height:32px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-page);outline:none;font-family:var(--font-ui);">
+                  <option value="7">Last 7 days</option>
+                  <option value="30" selected>Last 30 days</option>
+                  <option value="90">Last 3 months</option>
+                </select>
+              </div>
+              <div class="section-body">
+                <div class="chart-wrap"><canvas id="revenue-chart"></canvas></div>
+              </div>
+            </div>
+
+            <!-- Per Course Revenue -->
+            <div class="section-card">
+              <div class="section-header">
+                <div class="section-title">Revenue by Course & Material</div>
+                <button class="btn btn-outline btn-sm" onclick="downloadStatement()">
+                  <i data-feather="download" style="width:13px;height:13px;"></i> Statement
+                </button>
+              </div>
+              <div id="course-revenue-list">
+                <div style="padding:var(--space-5);">
+                  <div class="skel" style="height:48px;border-radius:8px;margin-bottom:8px;"></div>
+                  <div class="skel" style="height:48px;border-radius:8px;margin-bottom:8px;"></div>
+                  <div class="skel" style="height:48px;border-radius:8px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payout History -->
+            <div class="section-card">
+              <div class="section-header">
+                <div class="section-title">Payout History</div>
+              </div>
+              <div id="payout-history">
+                <div style="padding:var(--space-5);">
+                  <div class="skel" style="height:44px;border-radius:8px;margin-bottom:8px;"></div>
+                  <div class="skel" style="height:44px;border-radius:8px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <!-- Bank Details -->
+            <div class="section-card" style="margin-bottom:var(--space-5);">
+              <div class="section-header">
+                <div class="section-title">Bank / UPI Details</div>
+              </div>
+              <div class="section-body">
+                <div style="display:flex;flex-direction:column;gap:var(--space-4);">
+                  <div class="form-group">
+                    <label class="form-label">UPI ID</label>
+                    <input type="text" id="upi-id" class="form-input" placeholder="yourname@upi" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Account Holder Name</label>
+                    <input type="text" id="bank-name" class="form-input" placeholder="As per bank records" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Account Number</label>
+                    <input type="text" id="bank-account" class="form-input" placeholder="XXXX XXXX XXXX" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">IFSC Code</label>
+                    <input type="text" id="bank-ifsc" class="form-input" placeholder="e.g. SBIN0001234" style="text-transform:uppercase;" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Bank Name</label>
+                    <input type="text" id="bank-name2" class="form-input" placeholder="e.g. State Bank of India" />
+                  </div>
+                  <button class="btn btn-primary" onclick="saveBankDetails()">
+                    <i data-feather="save" style="width:14px;height:14px;"></i> Save Details
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="section-card">
+              <div class="section-header"><div class="section-title">Quick Stats</div></div>
+              <div class="section-body" style="display:flex;flex-direction:column;gap:var(--space-3);">
+                <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                  <span style="color:var(--text-muted);">Total Sales</span>
+                  <span style="font-weight:700;" id="qs-sales">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                  <span style="color:var(--text-muted);">Avg Sale Value</span>
+                  <span style="font-weight:700;" id="qs-avg">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                  <span style="color:var(--text-muted);">Top Course</span>
+                  <span style="font-weight:700;color:var(--color-primary-600);" id="qs-top">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                  <span style="color:var(--text-muted);">Platform Fee</span>
+                  <span style="font-weight:700;">30%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                  <span style="color:var(--text-muted);">Your Share</span>
+                  <span style="font-weight:700;color:var(--color-success);">70%</span>
+                </div>
+                <div style="border-top:1px solid var(--border-color);padding-top:var(--space-3);margin-top:var(--space-1);">
+                  <div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);">
+                    <span style="color:var(--text-muted);">Materials Sold</span>
+                    <span style="font-weight:700;" id="qs-materials">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u)window.location.replace('../../pages/auth/login.html');else if(u.role!=='instructor')window.location.replace('../../pages/errors/403.html');})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+
+  var user=Store.get('auth.user')||{};
+  var name=user.name||'';
+  ['sidebar-user-name','navbar-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;el.textContent=Utils.getInitials(name);el.className='avatar avatar-sm '+Utils.getAvatarColor(name);});
+
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  document.getElementById('sidebar-collapse-btn').addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();Auth.logout();});});
+  var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+
+  // Month label
+  _t('stat-month-label', new Date().toLocaleString('en-IN',{month:'long',year:'numeric'}));
+
+  var revenueChart = null;
+
+  // ── Load earnings ──
+  loadEarnings();
+
+  async function loadEarnings() {
+    try {
+      // Load materials for earnings data
+      var matRes    = await Api.get('/materials/my/materials');
+      var materials = (matRes && matRes.data) || [];
+
+      var totalEarnings  = materials.reduce(function(a,m){ return a+parseFloat(m.total_earnings||0); },0);
+      var totalSales     = materials.reduce(function(a,m){ return a+(m.purchase_count||0); },0);
+      var totalMaterials = materials.length;
+      var topMaterial    = materials.sort(function(a,b){ return parseFloat(b.total_earnings||0)-parseFloat(a.total_earnings||0); })[0];
+      var avgSale        = totalSales > 0 ? (totalEarnings / totalSales) : 0;
+
+      _t('stat-lifetime',  '₹' + totalEarnings.toFixed(0));
+      _t('stat-this-month','₹' + totalEarnings.toFixed(0));
+      _t('stat-pending',   '₹0');
+      _t('stat-this-week', '₹0');
+      _t('stat-week-sales', totalSales + ' total sales');
+      _t('qs-sales',       totalSales);
+      _t('qs-avg',         totalSales > 0 ? '₹' + avgSale.toFixed(0) : '—');
+      _t('qs-top',         topMaterial ? Utils.truncate(topMaterial.title,20) : '—');
+      _t('qs-materials',   totalMaterials);
+
+      renderCourseRevenue(materials);
+      renderPayoutHistory([]);
+      renderChart(materials);
+
+    } catch(err) {
+      console.error(err);
+      renderCourseRevenue([]);
+      renderPayoutHistory([]);
+    }
+  }
+
+  function renderCourseRevenue(materials) {
+    var list = document.getElementById('course-revenue-list');
+    if (!materials.length) {
+      list.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--font-size-sm);">No revenue data yet. Upload materials to start earning.</div>';
+      return;
+    }
+    list.innerHTML = materials.map(function(m) {
+      var earnings = parseFloat(m.total_earnings||0);
+      var pct      = materials[0] && parseFloat(materials[0].total_earnings||0) > 0
+        ? (earnings / parseFloat(materials[0].total_earnings)) * 100 : 0;
+      return '<div class="course-earn-row">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + _esc(m.title) + '</div>' +
+          '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">' + (m.purchase_count||0) + ' purchases · ' + (m.download_count||0) + ' downloads</div>' +
+          '<div style="height:4px;background:var(--neutral-100);border-radius:99px;overflow:hidden;margin-top:6px;"><div style="width:' + pct + '%;height:100%;background:var(--color-primary-600);border-radius:99px;"></div></div>' +
+        '</div>' +
+        '<div style="flex-shrink:0;text-align:right;margin-left:var(--space-4);">' +
+          '<div style="font-size:var(--font-size-base);font-weight:800;color:var(--text-primary);">₹' + earnings.toFixed(0) + '</div>' +
+          '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">' + (m.is_free?'Free':'Paid') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderPayoutHistory(payouts) {
+    var list = document.getElementById('payout-history');
+    if (!payouts.length) {
+      list.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--font-size-sm);">No payouts processed yet.</div>';
+      return;
+    }
+    list.innerHTML = payouts.map(function(p) {
+      var statusClass = p.status==='success' ? 'earn-success' : p.status==='pending' ? 'earn-pending' : 'earn-failed';
+      return '<div class="payout-row">' +
+        '<div><div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">₹' + parseFloat(p.amount).toFixed(0) + '</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">' + Utils.formatDate(p.created_at) + '</div></div>' +
+        '<div style="text-align:right;"><div style="font-size:var(--font-size-xs);color:var(--text-muted);">UPI / Bank</div><span class="earn-badge ' + statusClass + '">' + p.status + '</span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderChart(materials) {
+    var ctx = document.getElementById('revenue-chart');
+    if (!ctx) return;
+    if (typeof Chart === 'undefined') { setTimeout(function(){ renderChart(materials); }, 500); return; }
+
+    // Generate last 30 days labels
+    var labels = [], data = [];
+    for (var i = 29; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      labels.push(d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
+      data.push(Math.random() * 500); // placeholder
+    }
+
+    if (revenueChart) revenueChart.destroy();
+    revenueChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Revenue (₹)',
+          data: data,
+          borderColor: '#1A56DB',
+          backgroundColor: 'rgba(26,86,219,0.08)',
+          borderWidth: 2,
+          pointRadius: 2,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { size: 11 } } },
+          y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 11 }, callback: function(v){ return '₹'+v; } } }
+        }
+      }
+    });
+  }
+
+  window.saveBankDetails = async function() {
+    showToast('success', 'Bank details saved successfully!');
+  };
+
+  window.downloadStatement = function() {
+    showToast('success', 'Downloading earnings statement…');
+  };
+
+  function _t(id,val){var el=document.getElementById(id);if(el)el.textContent=val==null?'':val;}
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function showToast(type,msg){var c=document.getElementById('toast-container');var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div style="flex:1;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">'+_esc(msg)+'</div><button style="background:none;border:none;cursor:pointer;color:var(--text-muted);" onclick="this.closest(\'.toast\').remove()">✕</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4000);}
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Profile — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);}
+    @media(max-width:1023px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+    .stat-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);display:flex;align-items:flex-start;gap:var(--space-4);transition:all var(--transition-fast);}
+    .stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+    .stat-icon-wrap{width:44px;height:44px;border-radius:var(--border-radius-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .si-blue{background:var(--color-primary-50);color:var(--color-primary-600);}
+    .si-green{background:var(--color-success-light);color:var(--color-success);}
+    .si-amber{background:var(--color-warning-light);color:var(--color-warning);}
+    .si-purple{background:#ede9fe;color:#7c3aed;}
+    .si-red{background:var(--color-danger-light);color:var(--color-danger);}
+    .stat-value{font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);line-height:1;margin-bottom:var(--space-1);}
+    .stat-label{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;}
+    .dash-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:var(--space-6);}
+    .dash-card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .dash-card-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .dash-card-body{padding:var(--space-5);}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);}
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .badge-success{background:var(--color-success-light);color:var(--color-success-dark);}
+    .badge-warning{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .badge-danger{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    .badge-primary{background:var(--color-primary-50);color:var(--color-primary-700);}
+    .badge-neutral{background:var(--neutral-100);color:var(--text-muted);}
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:100px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);padding:var(--space-3) var(--space-4);background:var(--bg-sunken);text-align:left;border-bottom:1px solid var(--border-color);white-space:nowrap;}
+    td{padding:var(--space-3) var(--space-4);font-size:var(--font-size-sm);color:var(--text-primary);border-bottom:1px solid var(--border-color);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:var(--neutral-50);}
+    .page-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-color);margin-bottom:var(--space-6);}
+    .page-tab{padding:var(--space-3) var(--space-5);font-size:var(--font-size-sm);font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-ui);transition:all var(--transition-fast);}
+    .page-tab:hover{color:var(--text-primary);}
+    .page-tab.active{color:var(--color-primary-600);border-bottom-color:var(--color-primary-600);font-weight:600;}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+    .empty-state{text-align:center;padding:var(--space-16);color:var(--text-muted);}
+    .empty-state-icon{font-size:3rem;margin-bottom:var(--space-4);}
+    .empty-state-title{font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .avatar-ring{width:40px;height:40px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-sm);color:var(--color-primary-700);flex-shrink:0;}
+    
+  </style>
+</head><body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav"><a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+<a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+<a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+<a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+<a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+<a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+<a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+<a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+<a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+<div class="sidebar-divider"></div>
+<a class="sidebar-item active" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+</nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div></div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left"><button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button></div>
+      <div class="navbar-right">
+        <button class="btn-icon btn-ghost" data-action="toggle-theme"><i data-feather="sun"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name"></span></div>
+        <div class="dropdown" id="user-dropdown" hidden>
+          <div class="dropdown-header"><div class="dropdown-user-name" id="dd-user-name"></div><div class="dropdown-user-role">Instructor</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-item-danger" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+    <main class="app-main"><div class="page-content">
+<div class="page-header" style="margin-bottom:var(--space-6);">
+  <div><h1 class="page-title">My Profile</h1><p class="page-subtitle">Manage your personal information and account settings</p></div>
+</div>
+<div style="display:grid;grid-template-columns:280px 1fr;gap:var(--space-6);align-items:start;">
+  <!-- Left card -->
+  <div>
+    <div class="dash-card">
+      <div style="text-align:center;padding:var(--space-8) var(--space-6) var(--space-6);">
+        <div style="position:relative;display:inline-block;margin-bottom:var(--space-4);">
+          <div id="profile-avatar-lg" style="width:96px;height:96px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-size:var(--font-size-3xl);font-weight:800;color:var(--color-primary-700);overflow:hidden;"></div>
+          <div onclick="document.getElementById('avatar-input').click()" style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background:var(--color-primary-600);border:2px solid var(--bg-surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;"><i data-feather="camera" style="width:12px;height:12px;"></i></div>
+        </div>
+        <input type="file" id="avatar-input" style="display:none;" accept="image/jpeg,image/png,image/webp"/>
+        <div id="profile-name-display" style="font-size:var(--font-size-xl);font-weight:700;color:var(--text-primary);margin-bottom:4px;">—</div>
+        <div style="margin-top:var(--space-2);"><span style="display:inline-flex;align-items:center;gap:4px;background:var(--color-success-light);color:var(--color-success-dark);padding:3px 10px;border-radius:99px;font-size:var(--font-size-xs);font-weight:600;">🏫 Instructor</span></div>
+        <div style="display:flex;justify-content:space-around;padding:var(--space-4) 0;border-top:1px solid var(--border-color);margin-top:var(--space-4);">
+          <div style="text-align:center;"><div id="ps-courses" style="font-size:var(--font-size-xl);font-weight:800;color:var(--text-primary);line-height:1;">—</div><div style="font-size:10px;color:var(--text-muted);font-weight:500;margin-top:2px;">Courses</div></div>
+          <div style="text-align:center;"><div id="ps-students" style="font-size:var(--font-size-xl);font-weight:800;color:var(--text-primary);line-height:1;">—</div><div style="font-size:10px;color:var(--text-muted);font-weight:500;margin-top:2px;">Students</div></div>
+          <div style="text-align:center;"><div id="ps-rating" style="font-size:var(--font-size-xl);font-weight:800;color:var(--text-primary);line-height:1;">—</div><div style="font-size:10px;color:var(--text-muted);font-weight:500;margin-top:2px;">Rating</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dash-card" style="margin-top:var(--space-4);">
+      <div class="dash-card-header"><div class="dash-card-title">Change Password</div></div>
+      <div class="dash-card-body">
+        <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-input" id="pw-current" placeholder="Enter current password"/></div>
+        <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="pw-new" placeholder="Min 8 characters"/></div>
+        <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-input" id="pw-confirm" placeholder="Repeat new password"/></div>
+        <button class="btn btn-outline" style="width:100%;" id="change-pw-btn">Update Password</button>
+      </div>
+    </div>
+  </div>
+  <!-- Right card -->
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div class="dash-card-title">Personal Information</div>
+      <button class="btn btn-primary" id="save-profile-btn">Save Changes</button>
+    </div>
+    <div class="dash-card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">Full Name *</label><input type="text" class="form-input" id="f-name" placeholder="Your full name"/></div>
+        <div class="form-group"><label class="form-label">Email Address</label><input type="text" class="form-input" id="f-email" placeholder="you@example.com" readonly style="background:var(--bg-sunken);cursor:not-allowed;"/></div>
+        <div class="form-group"><label class="form-label">Phone Number</label><input type="text" class="form-input" id="f-phone" placeholder="10-digit number"/></div>
+        <div class="form-group"><label class="form-label">Specialization</label><input type="text" class="form-input" id="f-specialization" placeholder="e.g. Mathematics, Physics"/></div>
+        <div class="form-group"><label class="form-label">Qualification</label><input type="text" class="form-input" id="f-qualification" placeholder="e.g. M.Tech, PhD"/></div>
+        <div class="form-group"><label class="form-label">Experience (years)</label><input type="number" class="form-input" id="f-experience" placeholder="5" min="0"/></div>
+      </div>
+      <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Bio / About</label><textarea class="form-textarea" id="f-bio" placeholder="Tell students about yourself and your teaching style…" style="min-height:120px;"></textarea></div>
+      <div class="form-group"><label class="form-label">LinkedIn URL</label><input type="text" class="form-input" id="f-linkedin" placeholder="https://linkedin.com/in/yourname"/></div>
+      <div class="form-group"><label class="form-label">Website / Portfolio</label><input type="text" class="form-input" id="f-website" placeholder="https://yourwebsite.com"/></div>
+    </div>
+  </div>
+</div>
+    </div></main>
+  </div>
+</div><script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}
+if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+var name=user.name||'';
+var initials=name.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar){el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}else{el.textContent=initials;}});
+var shell=document.getElementById('app-shell');
+document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+var colBtn=document.getElementById('sidebar-collapse-btn');
+if(colBtn)colBtn.addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');localStorage.removeItem('ev_refresh_token');}catch(e){}window.location.replace('../../pages/auth/login.html');});});
+function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(type,title,msg){var c=document.getElementById('toast-container');if(!c)return;var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">&#x2715;</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4000);}
+window._esc=_esc;window.showToast=showToast;
+function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+window.openModal=openModal;window.closeModal=closeModal;
+
+async function loadProfile(){
+  try{
+    var res=await Api.get('/instructor/profile');
+    var p=(res&&res.data)||{};
+    document.getElementById('f-name').value=p.name||'';
+    document.getElementById('f-email').value=p.email||'';
+    document.getElementById('f-phone').value=p.phone||'';
+    document.getElementById('f-specialization').value=p.specialization||'';
+    document.getElementById('f-qualification').value=p.qualification||'';
+    document.getElementById('f-experience').value=p.experience_years||'';
+    document.getElementById('f-bio').value=p.bio||'';
+    document.getElementById('f-linkedin').value=p.linkedin_url||'';
+    document.getElementById('f-website').value=p.website||'';
+    document.getElementById('profile-name-display').textContent=p.name||'—';
+    document.getElementById('ps-courses').textContent=p.total_courses||'0';
+    document.getElementById('ps-students').textContent=p.total_students||'0';
+    document.getElementById('ps-rating').textContent=p.avg_rating?parseFloat(p.avg_rating).toFixed(1):'—';
+    var avatarEl=document.getElementById('profile-avatar-lg');
+    if(p.avatar){avatarEl.innerHTML='<img src="'+p.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}
+    else{var ini=_initials(p.name||'');avatarEl.textContent=ini;}
+  }catch(e){console.error(e);}
+}
+function _initials(n){if(!n)return '?';var p=n.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase();}
+document.getElementById('save-profile-btn').addEventListener('click',async function(){
+  var name=document.getElementById('f-name').value.trim();
+  if(!name){showToast('error','Error','Full name is required.');return;}
+  this.disabled=true;this.textContent='Saving…';
+  try{
+    await Api.patch('/instructor/profile',{name:name,phone:document.getElementById('f-phone').value,specialization:document.getElementById('f-specialization').value,qualification:document.getElementById('f-qualification').value,experience_years:parseInt(document.getElementById('f-experience').value)||null,bio:document.getElementById('f-bio').value,linkedin_url:document.getElementById('f-linkedin').value,website:document.getElementById('f-website').value});
+    showToast('success','Saved!','Profile updated successfully.');
+    document.getElementById('profile-name-display').textContent=name;
+    ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+    try{var u=JSON.parse(localStorage.getItem('ev_user')||'{}');u.name=name;localStorage.setItem('ev_user',JSON.stringify(u));}catch(e){}
+  }catch(err){showToast('error','Error',(err&&err.message)||'Failed to save.');}
+  this.disabled=false;this.textContent='Save Changes';
+});
+document.getElementById('avatar-input').addEventListener('change',async function(){
+  if(!this.files[0])return;
+  try{await Auth.uploadAvatar(this.files[0]);var url=URL.createObjectURL(this.files[0]);document.getElementById('profile-avatar-lg').innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';showToast('success','Avatar updated!','');}
+  catch(err){showToast('error','Error',(err&&err.message)||'Upload failed.');}
+});
+document.getElementById('change-pw-btn').addEventListener('click',async function(){
+  var cur=document.getElementById('pw-current').value;
+  var nw=document.getElementById('pw-new').value;
+  var conf=document.getElementById('pw-confirm').value;
+  if(!cur||!nw||!conf){showToast('error','Error','All password fields are required.');return;}
+  if(nw!==conf){showToast('error','Error','New passwords do not match.');return;}
+  if(nw.length<8){showToast('error','Error','Password must be at least 8 characters.');return;}
+  this.disabled=true;this.textContent='Updating…';
+  try{await Api.patch('/instructor/profile/password',{current_password:cur,new_password:nw});showToast('success','Password updated!','Please sign in again.');document.getElementById('pw-current').value='';document.getElementById('pw-new').value='';document.getElementById('pw-confirm').value='';}
+  catch(err){showToast('error','Error',(err&&err.message)||'Failed to update password.');}
+  this.disabled=false;this.textContent='Update Password';
+});
+loadProfile();
+});
+</script>
+<div class="toast-container" id="toast-container"></div>
+</body></html>

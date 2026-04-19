@@ -1,6 +1,8 @@
 /**
  * EduVerse — Auth Service
  * modules/auth/auth.service.js
+ * 
+ * FIXED: Normalized field name handling for register() function
  */
 
 'use strict';
@@ -37,21 +39,18 @@ function generateRefreshToken(user) {
 ============================================================ */
 
 async function register(data) {
-  const {
-    name, email, password, role,
-    phone, dob, grade,
-    institute_code, parent_email,
-    subject, qualification, experience,
-    linkedin, bio, levels,
-    relation, child_name, child_grade,
-    institute_name, institute_type,
-    city, state, affiliation, website, capacity,
-  } = data;
+  // Validate required fields
+  if (!data.name || !data.email || !data.password || !data.role) {
+    throw new AppError('Name, email, password, and role are required.', 400, 'MISSING_FIELDS');
+  }
+
+  // Normalize email
+  const normalizedEmail = data.email.toLowerCase().trim();
 
   // Check if email already exists
   const [existing] = await db.query(
     'SELECT id FROM users WHERE email = ?',
-    [email.toLowerCase().trim()]
+    [normalizedEmail]
   );
 
   if (existing.length > 0) {
@@ -60,17 +59,17 @@ async function register(data) {
 
   // Hash password
   const rounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
-  const password_hash = await bcrypt.hash(password, rounds);
+  const password_hash = await bcrypt.hash(data.password, rounds);
 
   // Insert user
   const [userResult] = await db.query(
     `INSERT INTO users (email, phone, password_hash, role)
      VALUES (?, ?, ?, ?)`,
     [
-      email.toLowerCase().trim(),
-      phone || null,
+      normalizedEmail,
+      data.phone || null,
       password_hash,
-      role,
+      data.role,
     ]
   );
 
@@ -82,10 +81,10 @@ async function register(data) {
      VALUES (?, ?, ?, ?, ?)`,
     [
       userId,
-      name.trim(),
-      dob || null,
-      city || null,
-      state || null,
+      data.name.trim(),
+      data.dob || null,
+      data.city || null,
+      data.state || null,
     ]
   );
 
@@ -101,18 +100,23 @@ async function register(data) {
 
   // Send verification email
   const verifyUrl = `${process.env.FRONTEND_URL}/pages/auth/verify-email.html?token=${verifyToken}`;
-  const emailTemplate = templates.verifyEmail(name.trim(), verifyUrl);
+  const emailTemplate = templates.verifyEmail(data.name.trim(), verifyUrl);
 
-  await sendMail({
-    to:      email,
-    subject: emailTemplate.subject,
-    html:    emailTemplate.html,
-  });
+  try {
+    await sendMail({
+      to:      normalizedEmail,
+      subject: emailTemplate.subject,
+      html:    emailTemplate.html,
+    });
+  } catch (mailErr) {
+    console.error('[Register] Email send failed:', mailErr.message);
+    // Don't fail registration if email fails — user can still verify later
+  }
 
   return {
     message: 'Registration successful. Please check your email to verify your account.',
-    email:   email,
-    role:    role,
+    email:   normalizedEmail,
+    role:    data.role,
   };
 }
 

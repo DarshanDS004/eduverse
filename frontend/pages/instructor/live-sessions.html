@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Live Sessions — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);}
+    @media(max-width:1023px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+    .stat-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);display:flex;align-items:flex-start;gap:var(--space-4);transition:all var(--transition-fast);}
+    .stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+    .stat-icon-wrap{width:44px;height:44px;border-radius:var(--border-radius-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .si-blue{background:var(--color-primary-50);color:var(--color-primary-600);}
+    .si-green{background:var(--color-success-light);color:var(--color-success);}
+    .si-amber{background:var(--color-warning-light);color:var(--color-warning);}
+    .si-purple{background:#ede9fe;color:#7c3aed;}
+    .si-red{background:var(--color-danger-light);color:var(--color-danger);}
+    .stat-value{font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);line-height:1;margin-bottom:var(--space-1);}
+    .stat-label{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;}
+    .dash-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:var(--space-6);}
+    .dash-card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .dash-card-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .dash-card-body{padding:var(--space-5);}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);}
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .badge-success{background:var(--color-success-light);color:var(--color-success-dark);}
+    .badge-warning{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .badge-danger{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    .badge-primary{background:var(--color-primary-50);color:var(--color-primary-700);}
+    .badge-neutral{background:var(--neutral-100);color:var(--text-muted);}
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:100px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);padding:var(--space-3) var(--space-4);background:var(--bg-sunken);text-align:left;border-bottom:1px solid var(--border-color);white-space:nowrap;}
+    td{padding:var(--space-3) var(--space-4);font-size:var(--font-size-sm);color:var(--text-primary);border-bottom:1px solid var(--border-color);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:var(--neutral-50);}
+    .page-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-color);margin-bottom:var(--space-6);}
+    .page-tab{padding:var(--space-3) var(--space-5);font-size:var(--font-size-sm);font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-ui);transition:all var(--transition-fast);}
+    .page-tab:hover{color:var(--text-primary);}
+    .page-tab.active{color:var(--color-primary-600);border-bottom-color:var(--color-primary-600);font-weight:600;}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+    .empty-state{text-align:center;padding:var(--space-16);color:var(--text-muted);}
+    .empty-state-icon{font-size:3rem;margin-bottom:var(--space-4);}
+    .empty-state-title{font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .avatar-ring{width:40px;height:40px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-sm);color:var(--color-primary-700);flex-shrink:0;}
+    
+  </style>
+</head><body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav"><a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+<a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+<a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+<a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+<a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+<a class="sidebar-item active" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+<a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+<a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+<a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+<div class="sidebar-divider"></div>
+<a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+</nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div></div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left"><button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button></div>
+      <div class="navbar-right">
+        <button class="btn-icon btn-ghost" data-action="toggle-theme"><i data-feather="sun"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name"></span></div>
+        <div class="dropdown" id="user-dropdown" hidden>
+          <div class="dropdown-header"><div class="dropdown-user-name" id="dd-user-name"></div><div class="dropdown-user-role">Instructor</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-item-danger" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+    <main class="app-main"><div class="page-content">
+<div class="page-header" style="margin-bottom:var(--space-6);">
+  <div><h1 class="page-title">Live Sessions</h1><p class="page-subtitle">Schedule and manage live classes for your students</p></div>
+  <button class="btn btn-primary" onclick="openModal('schedule-modal')"><i data-feather="video" style="width:16px;height:16px;"></i> Schedule Class</button>
+</div>
+<div class="page-tabs">
+  <button class="page-tab active" data-tab="upcoming">Upcoming</button>
+  <button class="page-tab" data-tab="past">Past Sessions</button>
+</div>
+<div class="tab-panel active" id="tab-upcoming">
+  <div id="upcoming-sessions" class="skel" style="height:200px;border-radius:12px;"></div>
+</div>
+<div class="tab-panel" id="tab-past">
+  <div class="dash-card">
+    <div class="dash-card-header"><div class="dash-card-title">Past Sessions</div></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Title</th><th>Course</th><th>Date</th><th>Duration</th><th>Attendees</th><th>Recording</th></tr></thead>
+      <tbody id="past-tbody"><tr><td colspan="6"><div class="skel" style="height:40px;"></div></td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="schedule-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">Schedule Live Session</div><button class="btn-icon btn-ghost btn-sm" onclick="closeModal('schedule-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Session Title *</label><input type="text" class="form-input" id="ls-title" placeholder="e.g. Introduction to Arrays"/></div>
+      <div class="form-group"><label class="form-label">Course</label><select class="form-select" id="ls-course"><option value="">Select course</option></select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">Date & Time *</label><input type="datetime-local" class="form-input" id="ls-datetime"/></div>
+        <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-input" id="ls-duration" placeholder="60" min="15" value="60"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Platform</label>
+        <select class="form-select" id="ls-platform">
+          <option value="zoom">Zoom</option><option value="google_meet">Google Meet</option>
+          <option value="microsoft_teams">Microsoft Teams</option><option value="custom">Custom Link</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Meeting Link</label><input type="text" class="form-input" id="ls-link" placeholder="https://…"/></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="ls-desc" placeholder="What will be covered in this session?"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('schedule-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-session-btn">Schedule</button>
+    </div>
+  </div>
+</div>
+    </div></main>
+  </div>
+</div><script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}
+if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+var name=user.name||'';
+var initials=name.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar){el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}else{el.textContent=initials;}});
+var shell=document.getElementById('app-shell');
+document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+var colBtn=document.getElementById('sidebar-collapse-btn');
+if(colBtn)colBtn.addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');localStorage.removeItem('ev_refresh_token');}catch(e){}window.location.replace('../../pages/auth/login.html');});});
+function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(type,title,msg){var c=document.getElementById('toast-container');if(!c)return;var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">&#x2715;</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4000);}
+window._esc=_esc;window.showToast=showToast;
+function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+window.openModal=openModal;window.closeModal=closeModal;
+
+var tabs=document.querySelectorAll('.page-tab');
+tabs.forEach(function(t){t.addEventListener('click',function(){tabs.forEach(function(x){x.classList.remove('active');});document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});t.classList.add('active');document.getElementById('tab-'+t.dataset.tab).classList.add('active');});});
+
+async function loadSessions(){
+  try{
+    var [uRes,pRes,cRes]=await Promise.all([Api.get('/instructor/live-sessions?status=upcoming'),Api.get('/instructor/live-sessions?status=past'),Api.get('/instructor/courses')]);
+    var upcoming=(uRes&&uRes.data)||[];
+    var past=(pRes&&pRes.data)||[];
+    var courses=(cRes&&cRes.data)||[];
+    var sel=document.getElementById('ls-course');
+    courses.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.title;sel.appendChild(o);});
+    renderUpcoming(upcoming);
+    renderPast(past);
+  }catch(e){document.getElementById('upcoming-sessions').innerHTML='<div style="color:var(--color-danger);text-align:center;padding:var(--space-8);">Failed to load sessions.</div>';}
+}
+function renderUpcoming(list){
+  var el=document.getElementById('upcoming-sessions');
+  if(!list.length){el.innerHTML='<div class="dash-card"><div class="dash-card-body"><div class="empty-state"><div class="empty-state-icon">📅</div><div class="empty-state-title">No upcoming sessions</div><p style="font-size:var(--font-size-sm);color:var(--text-muted);">Schedule your first live class.</p></div></div></div>';return;}
+  el.innerHTML=list.map(function(s){
+    var dt=new Date(s.scheduled_at);
+    var dtStr=dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})+' at '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    var isToday=dt.toDateString()===new Date().toDateString();
+    var diff=Math.ceil((dt-new Date())/60000);
+    var timeLabel=isToday&&diff>0?'Starting in '+diff+' min':dtStr;
+    return '<div class="dash-card" style="margin-bottom:var(--space-4);">'+
+      '<div class="dash-card-body">'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);">'+
+          '<div>'+
+            (isToday?'<span class="badge badge-danger" style="margin-bottom:var(--space-2);">Today</span><br>':'') +
+            '<div style="font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-1);">'+_esc(s.title)+'</div>'+
+            '<div style="font-size:var(--font-size-sm);color:var(--text-muted);margin-bottom:var(--space-2);">'+_esc(s.course_title||'')+(s.course_title?' · ':'')+(s.duration_minutes||60)+' min</div>'+
+            '<div style="font-size:var(--font-size-sm);color:var(--color-primary-600);font-weight:600;">🕐 '+timeLabel+'</div>'+
+            (s.meeting_link?'<div style="margin-top:var(--space-2);"><a href="'+_esc(s.meeting_link)+'" target="_blank" style="font-size:var(--font-size-xs);color:var(--color-primary-600);">🔗 '+_esc(s.meeting_link)+'</a></div>':'')+
+          '</div>'+
+          '<div style="display:flex;gap:var(--space-2);flex-shrink:0;">'+
+            (s.meeting_link?'<a href="'+_esc(s.meeting_link)+'" target="_blank" class="btn btn-primary btn-sm">Start Session</a>':'')+
+            '<button class="btn btn-ghost btn-sm" style="color:var(--color-danger);" onclick="cancelSession('+s.id+')">Cancel</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+function renderPast(list){
+  var tbody=document.getElementById('past-tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📹</div><div class="empty-state-title">No past sessions</div></div></td></tr>';return;}
+  tbody.innerHTML=list.map(function(s){return '<tr>'+
+    '<td style="font-weight:600;">'+_esc(s.title)+'</td>'+
+    '<td>'+_esc(s.course_title||'—')+'</td>'+
+    '<td style="font-size:var(--font-size-xs);">'+new Date(s.scheduled_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+'</td>'+
+    '<td>'+(s.duration_minutes||60)+' min</td>'+
+    '<td>'+(s.attendee_count||0)+' attended</td>'+
+    '<td>'+(s.recording_url?'<a href="'+_esc(s.recording_url)+'" target="_blank" class="btn btn-ghost btn-sm">Watch</a>':'<span style="color:var(--text-muted);font-size:var(--font-size-xs);">None</span>')+'</td>'+
+  '</tr>';}).join('');
+}
+document.getElementById('save-session-btn').addEventListener('click',async function(){
+  var title=document.getElementById('ls-title').value.trim();
+  var dt=document.getElementById('ls-datetime').value;
+  if(!title||!dt){showToast('error','Error','Title and date/time are required.');return;}
+  this.disabled=true;this.textContent='Scheduling…';
+  try{
+    await Api.post('/instructor/live-sessions',{title:title,course_id:document.getElementById('ls-course').value||null,scheduled_at:dt,duration_minutes:parseInt(document.getElementById('ls-duration').value)||60,platform:document.getElementById('ls-platform').value,meeting_link:document.getElementById('ls-link').value,description:document.getElementById('ls-desc').value});
+    closeModal('schedule-modal');showToast('success','Scheduled!','Live session has been scheduled.');
+    document.getElementById('ls-title').value='';document.getElementById('ls-datetime').value='';document.getElementById('ls-link').value='';
+    loadSessions();
+  }catch(err){showToast('error','Error',(err&&err.message)||'Failed to schedule.');}
+  this.disabled=false;this.textContent='Schedule';
+});
+window.cancelSession=async function(id){if(!confirm('Cancel this session?'))return;try{await Api.delete('/instructor/live-sessions/'+id);showToast('success','Cancelled','Session cancelled.');loadSessions();}catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}};
+loadSessions();
+});
+</script>
+<div class="toast-container" id="toast-container"></div>
+</body></html>

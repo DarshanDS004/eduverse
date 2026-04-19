@@ -1,0 +1,256 @@
+t.classList.add('active');
+      document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+      if(t.dataset.tab==='videos') loadVideoAnalytics();
+      if(t.dataset.tab==='students') loadStudentActivity();
+      if(t.dataset.tab==='reviews') loadReviews();
+    });
+  });
+
+  var enrollChart=null, progressChart=null, dropoffChart=null;
+  var allCourses=[];
+
+  async function loadAnalytics(){
+    var days=document.getElementById('period-filter').value;
+    var courseId=document.getElementById('course-filter').value;
+    try{
+      var [res,cRes]=await Promise.all([
+        Api.get('/instructor/analytics',{days:days,course_id:courseId||undefined}),
+        Api.get('/instructor/courses')
+      ]);
+      var d=(res&&res.data)||{};
+      allCourses=(cRes&&cRes.data)||[];
+
+      // Populate course filters
+      var opts='<option value="">All Courses</option>'+allCourses.map(function(c){return '<option value="'+c.id+'">'+_esc(c.title)+'</option>';}).join('');
+      ['course-filter','video-course-filter','reviews-course-filter'].forEach(function(id){document.getElementById(id).innerHTML=opts;});
+
+      // Stats
+      document.getElementById('s-views').textContent=d.total_views||'0';
+      document.getElementById('s-enrollments').textContent=d.new_enrollments||'0';
+      document.getElementById('s-watchtime').textContent=(d.watch_hours!=null?d.watch_hours+'h':'0h');
+      document.getElementById('s-completion').textContent=(d.completion_rate!=null?d.completion_rate+'%':'0%');
+      document.getElementById('s-engagement').textContent=(d.engagement_score!=null?parseFloat(d.engagement_score).toFixed(1):'—');
+
+      // Enrollment trend chart
+      if(d.enrollment_trend&&d.enrollment_trend.length){
+        var labels=d.enrollment_trend.map(function(t){return t.label||t.date;});
+        var vals=d.enrollment_trend.map(function(t){return t.count;});
+        if(enrollChart)enrollChart.destroy();
+        var ctx=document.getElementById('enrollment-chart').getContext('2d');
+        enrollChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'Enrollments',data:vals,borderColor:'#059669',backgroundColor:'rgba(5,150,105,0.08)',tension:0.4,fill:true,pointBackgroundColor:'#059669'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+      }
+
+      // Progress distribution
+      if(d.progress_distribution){
+        var pd=d.progress_distribution;
+        if(progressChart)progressChart.destroy();
+        var ctx2=document.getElementById('progress-chart').getContext('2d');
+        progressChart=new Chart(ctx2,{type:'doughnut',data:{labels:['Not Started','In Progress','Completed'],datasets:[{data:[pd.not_started||0,pd.in_progress||0,pd.completed||0],backgroundColor:['#e5e7eb','#3b82f6','#10b981'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+      }
+
+      // Top courses
+      var top=(d.top_courses||[]);
+      document.getElementById('top-courses-list').innerHTML=top.length
+        ?top.map(function(c,i){
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-2) 0;border-bottom:1px solid var(--border-color);">'+
+            '<div style="display:flex;align-items:center;gap:var(--space-3);">'+
+              '<div style="width:24px;height:24px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--color-primary-700);">'+(i+1)+'</div>'+
+              '<div style="font-size:var(--font-size-sm);font-weight:600;">'+_esc(c.title)+'</div>'+
+            '</div>'+
+            '<div style="text-align:right;"><div style="font-size:var(--font-size-sm);font-weight:700;color:var(--color-primary-600);">'+c.enrollment_count+' students</div>'+
+            '<div style="font-size:10px;color:var(--text-muted);">'+parseFloat(c.completion_rate||0).toFixed(0)+'% complete</div></div>'+
+          '</div>';
+        }).join('')
+        :'<div style="text-align:center;color:var(--text-muted);padding:var(--space-6);font-size:var(--font-size-sm);">No data yet.</div>';
+
+      // Quiz perf
+      var qp=(d.quiz_performance||[]);
+      document.getElementById('quiz-perf-list').innerHTML=qp.length
+        ?qp.map(function(q){var sc=parseFloat(q.avg_score||0);var color=sc>=75?'var(--color-success)':sc>=50?'var(--color-warning)':'var(--color-danger)';return '<div style="margin-bottom:var(--space-3);"><div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);margin-bottom:4px;"><span style="font-weight:500;">'+_esc(q.title)+'</span><span style="font-weight:700;color:'+color+';">'+sc.toFixed(1)+'% avg</span></div><div style="height:6px;background:var(--neutral-100);border-radius:99px;overflow:hidden;"><div style="height:100%;border-radius:99px;background:'+color+';width:'+sc.toFixed(1)+'%"></div></div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Pass rate: '+(q.pass_rate||0)+'% · '+(q.attempt_count||0)+' attempts</div></div>';}).join('')
+        :'<div style="text-align:center;color:var(--text-muted);padding:var(--space-6);font-size:var(--font-size-sm);">No quiz data yet.</div>';
+
+      // Submission rates
+      var sr=(d.submission_rates||[]);
+      document.getElementById('submission-rate-list').innerHTML=sr.length
+        ?sr.map(function(a){var pct=parseFloat(a.submission_rate||0);return '<div style="margin-bottom:var(--space-3);"><div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);margin-bottom:4px;"><span>'+_esc(a.title)+'</span><span style="font-weight:700;">'+a.submitted+' / '+a.total+' <small style="color:var(--text-muted);">('+pct.toFixed(0)+'%)</small></span></div><div style="height:6px;background:var(--neutral-100);border-radius:99px;overflow:hidden;"><div style="height:100%;background:var(--color-primary-600);width:'+pct.toFixed(0)+'%;border-radius:99px;"></div></div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">On-time: '+(a.on_time_rate||0)+'% · Late: '+(a.late_rate||0)+'%</div></div>';}).join('')
+        :'<div style="text-align:center;color:var(--text-muted);padding:var(--space-6);font-size:var(--font-size-sm);">No assignment data yet.</div>';
+
+    }catch(e){console.error(e);}
+  }
+
+  // ── Video Analytics ──
+  async function loadVideoAnalytics(){
+    var courseId=document.getElementById('video-course-filter').value;
+    try{
+      var res=await Api.get('/instructor/analytics/videos',{course_id:courseId||undefined});
+      var videos=(res&&res.data&&res.data.videos)||[];
+
+      // Video completion list
+      document.getElementById('video-completion-list').innerHTML=videos.length
+        ?videos.map(function(v){
+          var pct=parseFloat(v.completion_rate||0);
+          var color=pct>=70?'var(--color-success)':pct>=40?'var(--color-warning)':'var(--color-danger)';
+          return '<div style="margin-bottom:var(--space-4);">'+
+            '<div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);margin-bottom:var(--space-1);">'+
+              '<span style="font-weight:600;">'+_esc(v.title)+'</span>'+
+              '<span style="font-weight:700;color:'+color+';">'+pct.toFixed(0)+'% avg completion</span>'+
+            '</div>'+
+            '<div style="display:flex;align-items:center;gap:var(--space-3);">'+
+              '<div style="flex:1;height:8px;background:var(--neutral-100);border-radius:99px;overflow:hidden;"><div style="height:100%;border-radius:99px;background:'+color+';width:'+pct.toFixed(0)+'%;transition:width 0.8s ease;"></div></div>'+
+              '<span style="font-size:10px;color:var(--text-muted);white-space:nowrap;">'+v.view_count+' views · '+v.avg_watch_seconds+'s avg</span>'+
+            '</div>'+
+          '</div>';
+        }).join('')
+        :'<div style="text-align:center;color:var(--text-muted);padding:var(--space-8);"><div style="font-size:2rem;margin-bottom:8px;">📹</div>No video data yet.</div>';
+
+      // Populate drop-off select
+      var sel=document.getElementById('dropoff-video-select');
+      sel.innerHTML='<option value="">Select a video to view drop-off…</option>'+
+        videos.map(function(v){return '<option value="'+v.id+'">'+_esc(v.title)+'</option>';}).join('');
+
+    }catch(e){console.error(e);}
+  }
+
+  // Drop-off chart
+  document.getElementById('dropoff-video-select').addEventListener('change', async function(){
+    var vid=this.value;
+    if(!vid)return;
+    try{
+      var res=await Api.get('/instructor/analytics/videos/'+vid+'/dropoff');
+      var d=(res&&res.data)||{};
+      var segments=d.segments||[];
+      if(!segments.length){showToast('info','No data','No drop-off data for this video.');return;}
+      var labels=segments.map(function(s){return s.label||s.second+'s';});
+      var vals=segments.map(function(s){return s.viewers;});
+      if(dropoffChart)dropoffChart.destroy();
+      var ctx=document.getElementById('dropoff-chart').getContext('2d');
+      dropoffChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'Viewers remaining',data:vals,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.08)',tension:0.3,fill:true}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.parsed.y+' viewers remaining';}}}},scales:{y:{beginAtZero:true}}}});
+    }catch(e){console.error(e);}
+  });
+
+  document.getElementById('video-course-filter').addEventListener('change',loadVideoAnalytics);
+
+  // ── Student Activity ──
+  async function loadStudentActivity(){
+    try{
+      var res=await Api.get('/instructor/analytics/student-activity');
+      var d=(res&&res.data)||{};
+
+      // Heatmap
+      renderHeatmap(d.activity_heatmap||[]);
+
+      // Engagement scores per course
+      var eng=d.course_engagement||[];
+      document.getElementById('engagement-list').innerHTML=eng.length
+        ?eng.map(function(c){
+          var score=parseFloat(c.engagement_score||0);
+          var color=score>=70?'var(--color-success)':score>=40?'var(--color-warning)':'var(--color-danger)';
+          return '<div style="margin-bottom:var(--space-3);"><div style="display:flex;justify-content:space-between;font-size:var(--font-size-sm);margin-bottom:4px;"><span style="font-weight:600;">'+_esc(c.title)+'</span><span style="font-weight:800;color:'+color+';">'+score.toFixed(0)+'/100</span></div><div style="height:8px;background:var(--neutral-100);border-radius:99px;overflow:hidden;"><div style="height:100%;background:'+color+';width:'+score+'%;border-radius:99px;transition:width 0.8s;"></div></div></div>';
+        }).join('')
+        :'<div style="color:var(--text-muted);font-size:var(--font-size-sm);">No data yet.</div>';
+
+      // Student comparison
+      var students=d.student_comparison||[];
+      var tbody=document.getElementById('student-comparison-tbody');
+      tbody.innerHTML=students.length
+        ?students.map(function(s){
+          var engColor=parseFloat(s.engagement||0)>=70?'var(--color-success)':parseFloat(s.engagement||0)>=40?'var(--color-warning)':'var(--color-danger)';
+          var ini=(s.name||'?').trim().split(/\s+/).map(function(p){return p[0];}).slice(0,2).join('').toUpperCase();
+          return '<tr>'+
+            '<td><div style="display:flex;align-items:center;gap:var(--space-2);"><div style="width:28px;height:28px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--color-primary-700);">'+ini+'</div>'+_esc(s.name)+'</div></td>'+
+            '<td><div style="display:flex;align-items:center;gap:var(--space-2);"><div style="width:80px;height:4px;background:var(--neutral-100);border-radius:99px;overflow:hidden;"><div style="height:100%;background:var(--color-primary-600);width:'+(s.progress||0)+'%;"></div></div><span style="font-size:var(--font-size-xs);">'+(s.progress||0)+'%</span></div></td>'+
+            '<td style="font-weight:600;">'+(s.avg_score!=null?parseFloat(s.avg_score).toFixed(1)+'%':'—')+'</td>'+
+            '<td>'+(s.videos_watched||0)+'</td>'+
+            '<td><span style="font-weight:700;color:'+engColor+';">'+(s.engagement||0)+'</span><span style="font-size:10px;color:var(--text-muted);">/100</span></td>'+
+          '</tr>';
+        }).join('')
+        :'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:var(--space-8);">No student data.</td></tr>';
+
+    }catch(e){console.error(e);}
+  }
+
+  function renderHeatmap(data){
+    var container=document.getElementById('heatmap-container');
+    var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    var hours=Array.from({length:24},function(_,i){return i;});
+    var maxVal=data.reduce(function(max,cell){return Math.max(max,cell.value||0);},1);
+    var html='<div style="overflow-x:auto;"><table style="border-collapse:separate;border-spacing:3px;"><thead><tr><th style="width:40px;"></th>'+
+      hours.map(function(h){return '<th style="font-size:8px;color:var(--text-muted);text-align:center;padding:0;width:20px;">'+(h%4===0?h+'h':'')+'</th>';}).join('')+'</tr></thead><tbody>'+
+      days.map(function(day,di){
+        return '<tr><td style="font-size:9px;color:var(--text-muted);white-space:nowrap;padding-right:6px;">'+day+'</td>'+
+          hours.map(function(h){
+            var cell=data.find(function(d){return d.day===di&&d.hour===h;})||{value:0};
+            var intensity=cell.value?Math.ceil((cell.value/maxVal)*5):0;
+            var colors=['var(--neutral-100)','var(--color-primary-50)','var(--color-primary-100)','var(--color-primary-200)','var(--color-primary-400)','var(--color-primary-600)'];
+            return '<td style="width:18px;height:18px;background:'+colors[intensity]+';border-radius:3px;" title="'+day+' '+h+':00 — '+cell.value+' active students"></td>';
+          }).join('')+
+        '</tr>';
+      }).join('')+'</tbody></table></div>';
+    container.innerHTML=html;
+  }
+
+  // ── Reviews ──
+  async function loadReviews(){
+    var courseId=document.getElementById('reviews-course-filter').value;
+    try{
+      var res=await Api.get('/instructor/analytics/reviews',{course_id:courseId||undefined});
+      var d=(res&&res.data)||{};
+      var avgRating=parseFloat(d.avg_rating||0);
+      var totalReviews=d.total_reviews||0;
+
+      document.getElementById('overall-rating').textContent=avgRating?avgRating.toFixed(1):'—';
+      document.getElementById('overall-stars').textContent=avgRating?('★'.repeat(Math.round(avgRating))+'☆'.repeat(5-Math.round(avgRating))):'—';
+      document.getElementById('total-reviews').textContent=totalReviews+' review'+(totalReviews!==1?'s':'');
+
+      // Star breakdown
+      var breakdown=d.star_breakdown||{5:0,4:0,3:0,2:0,1:0};
+      document.getElementById('star-breakdown').innerHTML=[5,4,3,2,1].map(function(star){
+        var count=breakdown[star]||0;
+        var pct=totalReviews?Math.round((count/totalReviews)*100):0;
+        return '<div class="star-row">'+
+          '<span class="star-label">'+star+'★</span>'+
+          '<div class="star-bar-bg"><div class="star-bar-fill" style="width:'+pct+'%;"></div></div>'+
+          '<span class="star-count">'+count+'</span>'+
+        '</div>';
+      }).join('');
+
+      // Recent reviews
+      var reviews=d.reviews||[];
+      document.getElementById('reviews-list').innerHTML=reviews.length
+        ?reviews.map(function(r){
+          var stars='★'.repeat(r.rating||0)+'☆'.repeat(5-(r.rating||0));
+          var ini=(r.student_name||'?').trim().split(/\s+/).map(function(p){return p[0];}).slice(0,2).join('').toUpperCase();
+          var ago=r.created_at?timeAgo(r.created_at):'';
+          return '<div style="padding:var(--space-4) 0;border-bottom:1px solid var(--border-color);">'+
+            '<div style="display:flex;align-items:flex-start;gap:var(--space-3);">'+
+              '<div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-size:var(--font-size-xs);font-weight:700;color:var(--color-primary-700);flex-shrink:0;">'+ini+'</div>'+
+              '<div style="flex:1;">'+
+                '<div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-1);">'+
+                  '<span style="font-weight:600;font-size:var(--font-size-sm);">'+_esc(r.student_name||'Student')+'</span>'+
+                  '<span style="color:#f59e0b;font-size:var(--font-size-sm);">'+stars+'</span>'+
+                  '<span style="font-size:10px;color:var(--text-disabled);">'+ago+'</span>'+
+                '</div>'+
+                '<div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:var(--space-1);">'+_esc(r.course_title||'')+'</div>'+
+                '<div style="font-size:var(--font-size-sm);color:var(--text-secondary);">'+_esc(r.comment||'No comment.')+'</div>'+
+              '</div>'+
+            '</div>'+
+          '</div>';
+        }).join('')
+        :'<div style="text-align:center;color:var(--text-muted);padding:var(--space-8);"><div style="font-size:2rem;margin-bottom:8px;">⭐</div>No reviews yet.</div>';
+
+    }catch(e){console.error(e);}
+  }
+
+  document.getElementById('reviews-course-filter').addEventListener('change',loadReviews);
+
+  function timeAgo(d){var diff=Math.floor((new Date()-new Date(d))/1000);if(diff<60)return 'Just now';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';if(diff<2592000)return Math.floor(diff/86400)+'d ago';return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+
+  window.exportReport=function(){showToast('info','Exporting…','Report generation started. You\'ll get a download link shortly.');Api.post('/instructor/analytics/export',{days:document.getElementById('period-filter').value}).catch(function(){});};
+
+  document.getElementById('period-filter').addEventListener('change',loadAnalytics);
+  document.getElementById('course-filter').addEventListener('change',loadAnalytics);
+  loadAnalytics();
+});
+</script>
+</body>
+</html>

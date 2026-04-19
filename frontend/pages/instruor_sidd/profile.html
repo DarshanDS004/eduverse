@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Profile — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .dash-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:var(--space-6);}
+    .dash-card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .dash-card-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .dash-card-body{padding:var(--space-5);}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);}
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-hint{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:100px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+    .page-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-color);margin-bottom:var(--space-6);}
+    .page-tab{padding:var(--space-3) var(--space-5);font-size:var(--font-size-sm);font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-ui);transition:all var(--transition-fast);}
+    .page-tab:hover{color:var(--text-primary);}
+    .page-tab.active{color:var(--color-primary-600);border-bottom-color:var(--color-primary-600);font-weight:600;}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+
+    /* Tags */
+    .tag{display:inline-flex;align-items:center;gap:var(--space-1-5);background:var(--color-primary-50);color:var(--color-primary-700);border-radius:99px;padding:3px 10px;font-size:var(--font-size-xs);font-weight:600;margin:2px;}
+    .tag-remove{background:none;border:none;cursor:pointer;color:var(--color-primary-400);font-size:14px;line-height:1;padding:0;}
+    .tag-input-wrap{display:flex;flex-wrap:wrap;gap:4px;border:1px solid var(--border-color);border-radius:var(--border-radius-md);padding:var(--space-2);min-height:44px;background:var(--bg-surface);cursor:text;}
+    .tag-input-wrap:focus-within{border-color:var(--color-primary-600);}
+    .tag-bare-input{border:none;outline:none;font-size:var(--font-size-sm);font-family:var(--font-ui);background:transparent;color:var(--text-primary);flex:1;min-width:100px;}
+
+    /* Credential card */
+    .cred-card{background:var(--bg-sunken);border-radius:var(--border-radius-lg);padding:var(--space-4);display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);}
+    .cred-icon{width:40px;height:40px;border-radius:var(--border-radius-md);background:var(--color-primary-50);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+    .cred-info{flex:1;min-width:0;}
+    .cred-name{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .cred-meta{font-size:var(--font-size-xs);color:var(--text-muted);}
+
+    /* Experience entry */
+    .exp-entry{background:var(--bg-sunken);border-radius:var(--border-radius-lg);padding:var(--space-4);margin-bottom:var(--space-3);position:relative;}
+    .exp-title{font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);}
+    .exp-org{font-size:var(--font-size-sm);color:var(--color-primary-600);font-weight:600;}
+    .exp-period{font-size:var(--font-size-xs);color:var(--text-muted);}
+    .exp-desc{font-size:var(--font-size-sm);color:var(--text-secondary);margin-top:4px;}
+
+    /* Qual entry */
+    .qual-entry{display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--border-color);}
+    .qual-entry:last-child{border-bottom:none;}
+    .qual-icon{width:36px;height:36px;border-radius:50%;background:var(--color-primary-50);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+
+    /* Verification badge */
+    .verified-badge{display:inline-flex;align-items:center;gap:4px;background:var(--color-success-light);color:var(--color-success-dark);padding:3px 10px;border-radius:99px;font-size:var(--font-size-xs);font-weight:700;}
+    .unverified-badge{display:inline-flex;align-items:center;gap:4px;background:var(--color-warning-light);color:var(--color-warning-dark);padding:3px 10px;border-radius:99px;font-size:var(--font-size-xs);font-weight:700;}
+
+    /* Social link row */
+    .social-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);}
+    .social-icon{width:36px;height:36px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;}
+
+    /* Dropzone */
+    .dropzone{border:2px dashed var(--border-color-strong);border-radius:var(--border-radius-lg);padding:var(--space-6);text-align:center;cursor:pointer;transition:all var(--transition-base);background:var(--bg-sunken);}
+    .dropzone:hover{border-color:var(--color-primary-400);background:var(--color-primary-50);}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item active" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <a class="sidebar-user" href="profile.html">
+      <div class="avatar avatar-sm" id="sidebar-avatar"></div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div>
+    </a>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div>
+          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor Portal</div>
+          <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">My Profile</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;">
+          <div class="avatar avatar-sm" id="navbar-avatar"></div>
+          <div class="navbar-user-info"><span class="navbar-user-name" id="navbar-user-name"></span><span class="navbar-user-role">Instructor</span></div>
+        </div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height)-8px);right:var(--page-padding-x);min-width:200px;">
+          <div class="dropdown-header"><div style="font-weight:600;font-size:var(--font-size-sm);" id="dd-user-name"></div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Instructor</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" style="color:var(--color-danger);width:100%;text-align:left;" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main"><div class="page-content">
+
+      <div class="page-header" style="margin-bottom:var(--space-6);">
+        <div><h1 class="page-title">My Profile</h1><p class="page-subtitle">Build your public instructor profile and manage account settings</p></div>
+        <a href="#" id="view-public-btn" target="_blank" class="btn btn-outline btn-sm"><i data-feather="external-link" style="width:14px;height:14px;"></i> View Public Profile</a>
+      </div>
+
+      <!-- Profile card + stats -->
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:var(--space-6);align-items:start;margin-bottom:var(--space-6);">
+        <div class="dash-card" style="margin-bottom:0;">
+          <div style="text-align:center;padding:var(--space-8) var(--space-6) var(--space-6);">
+            <div style="position:relative;display:inline-block;margin-bottom:var(--space-4);">
+              <div id="profile-avatar-lg" style="width:96px;height:96px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-size:var(--font-size-3xl);font-weight:800;color:var(--color-primary-700);overflow:hidden;border:3px solid var(--border-color);"></div>
+              <div onclick="document.getElementById('avatar-input').click()" style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background:var(--color-primary-600);border:2px solid var(--bg-surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;"><i data-feather="camera" style="width:12px;height:12px;"></i></div>
+            </div>
+            <input type="file" id="avatar-input" style="display:none;" accept="image/jpeg,image/png,image/webp"/>
+            <div id="profile-name-display" style="font-size:var(--font-size-xl);font-weight:700;color:var(--text-primary);margin-bottom:4px;">—</div>
+            <div id="verification-badge" style="margin-top:var(--space-2);margin-bottom:var(--space-3);"></div>
+            <div style="display:flex;justify-content:space-around;padding:var(--space-4) 0;border-top:1px solid var(--border-color);">
+              <div style="text-align:center;"><div id="ps-courses" style="font-size:var(--font-size-xl);font-weight:800;color:var(--text-primary);line-height:1;">—</div><div style="font-size:10px;color:var(--text-muted);font-weight:500;margin-top:2px;">Courses</div></div>
+              <div style="text-align:center;"><div id="ps-students" style="font-size:var(--font-size-xl);font-weight:800;color:var(--text-primary);line-height:1;">—</div><div style="font-size:10px;color:var(--text-muted);font-weight:500;margin-top:2px;">Students</div></div>
+              <div style="text-align:center;"><div id="ps-rating" style="font-size:var(--font-size-xl);font-weight:800;color:var(--text-primary);line-height:1;">—</div><div style="font-size:10px;color:var(--text-muted);font-weight:500;margin-top:2px;">Rating</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick stats + profile strength -->
+        <div>
+          <div class="dash-card" style="margin-bottom:var(--space-4);">
+            <div class="dash-card-header"><div class="dash-card-title">Profile Completeness</div></div>
+            <div class="dash-card-body">
+              <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                <span style="font-size:var(--font-size-sm);color:var(--text-secondary);">Complete your profile to attract more students</span>
+                <span style="font-size:var(--font-size-sm);font-weight:700;color:var(--color-primary-600);" id="profile-pct">—</span>
+              </div>
+              <div style="height:8px;background:var(--neutral-100);border-radius:99px;overflow:hidden;">
+                <div id="profile-bar" style="height:100%;background:var(--color-primary-600);border-radius:99px;transition:width 1s;width:0%;"></div>
+              </div>
+              <div id="profile-tips" style="margin-top:var(--space-4);display:flex;flex-direction:column;gap:var(--space-2);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="page-tabs">
+        <button class="page-tab active" data-tab="basic">Basic Info</button>
+        <button class="page-tab" data-tab="expertise">Expertise & Tags</button>
+        <button class="page-tab" data-tab="qualifications">Qualifications</button>
+        <button class="page-tab" data-tab="experience">Experience</button>
+        <button class="page-tab" data-tab="credentials">Credentials</button>
+        <button class="page-tab" data-tab="social">Social Links</button>
+        <button class="page-tab" data-tab="security">Security</button>
+      </div>
+
+      <!-- BASIC INFO -->
+      <div class="tab-panel active" id="tab-basic">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">Personal Information</div>
+            <button class="btn btn-primary" id="save-basic-btn">Save Changes</button>
+          </div>
+          <div class="dash-card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+              <div class="form-group"><label class="form-label">Full Name *</label><input type="text" class="form-input" id="f-name" placeholder="Your full name"/></div>
+              <div class="form-group"><label class="form-label">Email Address</label><input type="text" class="form-input" id="f-email" readonly style="background:var(--bg-sunken);cursor:not-allowed;"/></div>
+              <div class="form-group"><label class="form-label">Phone Number</label><input type="text" class="form-input" id="f-phone" placeholder="+91 9999999999"/></div>
+              <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" class="form-input" id="f-dob"/></div>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Bio / About</label><textarea class="form-textarea" id="f-bio" placeholder="Tell students about yourself, your teaching philosophy, and what makes your courses unique…" style="min-height:140px;"></textarea><div class="form-hint">This appears on your public profile. 200–500 words recommended.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPERTISE TAGS -->
+      <div class="tab-panel" id="tab-expertise">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">Expertise Areas</div>
+            <button class="btn btn-primary" id="save-expertise-btn">Save</button>
+          </div>
+          <div class="dash-card-body">
+            <div class="form-group">
+              <label class="form-label">Expertise Tags</label>
+              <div class="tag-input-wrap" id="tag-wrap" onclick="document.getElementById('tag-bare').focus()">
+                <input type="text" id="tag-bare" class="tag-bare-input" placeholder="Type a skill and press Enter…"/>
+              </div>
+              <div class="form-hint">e.g. JavaScript, Machine Learning, Data Structures — press Enter or comma to add</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Primary Specialization</label>
+              <input type="text" class="form-input" id="f-specialization" placeholder="e.g. Mathematics, Web Development, Physics"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teaching Languages</label>
+              <input type="text" class="form-input" id="f-languages" placeholder="e.g. English, Hindi, Tamil"/>
+              <div class="form-hint">Languages you teach in</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUALIFICATIONS -->
+      <div class="tab-panel" id="tab-qualifications">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">Educational Qualifications</div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('qual-modal')"><i data-feather="plus" style="width:14px;height:14px;"></i> Add Qualification</button>
+          </div>
+          <div class="dash-card-body" id="quals-list">
+            <div class="skel" style="height:80px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="tab-panel" id="tab-experience">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">Work Experience</div>
+            <div style="display:flex;align-items:center;gap:var(--space-3);">
+              <div style="display:flex;align-items:center;gap:var(--space-2);">
+                <label class="form-label" style="margin:0;font-size:var(--font-size-sm);">Years of Experience:</label>
+                <input type="number" class="form-input" id="f-experience" placeholder="5" min="0" style="width:80px;height:36px;"/>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openModal('exp-modal')"><i data-feather="plus" style="width:14px;height:14px;"></i> Add</button>
+            </div>
+          </div>
+          <div class="dash-card-body" id="exp-list">
+            <div class="skel" style="height:80px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREDENTIALS -->
+      <div class="tab-panel" id="tab-credentials">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">Uploaded Credentials & Certifications</div>
+          </div>
+          <div class="dash-card-body">
+            <div class="dropzone" id="cred-dropzone" onclick="document.getElementById('cred-input').click()">
+              <div style="font-size:1.5rem;margin-bottom:8px;">📄</div>
+              <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Upload Credential Document</div>
+              <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;">PDF, JPG, PNG · Max 5MB</div>
+            </div>
+            <input type="file" id="cred-input" style="display:none;" accept=".pdf,.jpg,.jpeg,.png" multiple/>
+            <div id="creds-list" style="margin-top:var(--space-5);">
+              <div class="skel" style="height:60px;"></div>
+            </div>
+            <div style="margin-top:var(--space-5);padding:var(--space-4);background:var(--color-info-light);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--color-info-dark);">
+              <strong>Note:</strong> Credentials are reviewed by the EduVerse team. Upon approval, a Verified badge will appear on your public profile.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL LINKS -->
+      <div class="tab-panel" id="tab-social">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <div class="dash-card-title">Social & Professional Links</div>
+            <button class="btn btn-primary" id="save-social-btn">Save Links</button>
+          </div>
+          <div class="dash-card-body">
+            <div class="social-row"><div class="social-icon" style="background:#0077b5;color:#fff;">in</div><input type="url" class="form-input" id="f-linkedin" placeholder="https://linkedin.com/in/yourname"/></div>
+            <div class="social-row"><div class="social-icon" style="background:#333;color:#fff;"><i data-feather="github" style="width:16px;height:16px;"></i></div><input type="url" class="form-input" id="f-github" placeholder="https://github.com/yourusername"/></div>
+            <div class="social-row"><div class="social-icon" style="background:#ff0000;color:#fff;"><i data-feather="youtube" style="width:16px;height:16px;"></i></div><input type="url" class="form-input" id="f-youtube" placeholder="https://youtube.com/@yourchannel"/></div>
+            <div class="social-row"><div class="social-icon" style="background:var(--color-primary-600);color:#fff;">🌐</div><input type="url" class="form-input" id="f-website" placeholder="https://yourwebsite.com"/></div>
+            <div class="social-row"><div class="social-icon" style="background:#1da1f2;color:#fff;"><i data-feather="twitter" style="width:16px;height:16px;"></i></div><input type="url" class="form-input" id="f-twitter" placeholder="https://twitter.com/yourhandle"/></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECURITY -->
+      <div class="tab-panel" id="tab-security">
+        <div class="dash-card">
+          <div class="dash-card-header"><div class="dash-card-title">Change Password</div></div>
+          <div class="dash-card-body" style="max-width:480px;">
+            <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-input" id="pw-current" placeholder="Enter current password"/></div>
+            <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="pw-new" placeholder="Min 8 characters"/></div>
+            <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" class="form-input" id="pw-confirm" placeholder="Repeat new password"/></div>
+            <button class="btn btn-primary" id="change-pw-btn">Update Password</button>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header"><div class="dash-card-title" style="color:var(--color-danger);">Danger Zone</div></div>
+          <div class="dash-card-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4);background:var(--color-danger-light);border-radius:var(--border-radius-lg);">
+              <div><div style="font-weight:600;color:var(--color-danger-dark);">Delete Account</div><div style="font-size:var(--font-size-xs);color:var(--color-danger);">Permanently remove your account and all data. This cannot be undone.</div></div>
+              <button class="btn btn-ghost btn-sm" style="color:var(--color-danger);" onclick="requestDelete()">Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div></main>
+  </div>
+</div>
+
+<!-- Add Qualification Modal -->
+<div class="modal-overlay" id="qual-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">Add Qualification</div><button class="btn btn-ghost btn-sm" onclick="closeModal('qual-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Degree / Qualification *</label><input type="text" class="form-input" id="qual-degree" placeholder="e.g. B.Tech, M.Sc, PhD"/></div>
+      <div class="form-group"><label class="form-label">Field of Study *</label><input type="text" class="form-input" id="qual-field" placeholder="e.g. Computer Science, Mathematics"/></div>
+      <div class="form-group"><label class="form-label">Institution *</label><input type="text" class="form-input" id="qual-inst" placeholder="e.g. IIT Bombay, Anna University"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">Start Year</label><input type="number" class="form-input" id="qual-from" placeholder="2018" min="1950" max="2030"/></div>
+        <div class="form-group"><label class="form-label">End Year</label><input type="number" class="form-input" id="qual-to" placeholder="2022" min="1950" max="2030"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Grade / CGPA (optional)</label><input type="text" class="form-input" id="qual-grade" placeholder="e.g. 8.9/10 or First Class"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('qual-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-qual-btn">Add Qualification</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Experience Modal -->
+<div class="modal-overlay" id="exp-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">Add Work Experience</div><button class="btn btn-ghost btn-sm" onclick="closeModal('exp-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Job Title *</label><input type="text" class="form-input" id="exp-title" placeholder="e.g. Senior Software Engineer"/></div>
+      <div class="form-group"><label class="form-label">Organization / Company *</label><input type="text" class="form-input" id="exp-org" placeholder="e.g. Google, Infosys, Self-employed"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">Start Date *</label><input type="month" class="form-input" id="exp-from"/></div>
+        <div class="form-group"><label class="form-label">End Date</label><input type="month" class="form-input" id="exp-to" placeholder="Leave blank if current"/></div>
+      </div>
+      <div class="form-group">
+        <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3);">
+          <input type="checkbox" id="exp-current" style="accent-color:var(--color-primary-600);" onchange="document.getElementById('exp-to').disabled=this.checked;"/>
+          <label for="exp-current" style="font-size:var(--font-size-sm);color:var(--text-secondary);">Currently working here</label>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="exp-desc" placeholder="Key responsibilities and achievements…" style="min-height:80px;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('exp-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-exp-btn">Add Experience</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}
+if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  var name=user.name||'';
+  var initials=name.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+  ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar){el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}else{el.textContent=initials;}});
+
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  var colBtn=document.getElementById('sidebar-collapse-btn');
+  if(colBtn)colBtn.addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');localStorage.removeItem('ev_refresh_token');}catch(e){}window.location.replace('../../pages/auth/login.html');});});
+
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function showToast(type,title,msg){var c=document.getElementById('toast-container');if(!c)return;var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">&#x2715;</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4500);}
+  window._esc=_esc;window.showToast=showToast;
+  function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+  function closeModal(id){document.getElementById(id).classList.remove('open');}
+  window.openModal=openModal;window.closeModal=closeModal;
+
+  // Tabs
+  document.querySelectorAll('.page-tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.page-tab').forEach(function(x){x.classList.remove('active');});
+      document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+      t.classList.add('active');document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+      if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+    });
+  });
+
+  // Tags
+  var tags=[];
+  function renderTags(){
+    var wrap=document.getElementById('tag-wrap');
+    var input=document.getElementById('tag-bare');
+    wrap.querySelectorAll('.tag').forEach(function(el){el.remove();});
+    tags.forEach(function(tag,i){
+      var el=document.createElement('span');
+      el.className='tag';
+      el.innerHTML=_esc(tag)+'<button type="button" class="tag-remove" onclick="removeTag('+i+')">×</button>';
+      wrap.insertBefore(el,input);
+    });
+  }
+  window.removeTag=function(i){tags.splice(i,1);renderTags();};
+  document.getElementById('tag-bare').addEventListener('keydown',function(e){
+    if((e.key==='Enter'||e.key===',')&&this.value.trim()){
+      e.preventDefault();
+      var t=this.value.trim().replace(/,$/,'');
+      if(t&&!tags.includes(t)){tags.push(t);renderTags();}
+      this.value='';
+    }
+    if(e.key==='Backspace'&&!this.value&&tags.length){tags.pop();renderTags();}
+  });
+
+  // Load profile
+  async function loadProfile(){
+    try{
+      var res=await Api.get('/instructor/profile');
+      var p=(res&&res.data)||{};
+
+      // Basic
+      document.getElementById('f-name').value=p.name||'';
+      document.getElementById('f-email').value=p.email||'';
+      document.getElementById('f-phone').value=p.phone||'';
+      document.getElementById('f-dob').value=p.date_of_birth||'';
+      document.getElementById('f-bio').value=p.bio||'';
+      document.getElementById('profile-name-display').textContent=p.name||'—';
+
+      // Expertise
+      tags=p.expertise_tags||[];
+      renderTags();
+      document.getElementById('f-specialization').value=p.specialization||'';
+      document.getElementById('f-languages').value=(p.teaching_languages||[]).join(', ');
+      document.getElementById('f-experience').value=p.experience_years||'';
+
+      // Social
+      document.getElementById('f-linkedin').value=p.linkedin_url||'';
+      document.getElementById('f-github').value=p.github_url||'';
+      document.getElementById('f-youtube').value=p.youtube_url||'';
+      document.getElementById('f-website').value=p.website||'';
+      document.getElementById('f-twitter').value=p.twitter_url||'';
+
+      // Stats
+      document.getElementById('ps-courses').textContent=p.total_courses||'0';
+      document.getElementById('ps-students').textContent=p.total_students||'0';
+      document.getElementById('ps-rating').textContent=p.avg_rating?parseFloat(p.avg_rating).toFixed(1):'—';
+
+      // Avatar
+      var avatarEl=document.getElementById('profile-avatar-lg');
+      if(p.avatar){avatarEl.innerHTML='<img src="'+p.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}
+      else{var ini=_initials(p.name||'');avatarEl.textContent=ini;}
+
+      // Verification badge
+      var badge=document.getElementById('verification-badge');
+      badge.innerHTML=p.is_verified
+        ?'<span class="verified-badge">✅ Verified Instructor</span>'
+        :'<span class="unverified-badge">⏳ Pending Verification</span>';
+
+      // Public profile link
+      if(p.public_profile_url)document.getElementById('view-public-btn').href=p.public_profile_url;
+
+      // Profile strength
+      renderProfileStrength(p);
+
+      // Qualifications
+      renderQuals(p.qualifications||[]);
+      renderExps(p.work_experience||[]);
+      renderCreds(p.credentials||[]);
+
+    }catch(e){console.error(e);}
+  }
+
+  function _initials(n){if(!n)return '?';var p=n.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase();}
+
+  function renderProfileStrength(p){
+    var fields=[
+      {label:'Full name',done:!!p.name},
+      {label:'Bio',done:!!p.bio},
+      {label:'Avatar/Photo',done:!!p.avatar},
+      {label:'Specialization',done:!!p.specialization},
+      {label:'Expertise tags',done:!!(p.expertise_tags&&p.expertise_tags.length)},
+      {label:'Qualification',done:!!(p.qualifications&&p.qualifications.length)},
+      {label:'Social links',done:!!(p.linkedin_url||p.website||p.github_url)},
+      {label:'Work experience',done:!!(p.work_experience&&p.work_experience.length)},
+    ];
+    var done=fields.filter(function(f){return f.done;}).length;
+    var pct=Math.round((done/fields.length)*100);
+    var bar=document.getElementById('profile-bar'),pctEl=document.getElementById('profile-pct'),tips=document.getElementById('profile-tips');
+    if(bar)bar.style.width=pct+'%';
+    if(pctEl)pctEl.textContent=pct+'%';
+    if(tips){
+      var missing=fields.filter(function(f){return !f.done;});
+      tips.innerHTML=missing.length===0
+        ?'<div style="font-size:var(--font-size-xs);color:var(--color-success);">✅ Profile is complete!</div>'
+        :missing.slice(0,5).map(function(f){return '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">○ Add your '+f.label.toLowerCase()+'</div>';}).join('');
+    }
+  }
+
+  function renderQuals(list){
+    var el=document.getElementById('quals-list');
+    el.innerHTML=list.length
+      ?list.map(function(q,i){return '<div class="qual-entry"><div class="qual-icon">🎓</div><div style="flex:1;"><div style="font-weight:700;font-size:var(--font-size-sm);color:var(--text-primary);">'+_esc(q.degree)+' in '+_esc(q.field)+'</div><div style="font-size:var(--font-size-sm);color:var(--color-primary-600);">'+_esc(q.institution)+'</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+q.year_from+' – '+(q.year_to||'Present')+(q.grade?' · '+_esc(q.grade):'')+'</div></div><button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" onclick="deleteQual('+i+')"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button></div>';}).join('')
+      :'<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);font-size:var(--font-size-sm);">No qualifications added yet.</div>';
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  }
+
+  function renderExps(list){
+    var el=document.getElementById('exp-list');
+    el.innerHTML=list.length
+      ?list.map(function(e,i){return '<div class="exp-entry"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div class="exp-title">'+_esc(e.title)+'</div><div class="exp-org">'+_esc(e.organization)+'</div><div class="exp-period">'+_esc(e.from)+' – '+(e.current?'Present':_esc(e.to||''))+'</div>'+(e.description?'<div class="exp-desc">'+_esc(e.description)+'</div>':'')+'</div><button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" onclick="deleteExp('+i+')"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button></div></div>';}).join('')
+      :'<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);font-size:var(--font-size-sm);">No work experience added yet.</div>';
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  }
+
+  function renderCreds(list){
+    var el=document.getElementById('creds-list');
+    el.innerHTML=list.length
+      ?list.map(function(c,i){var statusColor=c.status==='approved'?'var(--color-success)':c.status==='rejected'?'var(--color-danger)':'var(--color-warning)';return '<div class="cred-card"><div class="cred-icon">📄</div><div class="cred-info"><div class="cred-name">'+_esc(c.name||c.filename)+'</div><div class="cred-meta">Uploaded '+new Date(c.uploaded_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+'</div></div><span style="font-size:var(--font-size-xs);font-weight:700;color:'+statusColor+';">'+_esc(c.status||'pending')+'</span><button class="btn btn-ghost btn-xs" style="color:var(--color-danger);" onclick="deleteCred('+i+')"><i data-feather="trash-2" style="width:13px;height:13px;"></i></button></div>';}).join('')
+      :'<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);font-size:var(--font-size-sm);">No credentials uploaded yet.</div>';
+    if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+  }
+
+  // Save basic
+  document.getElementById('save-basic-btn').addEventListener('click',async function(){
+    var name=document.getElementById('f-name').value.trim();
+    if(!name){showToast('error','Error','Full name is required.');return;}
+    this.disabled=true;this.textContent='Saving…';
+    try{
+      await Api.patch('/instructor/profile',{name:name,phone:document.getElementById('f-phone').value,date_of_birth:document.getElementById('f-dob').value,bio:document.getElementById('f-bio').value});
+      showToast('success','Saved!','Profile updated.');
+      document.getElementById('profile-name-display').textContent=name;
+      ['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+      try{var u=JSON.parse(localStorage.getItem('ev_user')||'{}');u.name=name;localStorage.setItem('ev_user',JSON.stringify(u));}catch(e){}
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Save Changes';
+  });
+
+  // Save expertise
+  document.getElementById('save-expertise-btn').addEventListener('click',async function(){
+    this.disabled=true;this.textContent='Saving…';
+    try{
+      await Api.patch('/instructor/profile',{expertise_tags:tags,specialization:document.getElementById('f-specialization').value,teaching_languages:document.getElementById('f-languages').value.split(',').map(function(l){return l.trim();}).filter(Boolean),experience_years:parseInt(document.getElementById('f-experience').value)||null});
+      showToast('success','Saved!','Expertise updated.');
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Save';
+  });
+
+  // Save social
+  document.getElementById('save-social-btn').addEventListener('click',async function(){
+    this.disabled=true;this.textContent='Saving…';
+    try{
+      await Api.patch('/instructor/profile',{linkedin_url:document.getElementById('f-linkedin').value,github_url:document.getElementById('f-github').value,youtube_url:document.getElementById('f-youtube').value,website:document.getElementById('f-website').value,twitter_url:document.getElementById('f-twitter').value});
+      showToast('success','Saved!','Social links updated.');
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Save Links';
+  });
+
+  // Add qualification
+  document.getElementById('save-qual-btn').addEventListener('click',async function(){
+    var degree=document.getElementById('qual-degree').value.trim();
+    var field=document.getElementById('qual-field').value.trim();
+    var inst=document.getElementById('qual-inst').value.trim();
+    if(!degree||!field||!inst){showToast('error','Error','Degree, field and institution required.');return;}
+    this.disabled=true;this.textContent='Saving…';
+    try{
+      await Api.post('/instructor/profile/qualifications',{degree:degree,field:field,institution:inst,year_from:parseInt(document.getElementById('qual-from').value)||null,year_to:parseInt(document.getElementById('qual-to').value)||null,grade:document.getElementById('qual-grade').value});
+      closeModal('qual-modal');showToast('success','Added!','Qualification saved.');loadProfile();
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Add Qualification';
+  });
+
+  // Add experience
+  document.getElementById('save-exp-btn').addEventListener('click',async function(){
+    var title=document.getElementById('exp-title').value.trim();
+    var org=document.getElementById('exp-org').value.trim();
+    var from=document.getElementById('exp-from').value;
+    if(!title||!org||!from){showToast('error','Error','Title, organization and start date required.');return;}
+    this.disabled=true;this.textContent='Saving…';
+    try{
+      await Api.post('/instructor/profile/experience',{title:title,organization:org,from:from,to:document.getElementById('exp-to').value||null,current:document.getElementById('exp-current').checked,description:document.getElementById('exp-desc').value});
+      closeModal('exp-modal');showToast('success','Added!','Experience saved.');loadProfile();
+    }catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Add Experience';
+  });
+
+  window.deleteQual=async function(i){if(!confirm('Remove qualification?'))return;try{await Api.delete('/instructor/profile/qualifications/'+i);loadProfile();}catch(e){showToast('error','Error','Failed.');}};
+  window.deleteExp=async function(i){if(!confirm('Remove experience?'))return;try{await Api.delete('/instructor/profile/experience/'+i);loadProfile();}catch(e){showToast('error','Error','Failed.');}};
+  window.deleteCred=async function(i){if(!confirm('Remove credential?'))return;try{await Api.delete('/instructor/profile/credentials/'+i);loadProfile();}catch(e){showToast('error','Error','Failed.');}};
+
+  // Credential upload
+  document.getElementById('cred-input').addEventListener('change',async function(){
+    var files=this.files;
+    if(!files||!files.length)return;
+    for(var i=0;i<files.length;i++){
+      var fd=new FormData();fd.append('credential',files[i]);fd.append('name',files[i].name);
+      try{await fetch(window.EV_BASE+'api/v1/instructor/profile/credentials',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('ev_token')},body:fd});}catch(e){}
+    }
+    showToast('success','Uploaded!',files.length+' credential'+(files.length!==1?'s':'')+' submitted for review.');
+    loadProfile();
+  });
+
+  // Avatar upload
+  document.getElementById('avatar-input').addEventListener('change',async function(){
+    if(!this.files[0])return;
+    try{
+      if(typeof Auth!=='undefined')await Auth.uploadAvatar(this.files[0]);
+      var url=URL.createObjectURL(this.files[0]);
+      document.getElementById('profile-avatar-lg').innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';
+      showToast('success','Avatar updated!','');
+    }catch(err){showToast('error','Error',(err&&err.message)||'Upload failed.');}
+  });
+
+  // Password
+  document.getElementById('change-pw-btn').addEventListener('click',async function(){
+    var cur=document.getElementById('pw-current').value;
+    var nw=document.getElementById('pw-new').value;
+    var conf=document.getElementById('pw-confirm').value;
+    if(!cur||!nw||!conf){showToast('error','Error','All fields required.');return;}
+    if(nw!==conf){showToast('error','Error','Passwords do not match.');return;}
+    if(nw.length<8){showToast('error','Error','Password must be at least 8 characters.');return;}
+    this.disabled=true;this.textContent='Updating…';
+    try{await Api.patch('/instructor/profile/password',{current_password:cur,new_password:nw});showToast('success','Updated!','Password changed. Please sign in again.');document.getElementById('pw-current').value='';document.getElementById('pw-new').value='';document.getElementById('pw-confirm').value='';}
+    catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}
+    this.disabled=false;this.textContent='Update Password';
+  });
+
+  window.requestDelete=function(){if(confirm('Are you absolutely sure? This cannot be undone and all your courses, students, and data will be permanently deleted.')){showToast('info','Request submitted','Our team will contact you within 24 hours to confirm.');}};
+
+  loadProfile();
+});
+</script>
+</body>
+</html>

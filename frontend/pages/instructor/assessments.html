@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Assessments — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);}
+    @media(max-width:1023px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+    .stat-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);display:flex;align-items:flex-start;gap:var(--space-4);transition:all var(--transition-fast);}
+    .stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+    .stat-icon-wrap{width:44px;height:44px;border-radius:var(--border-radius-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .si-blue{background:var(--color-primary-50);color:var(--color-primary-600);}
+    .si-green{background:var(--color-success-light);color:var(--color-success);}
+    .si-amber{background:var(--color-warning-light);color:var(--color-warning);}
+    .si-purple{background:#ede9fe;color:#7c3aed;}
+    .si-red{background:var(--color-danger-light);color:var(--color-danger);}
+    .stat-value{font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);line-height:1;margin-bottom:var(--space-1);}
+    .stat-label{font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;}
+    .dash-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:var(--space-6);}
+    .dash-card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);}
+    .dash-card-title{font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .dash-card-body{padding:var(--space-5);}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);}
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .badge-success{background:var(--color-success-light);color:var(--color-success-dark);}
+    .badge-warning{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .badge-danger{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    .badge-primary{background:var(--color-primary-50);color:var(--color-primary-700);}
+    .badge-neutral{background:var(--neutral-100);color:var(--text-muted);}
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:100px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);padding:var(--space-3) var(--space-4);background:var(--bg-sunken);text-align:left;border-bottom:1px solid var(--border-color);white-space:nowrap;}
+    td{padding:var(--space-3) var(--space-4);font-size:var(--font-size-sm);color:var(--text-primary);border-bottom:1px solid var(--border-color);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:var(--neutral-50);}
+    .page-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-color);margin-bottom:var(--space-6);}
+    .page-tab{padding:var(--space-3) var(--space-5);font-size:var(--font-size-sm);font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-ui);transition:all var(--transition-fast);}
+    .page-tab:hover{color:var(--text-primary);}
+    .page-tab.active{color:var(--color-primary-600);border-bottom-color:var(--color-primary-600);font-weight:600;}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+    .empty-state{text-align:center;padding:var(--space-16);color:var(--text-muted);}
+    .empty-state-icon{font-size:3rem;margin-bottom:var(--space-4);}
+    .empty-state-title{font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .avatar-ring{width:40px;height:40px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-sm);color:var(--color-primary-700);flex-shrink:0;}
+  </style>
+</head><body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav"><a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+<a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+<a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+<a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+<a class="sidebar-item active" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+<a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+<a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+<a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+<a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+<div class="sidebar-divider"></div>
+<a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+</nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div></div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left"><button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button></div>
+      <div class="navbar-right">
+        <button class="btn-icon btn-ghost" data-action="toggle-theme"><i data-feather="sun"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name"></span></div>
+        <div class="dropdown" id="user-dropdown" hidden>
+          <div class="dropdown-header"><div class="dropdown-user-name" id="dd-user-name"></div><div class="dropdown-user-role">Instructor</div></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-item-danger" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+    <main class="app-main"><div class="page-content">
+<div class="page-header" style="margin-bottom:var(--space-6);">
+  <div><h1 class="page-title">Assessments</h1><p class="page-subtitle">Create and manage quizzes and assignments for your courses</p></div>
+  <button class="btn btn-primary" onclick="openModal('add-assessment-modal')"><i data-feather="plus" style="width:16px;height:16px;"></i> New Assessment</button>
+</div>
+<div class="page-tabs">
+  <button class="page-tab active" data-tab="quizzes">Quizzes</button>
+  <button class="page-tab" data-tab="assignments">Assignments</button>
+  <button class="page-tab" data-tab="submissions">Submissions</button>
+</div>
+<div class="tab-panel active" id="tab-quizzes">
+  <div class="dash-card">
+    <div class="dash-card-header"><div class="dash-card-title">All Quizzes</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Title</th><th>Course</th><th>Questions</th><th>Time Limit</th><th>Attempts</th><th>Avg Score</th><th>Actions</th></tr></thead>
+        <tbody id="quizzes-tbody"><tr><td colspan="7"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="tab-panel" id="tab-assignments">
+  <div class="dash-card">
+    <div class="dash-card-header"><div class="dash-card-title">All Assignments</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Title</th><th>Course</th><th>Deadline</th><th>Max Score</th><th>Submissions</th><th>Actions</th></tr></thead>
+        <tbody id="assignments-tbody"><tr><td colspan="6"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="tab-panel" id="tab-submissions">
+  <div class="dash-card">
+    <div class="dash-card-header"><div class="dash-card-title">Pending Submissions to Grade</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Assignment</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="submissions-tbody"><tr><td colspan="5"><div class="skel" style="height:40px;"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Assessment Modal -->
+<div class="modal-overlay" id="add-assessment-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">New Assessment</div><button class="btn-icon btn-ghost btn-sm" onclick="closeModal('add-assessment-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Type *</label>
+        <select class="form-select" id="atype"><option value="quiz">Quiz</option><option value="assignment">Assignment</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Title *</label><input type="text" class="form-input" id="atitle" placeholder="e.g. Chapter 1 Quiz"/></div>
+      <div class="form-group"><label class="form-label">Course</label>
+        <select class="form-select" id="acourse"><option value="">Select course</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group"><label class="form-label">Time Limit (min)</label><input type="number" class="form-input" id="atime" placeholder="60" min="1"/></div>
+        <div class="form-group"><label class="form-label">Max Score</label><input type="number" class="form-input" id="ascore" placeholder="100" min="1"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Deadline</label><input type="datetime-local" class="form-input" id="adeadline"/></div>
+      <div class="form-group"><label class="form-label">Instructions</label><textarea class="form-textarea" id="ainstructions" placeholder="Describe the assessment…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-assessment-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-assessment-btn">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grade Modal -->
+<div class="modal-overlay" id="grade-modal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header"><div class="modal-title">Grade Submission</div><button class="btn-icon btn-ghost btn-sm" onclick="closeModal('grade-modal')"><i data-feather="x"></i></button></div>
+    <div class="modal-body">
+      <div id="grade-submission-info" style="background:var(--bg-sunken);border-radius:var(--border-radius-md);padding:var(--space-4);margin-bottom:var(--space-2);font-size:var(--font-size-sm);color:var(--text-muted);">Loading…</div>
+      <div class="form-group"><label class="form-label">Score *</label><input type="number" class="form-input" id="grade-score" placeholder="e.g. 85" min="0"/></div>
+      <div class="form-group"><label class="form-label">Feedback</label><textarea class="form-textarea" id="grade-feedback" placeholder="Optional feedback for the student…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('grade-modal')">Cancel</button>
+      <button class="btn btn-primary" id="submit-grade-btn">Submit Grade</button>
+    </div>
+  </div>
+</div>
+    </div></main>
+  </div>
+</div><script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}
+if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}
+if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});
+var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+var name=user.name||'';
+var initials=name.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+['sidebar-user-name','navbar-user-name','dd-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(user.avatar){el.innerHTML='<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>';}else{el.textContent=initials;}});
+var shell=document.getElementById('app-shell');
+document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+var colBtn=document.getElementById('sidebar-collapse-btn');
+if(colBtn)colBtn.addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');localStorage.removeItem('ev_refresh_token');}catch(e){}window.location.replace('../../pages/auth/login.html');});});
+function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(type,title,msg){var c=document.getElementById('toast-container');if(!c)return;var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+_esc(title)+'</div>'+(msg?'<div class="toast-msg">'+_esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">&#x2715;</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4000);}
+window._esc=_esc;window.showToast=showToast;
+function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+window.openModal=openModal;window.closeModal=closeModal;
+
+var tabs=document.querySelectorAll('.page-tab');
+tabs.forEach(function(t){t.addEventListener('click',function(){tabs.forEach(function(x){x.classList.remove('active');});document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});t.classList.add('active');document.getElementById('tab-'+t.dataset.tab).classList.add('active');});});
+
+async function loadAssessments(){
+  try{
+    var [qRes,aRes,sRes]=await Promise.all([Api.get('/instructor/quizzes'),Api.get('/instructor/assignments'),Api.get('/instructor/submissions?status=pending')]);
+    renderQuizzes((qRes&&qRes.data)||[]);
+    renderAssignments((aRes&&aRes.data)||[]);
+    renderSubmissions((sRes&&sRes.data)||[]);
+
+    // ── FIXED: correct endpoint + correct data path ──
+    var cRes=await Api.get('/courses?instructor_id='+user.id);
+    var courses=(cRes&&cRes.data&&cRes.data.courses)||[];
+    var sel=document.getElementById('acourse');
+    sel.innerHTML='<option value="">Select course</option>';
+    courses.forEach(function(c){
+      var o=document.createElement('option');
+      o.value=c.id;
+      o.textContent=c.title;
+      sel.appendChild(o);
+    });
+    if(!courses.length){
+      var o=document.createElement('option');
+      o.disabled=true;
+      o.textContent='No courses found';
+      sel.appendChild(o);
+    }
+
+  }catch(e){console.error(e);}
+}
+function renderQuizzes(list){
+  var tbody=document.getElementById('quizzes-tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-title">No quizzes yet</div></div></td></tr>';return;}
+  tbody.innerHTML=list.map(function(q){return '<tr>'+
+    '<td style="font-weight:600;">'+_esc(q.title)+'</td>'+
+    '<td>'+_esc(q.course_title||'—')+'</td>'+
+    '<td>'+(q.question_count||0)+' Qs</td>'+
+    '<td>'+(q.time_limit_minutes?q.time_limit_minutes+' min':'Unlimited')+'</td>'+
+    '<td>'+(q.attempt_count||0)+'</td>'+
+    '<td>'+(q.avg_score!=null?parseFloat(q.avg_score).toFixed(1)+'%':'—')+'</td>'+
+    '<td><button class="btn btn-ghost btn-sm" style="color:var(--color-danger);" onclick="deleteItem(\'quiz\','+q.id+')">Delete</button></td>'+
+  '</tr>';}).join('');
+}
+function renderAssignments(list){
+  var tbody=document.getElementById('assignments-tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">No assignments yet</div></div></td></tr>';return;}
+  tbody.innerHTML=list.map(function(a){
+    var deadline=a.deadline?new Date(a.deadline).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'No deadline';
+    var isLate=a.deadline&&new Date(a.deadline)<new Date();
+    return '<tr>'+
+      '<td style="font-weight:600;">'+_esc(a.title)+'</td>'+
+      '<td>'+_esc(a.course_title||'—')+'</td>'+
+      '<td style="color:'+(isLate?'var(--color-danger)':'var(--text-primary)')+';">'+deadline+'</td>'+
+      '<td>'+(a.max_score||100)+' pts</td>'+
+      '<td>'+(a.submission_count||0)+' submitted</td>'+
+      '<td><button class="btn btn-ghost btn-sm" style="color:var(--color-danger);" onclick="deleteItem(\'assignment\','+a.id+')">Delete</button></td>'+
+    '</tr>';
+  }).join('');
+}
+var selectedSubmission=null;
+function renderSubmissions(list){
+  var tbody=document.getElementById('submissions-tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">✅</div><div class="empty-state-title">No pending submissions</div><p style="font-size:var(--font-size-sm);color:var(--text-muted);">All submissions have been graded.</p></div></td></tr>';return;}
+  tbody.innerHTML=list.map(function(s){return '<tr>'+
+    '<td><div style="font-weight:600;">'+_esc(s.student_name||'Student')+'</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">'+_esc(s.student_email||'')+'</div></td>'+
+    '<td>'+_esc(s.assignment_title||s.title||'—')+'</td>'+
+    '<td style="font-size:var(--font-size-xs);color:var(--text-muted);">'+new Date(s.submitted_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})+'</td>'+
+    '<td><span class="badge badge-warning">Pending</span></td>'+
+    '<td><button class="btn btn-primary btn-sm" onclick="openGradeModal('+JSON.stringify(s).replace(/"/g,'&quot;')+')" >Grade</button></td>'+
+  '</tr>';}).join('');
+}
+window.openGradeModal=function(sub){selectedSubmission=sub;document.getElementById('grade-submission-info').innerHTML='<strong>'+_esc(sub.student_name||'Student')+'</strong> — '+_esc(sub.assignment_title||'Assignment')+(sub.text?'<br><br><em>'+_esc(sub.text)+'</em>':'');document.getElementById('grade-score').value='';document.getElementById('grade-feedback').value='';openModal('grade-modal');};
+document.getElementById('submit-grade-btn').addEventListener('click',async function(){
+  if(!selectedSubmission)return;
+  var score=document.getElementById('grade-score').value;
+  if(!score){showToast('error','Error','Score is required.');return;}
+  this.disabled=true;this.textContent='Grading…';
+  try{await Api.post('/instructor/submissions/'+selectedSubmission.id+'/grade',{score:parseInt(score),feedback:document.getElementById('grade-feedback').value});closeModal('grade-modal');showToast('success','Graded!','Score submitted successfully.');loadAssessments();}
+  catch(err){showToast('error','Error',(err&&err.message)||'Failed to grade.');}
+  this.disabled=false;this.textContent='Submit Grade';
+});
+document.getElementById('save-assessment-btn').addEventListener('click',async function(){
+  var title=document.getElementById('atitle').value.trim();
+  if(!title){showToast('error','Error','Title is required.');return;}
+  var type=document.getElementById('atype').value;
+  this.disabled=true;this.textContent='Creating…';
+  try{
+    var payload={title:title,course_id:document.getElementById('acourse').value,time_limit_minutes:parseInt(document.getElementById('atime').value)||null,max_score:parseInt(document.getElementById('ascore').value)||100,deadline:document.getElementById('adeadline').value||null,instructions:document.getElementById('ainstructions').value};
+    await Api.post('/instructor/'+(type==='quiz'?'quizzes':'assignments'),payload);
+    closeModal('add-assessment-modal');showToast('success','Created!',type.charAt(0).toUpperCase()+type.slice(1)+' created successfully.');loadAssessments();
+  }catch(err){showToast('error','Error',(err&&err.message)||'Failed to create.');}
+  this.disabled=false;this.textContent='Create';
+});
+window.deleteItem=async function(type,id){if(!confirm('Delete this '+type+'?'))return;try{await Api.delete('/instructor/'+(type==='quiz'?'quizzes':'assignments')+'/'+id);showToast('success','Deleted','Item removed.');loadAssessments();}catch(err){showToast('error','Error',(err&&err.message)||'Failed.');}};
+loadAssessments();
+});
+</script>
+<div class="toast-container" id="toast-container"></div>
+</body></html>

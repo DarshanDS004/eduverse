@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages — EduVerse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js"></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .messages-layout{display:grid;grid-template-columns:320px 1fr;gap:0;height:calc(100vh - var(--navbar-height) - var(--space-12));background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;}
+    .rooms-panel{border-right:1px solid var(--border-color);display:flex;flex-direction:column;overflow:hidden;}
+    .rooms-header{padding:var(--space-4);border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .rooms-header-title{font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);}
+    .rooms-search{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-color);flex-shrink:0;}
+    .rooms-search input{width:100%;height:34px;padding:0 var(--space-3) 0 var(--space-8);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-sunken);outline:none;font-family:var(--font-ui);}
+    .rooms-search input:focus{border-color:var(--color-primary-600);}
+    .rooms-list{flex:1;overflow-y:auto;}
+    .room-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);cursor:pointer;transition:background var(--transition-fast);border-bottom:1px solid var(--border-color);}
+    .room-item:hover,.room-item.active{background:var(--color-primary-50);}
+    .room-avatar{width:42px;height:42px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-sm);color:var(--color-primary-700);flex-shrink:0;}
+    .room-info{flex:1;min-width:0;}
+    .room-name{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .room-last{font-size:var(--font-size-xs);color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+    .room-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+    .room-time{font-size:10px;color:var(--text-disabled);}
+    .room-badge{background:var(--color-primary-600);color:#fff;border-radius:99px;font-size:10px;font-weight:700;padding:1px 5px;}
+    .chat-panel{display:flex;flex-direction:column;overflow:hidden;}
+    .chat-header{padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:var(--space-3);flex-shrink:0;}
+    .chat-messages{flex:1;overflow-y:auto;padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);}
+    .msg-bubble{max-width:70%;padding:var(--space-3) var(--space-4);border-radius:var(--border-radius-xl);font-size:var(--font-size-sm);line-height:var(--leading-relaxed);}
+    .msg-sent{background:var(--color-primary-600);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+    .msg-recv{background:var(--bg-sunken);color:var(--text-primary);align-self:flex-start;border-bottom-left-radius:4px;}
+    .msg-time{font-size:10px;color:var(--text-disabled);margin-top:2px;text-align:right;}
+    .msg-recv .msg-time{text-align:left;}
+    .chat-input-bar{padding:var(--space-4) var(--space-5);border-top:1px solid var(--border-color);display:flex;align-items:center;gap:var(--space-3);flex-shrink:0;}
+    .chat-input{flex:1;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-full);font-size:var(--font-size-sm);background:var(--bg-sunken);outline:none;font-family:var(--font-ui);}
+    .chat-input:focus{border-color:var(--color-primary-600);}
+    .chat-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--text-muted);}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    @media(max-width:767px){.messages-layout{grid-template-columns:1fr;}.chat-panel{display:none;}.chat-panel.mobile-open{display:flex;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Student Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="assignments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assignments</span></a>
+      <a class="sidebar-item" href="performance.html"><span class="sidebar-item-icon"><i data-feather="trending-up"></i></span><span class="sidebar-item-label">Performance</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="calendar.html"><span class="sidebar-item-icon"><i data-feather="calendar"></i></span><span class="sidebar-item-label">Calendar</span></a>
+      <a class="sidebar-item active" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <a class="sidebar-item" href="certificates.html"><span class="sidebar-item-icon"><i data-feather="award"></i></span><span class="sidebar-item-label">Certificates</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">Profile</span></a>
+    </nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Student</div></div></div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="app-body">
+    <header class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <button class="btn-icon btn-ghost" id="sidebar-collapse-btn"><i data-feather="sidebar"></i></button>
+      </div>
+      <div class="navbar-right">
+        <button class="btn-icon btn-ghost" data-action="toggle-theme"><i data-feather="sun"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger" style="cursor:pointer;"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name"></span></div>
+        <div class="dropdown" id="user-dropdown" hidden>
+          <div class="dropdown-header"><div class="dropdown-user-name" id="dd-user-name"></div><div class="dropdown-user-role">Student</div></div>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-item-danger" data-action="logout"><i data-feather="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </header>
+    <main class="app-main">
+      <div class="page-content">
+        <div class="messages-layout">
+          <!-- Rooms -->
+          <div class="rooms-panel">
+            <div class="rooms-header"><div class="rooms-header-title">Messages</div></div>
+            <div class="rooms-search" style="position:relative;">
+              <i data-feather="search" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-muted);pointer-events:none;"></i>
+              <input type="text" placeholder="Search conversations…" id="room-search" />
+            </div>
+            <div class="rooms-list" id="rooms-list">
+              <div class="skel" style="height:64px;margin:8px;border-radius:8px;"></div>
+              <div class="skel" style="height:64px;margin:8px;border-radius:8px;"></div>
+              <div class="skel" style="height:64px;margin:8px;border-radius:8px;"></div>
+            </div>
+          </div>
+          <!-- Chat -->
+          <div class="chat-panel" id="chat-panel">
+            <div class="chat-empty" id="chat-empty">
+              <div style="font-size:3rem;margin-bottom:var(--space-3);">💬</div>
+              <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Select a conversation</div>
+              <div style="font-size:var(--font-size-sm);margin-top:4px;">Choose a room from the left to start chatting</div>
+            </div>
+            <div id="chat-active" style="display:none;flex-direction:column;height:100%;">
+              <div class="chat-header" id="chat-header"></div>
+              <div class="chat-messages" id="chat-messages"></div>
+              <div class="chat-input-bar">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Type a message…" />
+                <button class="btn btn-primary btn-icon" id="send-btn"><i data-feather="send" style="width:16px;height:16px;"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+  window.EV_BASE='../../';
+  window.EV_API_BASE=window.EV_API_BASE||'http://localhost:5000/api/v1';
+</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/router.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}if(u.role!=='student'){window.location.replace('../../pages/errors/403.html');}})();
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  Sidebar.renderUser(user);
+  // ── Sidebar (managed by sidebar.js) ──
+  Sidebar.init();
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');});});
+  Sidebar.initDropdown();
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();if(typeof Auth!=='undefined')Auth.logout();else{try{localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');}catch(e){}window.location.replace('../../pages/auth/login.html');}});});
+
+  var allRooms=[], activeRoomId=null;
+  var pollInterval=null;  // FIX 12: poll for new messages every 7s
+  function startPolling(roomId){
+    stopPolling();
+    pollInterval=setInterval(async function(){
+      if(activeRoomId!==roomId) return;
+      try{
+        var res=await Api.messages.messages(roomId,{limit:50});
+        var msgs=(res&&res.data)||[];
+        // Only re-render if message count changed (avoid scroll jump)
+        var wrap=document.getElementById('messages-wrap');
+        if(wrap && msgs.length!==wrap.querySelectorAll('.msg-bubble,.msg-bubble-mine').length){
+          renderMessages(msgs);
+        }
+      }catch(e){}
+    }, 7000);
+  }
+  function stopPolling(){
+    if(pollInterval){clearInterval(pollInterval);pollInterval=null;}
+  }
+  window.addEventListener('beforeunload',stopPolling);
+
+  async function loadRooms(){
+    try{
+      var res=await Api.messages.rooms();
+      allRooms=(res&&res.data)||[];
+      renderRooms(allRooms);
+    }catch(err){
+      document.getElementById('rooms-list').innerHTML='<div style="padding:var(--space-4);color:var(--text-muted);font-size:var(--font-size-sm);">Failed to load conversations.</div>';
+    }
+  }
+
+  function renderRooms(rooms){
+    var list=document.getElementById('rooms-list');
+    if(!rooms.length){ list.innerHTML='<div style="padding:var(--space-6);text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);">No conversations yet.</div>'; return; }
+    list.innerHTML=rooms.map(function(r){
+      var otherName=r.other_user_name||r.name||'Unknown';
+      var ini=otherName.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+      var lastMsg=r.last_message?_esc(r.last_message.content||''):'No messages yet';
+      var t=r.last_message?Utils.timeAgo(r.last_message.created_at):'';
+      var unread=r.unread_count||0;
+      return '<div class="room-item'+(r.id===activeRoomId?' active':'')+'" data-rid="'+r.id+'" onclick="openRoom('+r.id+')">'+
+        '<div class="room-avatar">'+ini+'</div>'+
+        '<div class="room-info"><div class="room-name">'+_esc(otherName)+'</div><div class="room-last">'+lastMsg+'</div></div>'+
+        '<div class="room-meta"><div class="room-time">'+t+'</div>'+(unread?'<div class="room-badge">'+unread+'</div>':'')+'</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  window.openRoom=async function(roomId){
+    activeRoomId=roomId;
+    startPolling(roomId);  // FIX 12: poll every 7s
+    document.querySelectorAll('.room-item').forEach(function(el){el.classList.toggle('active',el.dataset.rid==roomId);});
+    var room=allRooms.find(function(r){return r.id==roomId;});
+    var otherName=room?(room.other_user_name||room.name||'Unknown'):'Chat';
+    var ini=otherName.trim().split(/\s+/).reduce(function(a,p,i,arr){return i===0||i===arr.length-1?a+p[0].toUpperCase():a;},'');
+    document.getElementById('chat-empty').style.display='none';
+    var active=document.getElementById('chat-active');
+    active.style.display='flex';
+    document.getElementById('chat-header').innerHTML=
+      '<div style="width:38px;height:38px;border-radius:50%;background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--font-size-sm);color:var(--color-primary-700);">'+ini+'</div>'+
+      '<div><div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">'+_esc(otherName)+'</div></div>';
+    document.getElementById('chat-messages').innerHTML='<div class="skel" style="height:40px;width:60%;border-radius:12px;"></div>';
+    try{
+      var res=await Api.messages.messages(roomId,{limit:50});
+      var msgs=(res&&res.data&&res.data.messages)||(res&&res.data)||[];
+      renderMessages(msgs);
+      await Api.messages.markRead(roomId);
+      loadRooms();
+    }catch(err){
+      document.getElementById('chat-messages').innerHTML='<div style="color:var(--color-danger);">Failed to load messages.</div>';
+    }
+  };
+
+  function renderMessages(msgs){
+    var container=document.getElementById('chat-messages');
+    if(!msgs.length){ container.innerHTML='<div style="text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);padding:var(--space-8);">No messages yet. Say hello! 👋</div>'; return; }
+    container.innerHTML=msgs.map(function(m){
+      var mine=m.sender_id==user.id||m.is_mine;
+      return '<div style="display:flex;flex-direction:column;align-items:'+(mine?'flex-end':'flex-start')+';">'+
+        '<div class="msg-bubble '+(mine?'msg-sent':'msg-recv')+'">'+_esc(m.content||'')+'</div>'+
+        '<div class="msg-time">'+Utils.timeAgo(m.created_at)+'</div>'+
+      '</div>';
+    }).join('');
+    container.scrollTop=container.scrollHeight;
+  }
+
+  async function sendMessage(){
+    var input=document.getElementById('chat-input');
+    var text=input.value.trim();
+    if(!text||!activeRoomId) return;
+    input.value='';
+    try{
+      await Api.messages.send(activeRoomId,{content:text});
+      var res=await Api.messages.messages(activeRoomId,{limit:50});
+      var msgs=(res&&res.data&&res.data.messages)||(res&&res.data)||[];
+      renderMessages(msgs);
+    }catch(err){ input.value=text; }
+  }
+
+  document.getElementById('send-btn').addEventListener('click',sendMessage);
+  document.getElementById('chat-input').addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } });
+
+  var searchDebounce;
+  document.getElementById('room-search').addEventListener('input',function(){
+    clearTimeout(searchDebounce);
+    var q=this.value.toLowerCase();
+    searchDebounce=setTimeout(function(){ renderRooms(allRooms.filter(function(r){return (r.other_user_name||r.name||'').toLowerCase().includes(q);})); },200);
+  });
+
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  loadRooms();
+});
+</script>
+</body>
+</html>

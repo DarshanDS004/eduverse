@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Course Builder — EduVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css"/>
+  <link rel="stylesheet" href="../../css/reset.css"/>
+  <link rel="stylesheet" href="../../css/global.css"/>
+  <link rel="stylesheet" href="../../css/components.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <script>
+    try {
+      if (localStorage.getItem('ev_theme')==='dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.documentElement.classList.add('dark');
+      }
+    } catch(e) {}
+  </script>
+  <style>
+    /* ── Skeleton ── */
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+
+    /* ── Toast ── */
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);display:flex;flex-direction:column;gap:var(--space-3);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error  {border-left:4px solid var(--color-danger);}
+    .toast-info   {border-left:4px solid var(--color-primary-600);}
+    .toast-content{flex:1;}.toast-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);}
+    .toast-msg    {font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .toast-close  {background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;}
+
+    /* ── Modal ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);}
+
+    /* ── Form helpers ── */
+    .form-group{margin-bottom:var(--space-4);}
+    .form-label{display:block;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);}
+    .form-input,.form-select{width:100%;height:42px;padding:0 var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;transition:border-color var(--transition-fast);}
+    .form-input:focus,.form-select:focus{border-color:var(--color-primary-600);}
+    .form-textarea{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);color:var(--text-primary);background:var(--bg-surface);font-family:var(--font-ui);outline:none;resize:vertical;min-height:80px;transition:border-color var(--transition-fast);}
+    .form-textarea:focus{border-color:var(--color-primary-600);}
+    .form-hint{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:var(--space-1);}
+
+    /* ── Builder layout ── */
+    .builder-layout{display:grid;grid-template-columns:320px 1fr;gap:var(--space-6);align-items:start;}
+    @media(max-width:1023px){.builder-layout{grid-template-columns:1fr;}}
+
+    /* ── Course info panel ── */
+    .info-panel{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;position:sticky;top:calc(var(--navbar-height)+var(--space-6));}
+    .info-panel-header{padding:var(--space-5);border-bottom:1px solid var(--border-color);}
+    .info-panel-body{padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-4);}
+    .course-thumb{width:100%;height:160px;border-radius:var(--border-radius-lg);object-fit:cover;background:var(--color-primary-50);display:flex;align-items:center;justify-content:center;font-size:3rem;overflow:hidden;}
+    .thumb-upload-wrap{position:relative;}
+    .thumb-upload-btn{position:absolute;bottom:var(--space-2);right:var(--space-2);background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:var(--border-radius-md);padding:var(--space-2) var(--space-3);font-size:var(--font-size-xs);cursor:pointer;display:flex;align-items:center;gap:4px;}
+    .info-row{display:flex;justify-content:space-between;align-items:center;font-size:var(--font-size-sm);}
+    .info-row-label{color:var(--text-muted);font-weight:500;}
+    .info-row-value{color:var(--text-primary);font-weight:600;}
+    .status-badge{padding:2px 10px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;}
+    .status-published{background:var(--color-success-light);color:var(--color-success-dark);}
+    .status-draft{background:var(--neutral-100);color:var(--text-muted);}
+
+    /* ── Modules panel ── */
+    .modules-panel{display:flex;flex-direction:column;gap:var(--space-4);}
+    .modules-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);}
+    .modules-title{font-size:var(--font-size-xl);font-weight:700;color:var(--text-primary);}
+
+    /* ── Module card ── */
+    .module-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;}
+    .module-card-header{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-5);cursor:pointer;user-select:none;transition:background var(--transition-fast);}
+    .module-card-header:hover{background:var(--neutral-50);}
+    .module-drag-handle{color:var(--text-muted);cursor:grab;flex-shrink:0;}
+    .module-number{width:28px;height:28px;border-radius:50%;background:var(--color-primary-100);color:var(--color-primary-700);font-size:var(--font-size-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .module-title-text{flex:1;font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);}
+    .module-meta{font-size:var(--font-size-xs);color:var(--text-muted);}
+    .module-actions{display:flex;align-items:center;gap:var(--space-1);}
+    .module-chevron{color:var(--text-muted);transition:transform var(--transition-base);}
+    .module-card.open .module-chevron{transform:rotate(180deg);}
+
+    /* ── Module body (videos) ── */
+    .module-body{display:none;border-top:1px solid var(--border-color);padding:var(--space-3) var(--space-5);}
+    .module-card.open .module-body{display:block;}
+
+    /* ── Video row ── */
+    .video-row{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--border-color);}
+    .video-row:last-of-type{border-bottom:none;}
+    .video-icon{width:36px;height:36px;border-radius:var(--border-radius-md);background:var(--color-primary-50);display:flex;align-items:center;justify-content:center;color:var(--color-primary-600);flex-shrink:0;}
+    .video-info{flex:1;min-width:0;}
+    .video-title{font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .video-meta{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:2px;}
+    .preview-badge{padding:1px 6px;border-radius:99px;font-size:10px;font-weight:700;background:var(--color-success-light);color:var(--color-success-dark);margin-left:var(--space-2);}
+    .video-actions{display:flex;gap:var(--space-1);flex-shrink:0;}
+    .add-video-btn{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3);color:var(--color-primary-600);font-size:var(--font-size-sm);font-weight:600;cursor:pointer;border:none;background:none;font-family:var(--font-ui);width:100%;border-radius:var(--border-radius-md);transition:background var(--transition-fast);margin-top:var(--space-2);}
+    .add-video-btn:hover{background:var(--color-primary-50);}
+
+    /* ── Empty modules ── */
+    .empty-modules{text-align:center;padding:var(--space-16);color:var(--text-muted);}
+    .empty-modules-icon{font-size:3.5rem;margin-bottom:var(--space-4);}
+    .empty-modules-title{font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2);}
+
+    /* ── Upload progress ── */
+    .upload-progress{width:100%;height:6px;background:var(--neutral-100);border-radius:99px;overflow:hidden;margin-top:var(--space-2);display:none;}
+    .upload-progress-fill{height:100%;background:var(--color-primary-600);border-radius:99px;transition:width .3s ease;width:0%;}
+
+    /* ── Publish CTA ── */
+    .publish-cta{background:linear-gradient(135deg,var(--color-primary-600),var(--color-primary-700));border-radius:var(--card-radius);padding:var(--space-5);color:#fff;text-align:center;}
+    .publish-cta h3{font-size:var(--font-size-base);font-weight:700;margin-bottom:var(--space-2);}
+    .publish-cta p{font-size:var(--font-size-xs);opacity:.8;margin-bottom:var(--space-4);}
+    .btn-publish{background:#fff;color:var(--color-primary-700);border:none;border-radius:var(--border-radius-md);padding:var(--space-2-5) var(--space-6);font-size:var(--font-size-sm);font-weight:700;cursor:pointer;font-family:var(--font-ui);transition:opacity var(--transition-fast);}
+    .btn-publish:hover{opacity:.9;}
+    .btn-publish:disabled{opacity:.6;cursor:not-allowed;}
+
+    /* ── Input with file ── */
+    .file-drop{border:2px dashed var(--border-color);border-radius:var(--border-radius-lg);padding:var(--space-6);text-align:center;cursor:pointer;transition:all var(--transition-fast);position:relative;}
+    .file-drop:hover,.file-drop.dragover{border-color:var(--color-primary-600);background:var(--color-primary-50);}
+    .file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+    .file-drop-icon{font-size:2rem;margin-bottom:var(--space-2);}
+    .file-drop-text{font-size:var(--font-size-sm);color:var(--text-muted);}
+    .file-drop-name{font-size:var(--font-size-sm);color:var(--color-primary-600);font-weight:600;margin-top:var(--space-2);}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="dashboard.html">
+      <div class="sidebar-logo">E</div>
+      <div>
+        <div class="sidebar-brand-name">EduVerse</div>
+        <div class="sidebar-brand-tagline">Instructor Portal</div>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item active" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar avatar-sm" id="sidebar-avatar"></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+        <div class="sidebar-user-role">Instructor</div>
+      </div>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn" aria-label="Collapse sidebar">
+      <i data-feather="chevron-left"></i>
+    </button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-body">
+    <!-- NAVBAR -->
+    <header class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <a href="courses.html" class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:var(--space-2);">
+          <i data-feather="arrow-left" style="width:16px;height:16px;"></i> My Courses
+        </a>
+      </div>
+      <div class="navbar-right">
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="sun"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger">
+          <div class="avatar avatar-sm" id="navbar-avatar"></div>
+          <span class="navbar-user-name" id="navbar-user-name"></span>
+          <i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        </div>
+        <div class="dropdown" id="user-dropdown" hidden>
+          <div class="dropdown-header">
+            <div class="dropdown-user-name" id="dd-user-name"></div>
+            <div class="dropdown-user-role">Instructor</div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="profile.html"><i data-feather="user"></i> My Profile</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-item-danger" data-action="logout">
+            <i data-feather="log-out"></i> Sign Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Page header -->
+        <div class="page-header" style="margin-bottom:var(--space-6);">
+          <div>
+            <h1 class="page-title" id="page-course-title">
+              <span class="skel" style="width:200px;height:28px;display:inline-block;"></span>
+            </h1>
+            <p class="page-subtitle">Build your course modules and upload videos</p>
+          </div>
+          <div style="display:flex;gap:var(--space-3);">
+            <button class="btn btn-outline" id="btn-preview" onclick="window.open('../../pages/student/player.html?course='+COURSE_ID,'_blank')">
+              <i data-feather="eye" style="width:16px;height:16px;"></i> Preview
+            </button>
+            <button class="btn btn-primary" id="btn-publish" disabled>
+              <i data-feather="globe" style="width:16px;height:16px;"></i> Publish Course
+            </button>
+          </div>
+        </div>
+
+        <!-- Builder layout -->
+        <div class="builder-layout">
+
+          <!-- LEFT: Course info -->
+          <div>
+            <div class="info-panel">
+              <div class="info-panel-header">
+                <div style="font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);">Course Info</div>
+              </div>
+              <div class="info-panel-body">
+
+                <!-- Thumbnail -->
+                <div class="thumb-upload-wrap">
+                  <div class="course-thumb" id="course-thumb-preview">📘</div>
+                  <label class="thumb-upload-btn" for="thumb-file-input">
+                    <i data-feather="camera" style="width:12px;height:12px;"></i> Change
+                  </label>
+                  <input type="file" id="thumb-file-input" accept="image/*" style="display:none;"/>
+                </div>
+
+                <!-- Info rows -->
+                <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+                  <div class="info-row">
+                    <span class="info-row-label">Status</span>
+                    <span class="info-row-value" id="info-status">
+                      <span class="status-badge status-draft">Draft</span>
+                    </span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-row-label">Category</span>
+                    <span class="info-row-value" id="info-category">—</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-row-label">Level</span>
+                    <span class="info-row-value" id="info-level">—</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-row-label">Price</span>
+                    <span class="info-row-value" id="info-price">—</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-row-label">Modules</span>
+                    <span class="info-row-value" id="info-modules">0</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-row-label">Videos</span>
+                    <span class="info-row-value" id="info-videos">0</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-row-label">Students</span>
+                    <span class="info-row-value" id="info-students">0</span>
+                  </div>
+                </div>
+
+                <!-- Edit basic info -->
+                <button class="btn btn-outline btn-sm" style="width:100%;" onclick="openEditInfoModal()">
+                  <i data-feather="edit-2" style="width:14px;height:14px;"></i> Edit Course Info
+                </button>
+
+              </div>
+            </div>
+
+            <!-- Publish CTA (shown when enough content) -->
+            <div class="publish-cta" id="publish-cta" style="margin-top:var(--space-4);display:none;">
+              <h3>Ready to go live?</h3>
+              <p>You have modules and videos. Publish your course so students can enroll.</p>
+              <button class="btn-publish" id="btn-publish-cta" onclick="publishCourse()">
+                🚀 Publish Now
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT: Modules & Videos -->
+          <div class="modules-panel">
+            <div class="modules-header">
+              <div class="modules-title">Course Content</div>
+              <button class="btn btn-primary btn-sm" onclick="openAddModuleModal()">
+                <i data-feather="plus" style="width:14px;height:14px;"></i> Add Module
+              </button>
+            </div>
+
+            <!-- Module list -->
+            <div id="modules-list">
+              <div class="skel" style="height:64px;border-radius:12px;"></div>
+              <div class="skel" style="height:64px;border-radius:12px;margin-top:var(--space-4);"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<!-- Add Module Modal -->
+<div class="modal-overlay" id="add-module-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="module-modal-title">Add Module</div>
+      <button class="btn-icon btn-ghost btn-sm" onclick="closeModal('add-module-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Module Title *</label>
+        <input type="text" class="form-input" id="module-title-input" placeholder="e.g. Introduction to the Course"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+        <textarea class="form-textarea" id="module-desc-input" placeholder="What will students learn in this module?"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-module-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-module-btn">Save Module</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Video Modal -->
+<div class="modal-overlay" id="add-video-modal">
+  <div class="modal-box" style="max-width:620px;">
+    <div class="modal-header">
+      <div class="modal-title">Add Video</div>
+      <button class="btn-icon btn-ghost btn-sm" onclick="closeModal('add-video-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Video Title *</label>
+        <input type="text" class="form-input" id="video-title-input" placeholder="e.g. What is JavaScript?"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Upload Video <span style="color:var(--text-muted);font-weight:400;">(or paste URL)</span></label>
+        <div class="file-drop" id="video-drop-zone">
+          <input type="file" id="video-file-input" accept="video/*"/>
+          <div class="file-drop-icon">🎬</div>
+          <div class="file-drop-text">Drop video here or click to browse</div>
+          <div class="file-drop-text" style="margin-top:4px;font-size:11px;">MP4, WebM, MOV · Max 500MB</div>
+          <div class="file-drop-name" id="video-file-name" style="display:none;"></div>
+        </div>
+        <div class="upload-progress" id="upload-progress">
+          <div class="upload-progress-fill" id="upload-progress-fill"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-3);">
+          <div style="flex:1;height:1px;background:var(--border-color);"></div>
+          <span style="font-size:var(--font-size-xs);color:var(--text-muted);">OR</span>
+          <div style="flex:1;height:1px;background:var(--border-color);"></div>
+        </div>
+        <input type="url" class="form-input" id="video-url-input" placeholder="Paste YouTube / Vimeo URL" style="margin-top:var(--space-3);"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Duration (seconds)</label>
+          <input type="number" class="form-input" id="video-duration-input" placeholder="e.g. 600" min="0"/>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:var(--space-3);padding-top:var(--space-6);">
+          <input type="checkbox" id="video-preview-check" style="width:18px;height:18px;accent-color:var(--color-primary-600);"/>
+          <label for="video-preview-check" style="font-size:var(--font-size-sm);font-weight:500;cursor:pointer;">Free Preview</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+        <textarea class="form-textarea" id="video-desc-input" placeholder="Brief description of this lesson…" style="min-height:60px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-video-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-video-btn">Add Video</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Course Info Modal -->
+<div class="modal-overlay" id="edit-info-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Edit Course Info</div>
+      <button class="btn-icon btn-ghost btn-sm" onclick="closeModal('edit-info-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Course Title *</label>
+        <input type="text" class="form-input" id="ei-title"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="ei-description"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="ei-category">
+            <option value="">Select category</option>
+            <option value="programming">Programming</option>
+            <option value="design">Design</option>
+            <option value="business">Business</option>
+            <option value="mathematics">Mathematics</option>
+            <option value="science">Science</option>
+            <option value="language">Language</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Level</label>
+          <select class="form-select" id="ei-level">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Price (₹)</label>
+          <input type="number" class="form-input" id="ei-price" min="0" placeholder="0 for free"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          <select class="form-select" id="ei-language">
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Kannada">Kannada</option>
+            <option value="Tamil">Tamil</option>
+            <option value="Telugu">Telugu</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">What students will learn</label>
+        <textarea class="form-textarea" id="ei-what-you-learn" placeholder="List the key outcomes, one per line…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Requirements</label>
+        <textarea class="form-textarea" id="ei-requirements" placeholder="Prerequisites for this course…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('edit-info-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-info-btn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title" id="delete-modal-title">Delete Module?</div>
+      <button class="btn-icon btn-ghost btn-sm" onclick="closeModal('delete-modal')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="delete-modal-text" style="color:var(--text-secondary);font-size:var(--font-size-sm);"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('delete-modal')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- SCRIPTS -->
+<script>window.EV_BASE = "../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/sidebar.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/router.js"></script>
+<script src="../../js/init.js"></script>
+
+<script>
+/* ── Auth guard ── */
+(function() {
+  var token, user;
+  try { token=localStorage.getItem('ev_token'); user=token?JSON.parse(localStorage.getItem('ev_user')):null; } catch(e){}
+  if (!token||!user) { window.location.replace('../../pages/auth/login.html'); return; }
+  if (user.role!=='instructor') { window.location.replace('../../pages/errors/403.html'); }
+})();
+
+/* ── Get course ID from URL ── */
+var COURSE_ID = null;
+try {
+  COURSE_ID = new URLSearchParams(window.location.search).get('id');
+} catch(e) {}
+if (!COURSE_ID) {
+  window.location.replace('courses.html');
+}
+
+/* ── Helpers ── */
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fmtDuration(secs){if(!secs)return '—';var m=Math.floor(secs/60),s=secs%60;return m+'m '+(s>0?s+'s':'');}
+function showToast(type,title,msg){var c=document.getElementById('toast-container');var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div class="toast-content"><div class="toast-title">'+esc(title)+'</div>'+(msg?'<div class="toast-msg">'+esc(msg)+'</div>':'')+' </div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">&#x2715;</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4000);}
+function openModal(id){document.getElementById(id).classList.add('open');if(typeof feather!=='undefined')feather.replace({'stroke-width':1.75});}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+/* ── State ── */
+var courseData     = null;
+var modulesData    = [];
+var activeModuleId = null;  // module being edited
+var deleteTarget   = null;  // {type, id}
+
+/* ── Load course + modules ── */
+async function loadCourse() {
+  try {
+    var res = await Api.get('/instructor/courses/'+COURSE_ID);
+    courseData = (res && res.data) || {};
+    modulesData = courseData.modules || [];
+    renderCourseInfo();
+    renderModules();
+  } catch(err) {
+    showToast('error','Failed to load course',(err&&err.message)||'Please try again.');
+  }
+}
+
+function renderCourseInfo() {
+  var c = courseData;
+  document.getElementById('page-course-title').textContent = c.title || 'Untitled Course';
+  document.title = (c.title || 'Course') + ' — Course Builder — EduVerse';
+
+  // Thumbnail
+  var thumbEl = document.getElementById('course-thumb-preview');
+  if (c.thumbnail_url) {
+    thumbEl.innerHTML = '<img src="'+esc(c.thumbnail_url)+'" style="width:100%;height:100%;object-fit:cover;"/>';
+  } else {
+    thumbEl.textContent = '📘';
+  }
+
+  // Status badge
+  var statusBadge = c.status==='published'
+    ? '<span class="status-badge status-published">Published</span>'
+    : '<span class="status-badge status-draft">Draft</span>';
+  document.getElementById('info-status').innerHTML = statusBadge;
+
+  document.getElementById('info-category').textContent = c.category || '—';
+  document.getElementById('info-level').textContent    = c.level ? (c.level.charAt(0).toUpperCase()+c.level.slice(1)) : '—';
+  document.getElementById('info-price').textContent    = (c.is_free||!parseFloat(c.price||0)) ? 'FREE' : '₹'+parseFloat(c.price).toFixed(0);
+  document.getElementById('info-students').textContent = c.enrolled_count || 0;
+
+  // Counts
+  var totalVideos = modulesData.reduce(function(sum,m){ return sum+(m.videos?m.videos.length:0); },0);
+  document.getElementById('info-modules').textContent = modulesData.length;
+  document.getElementById('info-videos').textContent  = totalVideos;
+
+  // Publish button state
+  var canPublish = modulesData.length>0 && totalVideos>0;
+  var publishBtn = document.getElementById('btn-publish');
+  publishBtn.disabled = !canPublish;
+
+  var cta = document.getElementById('publish-cta');
+  if (canPublish && c.status!=='published') {
+    cta.style.display = 'block';
+  } else {
+    cta.style.display = 'none';
+  }
+
+  // Update publish button text
+  publishBtn.innerHTML = c.status==='published'
+    ? '<i data-feather="eye-off" style="width:16px;height:16px;"></i> Unpublish'
+    : '<i data-feather="globe" style="width:16px;height:16px;"></i> Publish Course';
+  if (typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+}
+
+function renderModules() {
+  var container = document.getElementById('modules-list');
+  if (!modulesData.length) {
+    container.innerHTML = '<div class="empty-modules">'+
+      '<div class="empty-modules-icon">📂</div>'+
+      '<div class="empty-modules-title">No modules yet</div>'+
+      '<p style="font-size:var(--font-size-sm);margin-bottom:var(--space-4);">Modules are sections of your course. Add one to get started.</p>'+
+      '<button class="btn btn-primary" onclick="openAddModuleModal()">'+
+        '<i data-feather="plus" style="width:16px;height:16px;"></i> Add First Module'+
+      '</button>'+
+    '</div>';
+    if (typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+    return;
+  }
+
+  container.innerHTML = modulesData.map(function(mod, idx) {
+    var videos = mod.videos || [];
+    var videosHtml = videos.map(function(v) {
+      var durStr = v.duration ? fmtDuration(v.duration) : 'No duration';
+      return '<div class="video-row">'+
+        '<div class="video-icon"><i data-feather="play-circle" style="width:18px;height:18px;"></i></div>'+
+        '<div class="video-info">'+
+          '<div class="video-title">'+esc(v.title)+(v.is_preview?'<span class="preview-badge">Preview</span>':'')+'</div>'+
+          '<div class="video-meta">'+durStr+'</div>'+
+        '</div>'+
+        '<div class="video-actions">'+
+          '<button class="btn-icon btn-ghost btn-sm" title="Delete video" onclick="confirmDeleteVideo('+v.id+',\''+esc(v.title)+'\')">'+
+            '<i data-feather="trash-2" style="width:14px;height:14px;color:var(--color-danger);"></i>'+
+          '</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+
+    return '<div class="module-card" id="module-card-'+mod.id+'">'+
+      '<div class="module-card-header" onclick="toggleModule('+mod.id+')">'+
+        '<div class="module-drag-handle"><i data-feather="more-vertical" style="width:16px;height:16px;"></i></div>'+
+        '<div class="module-number">'+(idx+1)+'</div>'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div class="module-title-text">'+esc(mod.title)+'</div>'+
+          '<div class="module-meta">'+videos.length+' video'+(videos.length!==1?'s':'')+'</div>'+
+        '</div>'+
+        '<div class="module-actions" onclick="event.stopPropagation();">'+
+          '<button class="btn btn-ghost btn-sm" onclick="openEditModuleModal('+mod.id+')">'+
+            '<i data-feather="edit-2" style="width:14px;height:14px;"></i>'+
+          '</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="confirmDeleteModule('+mod.id+',\''+esc(mod.title)+'\')" style="color:var(--color-danger);">'+
+            '<i data-feather="trash-2" style="width:14px;height:14px;"></i>'+
+          '</button>'+
+        '</div>'+
+        '<div class="module-chevron"><i data-feather="chevron-down" style="width:16px;height:16px;"></i></div>'+
+      '</div>'+
+      '<div class="module-body">'+
+        videosHtml+
+        '<button class="add-video-btn" onclick="openAddVideoModal('+mod.id+')">'+
+          '<i data-feather="plus-circle" style="width:16px;height:16px;"></i> Add Video'+
+        '</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  if (typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+}
+
+/* ── Module toggle ── */
+window.toggleModule = function(id) {
+  var card = document.getElementById('module-card-'+id);
+  if (card) card.classList.toggle('open');
+};
+
+/* ── Add Module ── */
+window.openAddModuleModal = function() {
+  activeModuleId = null;
+  document.getElementById('module-modal-title').textContent = 'Add Module';
+  document.getElementById('module-title-input').value = '';
+  document.getElementById('module-desc-input').value  = '';
+  openModal('add-module-modal');
+  setTimeout(function(){ document.getElementById('module-title-input').focus(); },100);
+};
+
+window.openEditModuleModal = function(id) {
+  var mod = modulesData.find(function(m){ return m.id===id; });
+  if (!mod) return;
+  activeModuleId = id;
+  document.getElementById('module-modal-title').textContent = 'Edit Module';
+  document.getElementById('module-title-input').value = mod.title || '';
+  document.getElementById('module-desc-input').value  = mod.description || '';
+  openModal('add-module-modal');
+};
+
+document.getElementById('save-module-btn').addEventListener('click', async function() {
+  var title = document.getElementById('module-title-input').value.trim();
+  if (!title) { showToast('error','Error','Module title is required.'); return; }
+  this.disabled = true; this.textContent = 'Saving…';
+  try {
+    if (activeModuleId) {
+      await Api.patch('/instructor/courses/'+COURSE_ID+'/modules/'+activeModuleId, {
+        title: title, description: document.getElementById('module-desc-input').value
+      });
+      showToast('success','Module Updated!','Changes saved.');
+    } else {
+      await Api.post('/instructor/courses/'+COURSE_ID+'/modules', {
+        title: title, description: document.getElementById('module-desc-input').value
+      });
+      showToast('success','Module Added!','New module created.');
+    }
+    closeModal('add-module-modal');
+    await loadCourse();
+    // Auto-expand new module
+    if (!activeModuleId && modulesData.length) {
+      var last = modulesData[modulesData.length-1];
+      if (last) { var card=document.getElementById('module-card-'+last.id); if(card) card.classList.add('open'); }
+    }
+  } catch(err) {
+    showToast('error','Error',(err&&err.message)||'Failed to save module.');
+  }
+  this.disabled = false; this.textContent = 'Save Module';
+});
+
+/* ── Delete Module ── */
+window.confirmDeleteModule = function(id, title) {
+  deleteTarget = { type:'module', id:id };
+  document.getElementById('delete-modal-title').textContent = 'Delete Module?';
+  document.getElementById('delete-modal-text').textContent =
+    'Are you sure you want to delete "'+title+'" and all its videos? This cannot be undone.';
+  openModal('delete-modal');
+};
+
+/* ── Add Video ── */
+window.openAddVideoModal = function(moduleId) {
+  activeModuleId = moduleId;
+  document.getElementById('video-title-input').value    = '';
+  document.getElementById('video-url-input').value      = '';
+  document.getElementById('video-duration-input').value = '';
+  document.getElementById('video-desc-input').value     = '';
+  document.getElementById('video-preview-check').checked = false;
+  document.getElementById('video-file-name').style.display = 'none';
+  document.getElementById('video-file-name').textContent   = '';
+  document.getElementById('upload-progress').style.display = 'none';
+  document.getElementById('upload-progress-fill').style.width = '0%';
+  document.getElementById('video-file-input').value = '';
+  openModal('add-video-modal');
+  setTimeout(function(){ document.getElementById('video-title-input').focus(); },100);
+};
+
+/* File drop zone */
+var videoFileInput = document.getElementById('video-file-input');
+var videoDropZone  = document.getElementById('video-drop-zone');
+videoFileInput.addEventListener('change', function(){
+  if (this.files[0]) {
+    document.getElementById('video-file-name').style.display = 'block';
+    document.getElementById('video-file-name').textContent   = this.files[0].name;
+  }
+});
+['dragover','dragleave','drop'].forEach(function(evt){
+  videoDropZone.addEventListener(evt, function(e){
+    e.preventDefault();
+    videoDropZone.classList.toggle('dragover', evt==='dragover');
+    if (evt==='drop' && e.dataTransfer.files[0]) {
+      var dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+      videoFileInput.files = dt.files;
+      document.getElementById('video-file-name').style.display = 'block';
+      document.getElementById('video-file-name').textContent   = e.dataTransfer.files[0].name;
+    }
+  });
+});
+
+document.getElementById('save-video-btn').addEventListener('click', async function() {
+  var title = document.getElementById('video-title-input').value.trim();
+  if (!title) { showToast('error','Error','Video title is required.'); return; }
+
+  var file      = videoFileInput.files[0];
+  var videoUrl  = document.getElementById('video-url-input').value.trim();
+
+  if (!file && !videoUrl) {
+    showToast('error','Error','Please upload a video file or paste a URL.');
+    return;
+  }
+
+  this.disabled = true; this.textContent = 'Adding…';
+  var progressBar  = document.getElementById('upload-progress');
+  var progressFill = document.getElementById('upload-progress-fill');
+
+  try {
+    var formData = new FormData();
+    formData.append('title',       title);
+    formData.append('description', document.getElementById('video-desc-input').value);
+    formData.append('duration',    document.getElementById('video-duration-input').value||0);
+    formData.append('is_preview',  document.getElementById('video-preview-check').checked?'true':'false');
+    if (file) {
+      formData.append('video', file);
+    } else {
+      formData.append('video_url', videoUrl);
+    }
+
+    if (file) {
+      progressBar.style.display = 'block';
+      // Simulate progress (real XHR progress would require xhr.upload)
+      var prog = 0;
+      var ticker = setInterval(function(){
+        prog = Math.min(prog+10, 85);
+        progressFill.style.width = prog+'%';
+      }, 300);
+    }
+
+    await Api.postForm('/instructor/modules/'+activeModuleId+'/videos', formData);
+
+    if (file) { clearInterval(ticker); progressFill.style.width='100%'; }
+    showToast('success','Video Added!','"'+title+'" has been added to the module.');
+    closeModal('add-video-modal');
+    await loadCourse();
+    // Auto-expand the module
+    var card = document.getElementById('module-card-'+activeModuleId);
+    if (card) card.classList.add('open');
+
+  } catch(err) {
+    showToast('error','Error',(err&&err.message)||'Failed to add video.');
+  }
+  progressBar.style.display='none'; progressFill.style.width='0%';
+  this.disabled=false; this.textContent='Add Video';
+});
+
+/* ── Delete Video ── */
+window.confirmDeleteVideo = function(id, title) {
+  deleteTarget = { type:'video', id:id };
+  document.getElementById('delete-modal-title').textContent = 'Delete Video?';
+  document.getElementById('delete-modal-text').textContent  =
+    'Delete "'+title+'"? Students who have watched this video will lose their progress.';
+  openModal('delete-modal');
+};
+
+/* ── Confirm Delete ── */
+document.getElementById('confirm-delete-btn').addEventListener('click', async function() {
+  if (!deleteTarget) return;
+  this.disabled=true; this.textContent='Deleting…';
+  try {
+    if (deleteTarget.type==='module') {
+      await Api.delete('/instructor/courses/'+COURSE_ID+'/modules/'+deleteTarget.id);
+      showToast('success','Deleted','Module removed.');
+    } else {
+      await Api.delete('/instructor/videos/'+deleteTarget.id);
+      showToast('success','Deleted','Video removed.');
+    }
+    closeModal('delete-modal');
+    await loadCourse();
+  } catch(err) {
+    showToast('error','Error',(err&&err.message)||'Failed to delete.');
+  }
+  this.disabled=false; this.textContent='Delete';
+  deleteTarget=null;
+});
+
+/* ── Edit Course Info ── */
+window.openEditInfoModal = function() {
+  if (!courseData) return;
+  document.getElementById('ei-title').value         = courseData.title||'';
+  document.getElementById('ei-description').value   = courseData.description||'';
+  document.getElementById('ei-category').value      = courseData.category||'';
+  document.getElementById('ei-level').value         = courseData.level||'beginner';
+  document.getElementById('ei-price').value         = courseData.price||0;
+  document.getElementById('ei-language').value      = courseData.language||'English';
+  document.getElementById('ei-what-you-learn').value= courseData.what_you_learn||'';
+  document.getElementById('ei-requirements').value  = courseData.requirements||'';
+  openModal('edit-info-modal');
+};
+
+document.getElementById('save-info-btn').addEventListener('click', async function() {
+  var title = document.getElementById('ei-title').value.trim();
+  if (!title) { showToast('error','Error','Course title is required.'); return; }
+  this.disabled=true; this.textContent='Saving…';
+  try {
+    await Api.patch('/instructor/courses/'+COURSE_ID, {
+      title:          title,
+      description:    document.getElementById('ei-description').value,
+      category:       document.getElementById('ei-category').value,
+      level:          document.getElementById('ei-level').value,
+      price:          parseFloat(document.getElementById('ei-price').value)||0,
+      language:       document.getElementById('ei-language').value,
+      what_you_learn: document.getElementById('ei-what-you-learn').value,
+      requirements:   document.getElementById('ei-requirements').value,
+    });
+    showToast('success','Saved!','Course info updated.');
+    closeModal('edit-info-modal');
+    await loadCourse();
+  } catch(err) {
+    showToast('error','Error',(err&&err.message)||'Failed to save.');
+  }
+  this.disabled=false; this.textContent='Save Changes';
+});
+
+/* ── Thumbnail upload ── */
+document.getElementById('thumb-file-input').addEventListener('change', async function() {
+  var file = this.files[0];
+  if (!file) return;
+  var formData = new FormData();
+  formData.append('thumbnail', file);
+  try {
+    var res = await Api.postForm('/instructor/courses/'+COURSE_ID+'/thumbnail', formData);
+    var url = res && res.data && res.data.thumbnail_url;
+    if (url) {
+      var thumbEl = document.getElementById('course-thumb-preview');
+      thumbEl.innerHTML = '<img src="'+esc(url)+'" style="width:100%;height:100%;object-fit:cover;"/>';
+    }
+    showToast('success','Thumbnail updated!');
+  } catch(err) {
+    showToast('error','Upload failed',(err&&err.message)||'Please try again.');
+  }
+});
+
+/* ── Publish course ── */
+async function publishCourse() {
+  var btn1 = document.getElementById('btn-publish');
+  var btn2 = document.getElementById('btn-publish-cta');
+  if (btn1) { btn1.disabled=true; btn1.textContent='Publishing…'; }
+  if (btn2) { btn2.disabled=true; btn2.textContent='Publishing…'; }
+  try {
+    var isPublished = courseData && courseData.status==='published';
+    if (isPublished) {
+      await Api.patch('/instructor/courses/'+COURSE_ID, { status:'draft' });
+      showToast('info','Course Unpublished','Course moved back to draft.');
+    } else {
+      await Api.patch('/instructor/courses/'+COURSE_ID+'/publish');
+      showToast('success','Course Published! 🎉','Students can now enroll in your course.');
+    }
+    await loadCourse();
+  } catch(err) {
+    showToast('error','Error',(err&&err.message)||'Failed to update course status.');
+    if (btn1) { btn1.disabled=false; }
+  }
+  if (btn2) { btn2.disabled=false; btn2.textContent='🚀 Publish Now'; }
+}
+window.publishCourse = publishCourse;
+document.getElementById('btn-publish').addEventListener('click', publishCourse);
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+
+  Sidebar.init();
+  Sidebar.initTheme();
+  Sidebar.initLogout();
+  Sidebar.initDropdown();
+
+  var user;
+  try { user=JSON.parse(localStorage.getItem('ev_user'))||{}; } catch(e){ user={}; }
+  Sidebar.renderUser(user);
+
+  /* Extend Api with postForm if not present */
+  if (typeof Api!=='undefined' && !Api.postForm) {
+    Api.postForm = async function(endpoint, formData) {
+      var token;
+      try { token=localStorage.getItem('ev_token'); } catch(e){}
+      var base = window.EV_BASE ? window.EV_BASE+'api/v1' : '/api/v1';
+      var resp = await fetch(base+endpoint, {
+        method:'POST',
+        headers: token ? { 'Authorization':'Bearer '+token } : {},
+        body: formData,
+      });
+      var json = await resp.json();
+      if (!resp.ok) throw new Error(json.message||'Request failed');
+      return json;
+    };
+  }
+
+  loadCourse();
+});
+</script>
+</body>
+</html>

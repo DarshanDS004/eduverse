@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Sessions — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    .sessions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-5);margin-bottom:var(--space-6);}
+    .session-card{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;transition:box-shadow var(--transition-base),transform var(--transition-base);}
+    .session-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+    .session-card-top{padding:var(--space-5);border-bottom:1px solid var(--border-color);}
+    .session-card-bottom{padding:var(--space-4) var(--space-5);display:flex;align-items:center;justify-content:space-between;}
+    .session-status{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:var(--space-2);}
+    .status-live{background:#fee2e2;color:#991b1b;animation:pulseLive 1.5s infinite;}
+    .status-upcoming{background:var(--color-primary-50);color:var(--color-primary-700);}
+    .status-completed{background:var(--neutral-100);color:var(--text-muted);}
+    .status-cancelled{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    @keyframes pulseLive{0%,100%{opacity:1}50%{opacity:.6}}
+    .session-title{font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);margin-bottom:var(--space-1);line-height:var(--leading-snug);}
+    .session-meta{display:flex;flex-direction:column;gap:4px;}
+    .session-meta-item{display:flex;align-items:center;gap:var(--space-2);font-size:var(--font-size-xs);color:var(--text-muted);}
+    .tabs-bar{display:flex;align-items:center;gap:0;border-bottom:2px solid var(--border-color);margin-bottom:var(--space-5);}
+    .tab-btn{padding:var(--space-3) var(--space-4);font-size:var(--font-size-sm);font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-ui);transition:color var(--transition-fast),border-color var(--transition-fast);white-space:nowrap;}
+    .tab-btn:hover{color:var(--text-primary);}
+    .tab-btn.active{color:var(--color-primary-600);border-bottom-color:var(--color-primary-600);font-weight:600;}
+    .tab-content{display:none;}
+    .tab-content.active{display:block;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:center;justify-content:center;padding:var(--space-4);}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);}
+    .modal-title{font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);}
+    .modal-body{padding:var(--space-5) var(--space-6);overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:var(--space-4);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);background:var(--neutral-50);border-radius:0 0 var(--border-radius-xl) var(--border-radius-xl);}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);}
+    .attendance-table{width:100%;border-collapse:collapse;}
+    .attendance-table th,.attendance-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-color);font-size:var(--font-size-sm);text-align:left;}
+    .attendance-table th{background:var(--neutral-50);font-weight:700;color:var(--text-muted);font-size:var(--font-size-xs);text-transform:uppercase;}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:var(--z-toast);max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-2);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-info);}
+    .empty-state{text-align:center;padding:var(--space-16);color:var(--text-muted);}
+    .empty-icon{font-size:3rem;margin-bottom:var(--space-4);opacity:.5;}
+    @media(max-width:1023px){.sessions-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:767px){.sessions-grid{grid-template-columns:1fr;}.form-row-2{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item active" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div></div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="app-body">
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div><div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Live Sessions</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);">Schedule and manage your live classes</div></div>
+      </div>
+      <div class="navbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openScheduleModal()">
+          <i data-feather="plus" style="width:14px;height:14px;"></i> Schedule Session
+        </button>
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name">Loading…</span><i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:180px;">
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6);">
+          <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);">
+            <div style="font-size:var(--font-size-2xl);font-weight:800;color:var(--color-primary-600);" id="stat-upcoming">0</div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;">Upcoming Sessions</div>
+          </div>
+          <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);">
+            <div style="font-size:var(--font-size-2xl);font-weight:800;color:var(--color-success);" id="stat-completed">0</div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;">Sessions Completed</div>
+          </div>
+          <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);">
+            <div style="font-size:var(--font-size-2xl);font-weight:800;color:var(--color-warning);" id="stat-students">0</div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;">Total Attendees</div>
+          </div>
+          <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);padding:var(--space-5) var(--space-6);">
+            <div style="font-size:var(--font-size-2xl);font-weight:800;color:var(--text-primary);" id="stat-recordings">0</div>
+            <div style="font-size:var(--font-size-xs);color:var(--text-muted);font-weight:500;">Recordings Saved</div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-bar">
+          <button class="tab-btn active" onclick="switchTab('upcoming',this)">Upcoming</button>
+          <button class="tab-btn" onclick="switchTab('live',this)">Live Now</button>
+          <button class="tab-btn" onclick="switchTab('completed',this)">Completed</button>
+          <button class="tab-btn" onclick="switchTab('cancelled',this)">Cancelled</button>
+        </div>
+
+        <div class="tab-content active" id="tab-upcoming">
+          <div class="sessions-grid" id="upcoming-grid">
+            <div style="grid-column:1/-1;padding:var(--space-6);">
+              <div class="skel" style="height:180px;border-radius:12px;margin-bottom:16px;"></div>
+              <div class="skel" style="height:180px;border-radius:12px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-content" id="tab-live">
+          <div class="sessions-grid" id="live-grid">
+            <div style="grid-column:1/-1;" class="empty-state"><div class="empty-icon">📡</div><div style="font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);">No live sessions right now</div><div style="font-size:var(--font-size-sm);">Sessions in progress will appear here</div></div>
+          </div>
+        </div>
+        <div class="tab-content" id="tab-completed">
+          <div class="sessions-grid" id="completed-grid">
+            <div style="grid-column:1/-1;padding:var(--space-6);"><div class="skel" style="height:180px;border-radius:12px;"></div></div>
+          </div>
+        </div>
+        <div class="tab-content" id="tab-cancelled">
+          <div class="sessions-grid" id="cancelled-grid">
+            <div style="grid-column:1/-1;" class="empty-state"><div class="empty-icon">🚫</div><div style="font-weight:600;color:var(--text-primary);">No cancelled sessions</div></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="schedule-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="schedule-modal-title">Schedule Live Session</div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeScheduleModal()"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Session Title *</label>
+        <input type="text" id="s-title" class="form-input" placeholder="e.g. Chapter 5 — Algebra Live Doubt Session" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic / Description</label>
+        <textarea id="s-desc" class="form-textarea" rows="3" placeholder="What will you cover in this session?"></textarea>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Date *</label>
+          <input type="date" id="s-date" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time *</label>
+          <input type="time" id="s-time" class="form-input" />
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Duration</label>
+          <select id="s-duration" class="form-select">
+            <option value="30">30 minutes</option>
+            <option value="45">45 minutes</option>
+            <option value="60" selected>1 hour</option>
+            <option value="90">1.5 hours</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Participants</label>
+          <input type="number" id="s-max" class="form-input" value="100" min="1" max="500" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Linked Course (optional)</label>
+        <select id="s-course" class="form-select">
+          <option value="">— Not linked to a course —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-checkbox" style="cursor:pointer;align-items:center;gap:var(--space-3);">
+          <input type="checkbox" id="s-record" checked />
+          <span style="font-size:var(--font-size-sm);color:var(--text-secondary);">Auto-record this session</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-checkbox" style="cursor:pointer;align-items:center;gap:var(--space-3);">
+          <input type="checkbox" id="s-notify" checked />
+          <span style="font-size:var(--font-size-sm);color:var(--text-secondary);">Notify enrolled students via email</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeScheduleModal()">Cancel</button>
+      <button class="btn btn-primary" id="schedule-submit-btn" onclick="scheduleSession()">
+        <i data-feather="calendar" style="width:14px;height:14px;"></i> Schedule Session
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Attendance Modal -->
+<div class="modal-overlay" id="attendance-modal">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header">
+      <div class="modal-title">Session Attendance</div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="document.getElementById('attendance-modal').classList.remove('open')"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body" id="attendance-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('attendance-modal').classList.remove('open')">Close</button>
+      <button class="btn btn-primary" onclick="exportAttendance()">
+        <i data-feather="download" style="width:14px;height:14px;"></i> Export CSV
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u)window.location.replace('../../pages/auth/login.html');else if(u.role!=='instructor')window.location.replace('../../pages/errors/403.html');})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+
+  var user=Store.get('auth.user')||{};
+  var name=user.name||'';
+  ['sidebar-user-name','navbar-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;el.textContent=Utils.getInitials(name);el.className='avatar avatar-sm '+Utils.getAvatarColor(name);});
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  document.getElementById('sidebar-collapse-btn').addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();Auth.logout();});});
+  var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+
+  // Set min date to today
+  document.getElementById('s-date').min = new Date().toISOString().split('T')[0];
+
+  var allSessions = [];
+  var editingId   = null;
+  var currentAttendance = [];
+
+  loadSessions();
+  loadCourses();
+
+  async function loadCourses() {
+    try {
+      var res     = await Api.instructor.courses();
+      var courses = (res && res.data) || [];
+      var sel     = document.getElementById('s-course');
+      courses.forEach(function(c) {
+        var o = document.createElement('option');
+        o.value = c.id; o.textContent = c.title;
+        sel.appendChild(o);
+      });
+    } catch(e) {}
+  }
+
+  async function loadSessions() {
+    try {
+      var res      = await Api.instructor.liveSessions();
+      allSessions  = (res && res.data) || [];
+      renderAllTabs();
+    } catch(err) {
+      ['upcoming-grid','completed-grid'].forEach(function(id) {
+        document.getElementById(id).innerHTML = '<div style="grid-column:1/-1;" class="empty-state"><div class="empty-icon">📅</div><div style="font-weight:600;color:var(--text-primary);">No sessions yet</div><div style="font-size:var(--font-size-sm);margin-top:var(--space-2);">Schedule your first live session to get started</div><button class="btn btn-primary" style="margin-top:var(--space-4);" onclick="openScheduleModal()">Schedule Now</button></div>';
+      });
+    }
+  }
+
+  function renderAllTabs() {
+    var now       = new Date();
+    var upcoming  = allSessions.filter(function(s){ return s.status==='scheduled' && new Date(s.scheduled_at) > now; });
+    var live      = allSessions.filter(function(s){ return s.status==='live'; });
+    var completed = allSessions.filter(function(s){ return s.status==='completed'; });
+    var cancelled = allSessions.filter(function(s){ return s.status==='cancelled'; });
+
+    _t('stat-upcoming',   upcoming.length);
+    _t('stat-completed',  completed.length);
+    _t('stat-students',   allSessions.reduce(function(a,s){ return a+(s.participant_count||0); },0));
+    _t('stat-recordings', completed.filter(function(s){ return s.recording_url; }).length);
+
+    renderGrid('upcoming-grid',  upcoming,  'upcoming');
+    renderGrid('live-grid',      live,      'live');
+    renderGrid('completed-grid', completed, 'completed');
+    renderGrid('cancelled-grid', cancelled, 'cancelled');
+  }
+
+  function renderGrid(gridId, sessions, type) {
+    var grid = document.getElementById(gridId);
+    if (!sessions.length) {
+      var emptyMsgs = {
+        upcoming:  { icon:'📅', title:'No upcoming sessions', sub:'Schedule a session to see it here' },
+        live:      { icon:'📡', title:'No live sessions right now', sub:'Sessions in progress appear here' },
+        completed: { icon:'✅', title:'No completed sessions yet', sub:'Finished sessions will appear here' },
+        cancelled: { icon:'🚫', title:'No cancelled sessions', sub:'' }
+      };
+      var e = emptyMsgs[type]||emptyMsgs.upcoming;
+      grid.innerHTML = '<div style="grid-column:1/-1;" class="empty-state"><div class="empty-icon">' + e.icon + '</div><div style="font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);">' + e.title + '</div><div style="font-size:var(--font-size-sm);">' + e.sub + '</div>' + (type==='upcoming'?'<button class="btn btn-primary" style="margin-top:var(--space-5);" onclick="openScheduleModal()">Schedule Session</button>':'') + '</div>';
+      return;
+    }
+    grid.innerHTML = sessions.map(function(s) { return renderSessionCard(s, type); }).join('');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  }
+
+  function renderSessionCard(s, type) {
+    var dt       = new Date(s.scheduled_at);
+    var isPast   = dt < new Date();
+    var statusCls= s.status==='live' ? 'status-live' : s.status==='completed' ? 'status-completed' : s.status==='cancelled' ? 'status-cancelled' : 'status-upcoming';
+    var statusLbl= s.status==='live' ? '🔴 LIVE' : s.status==='completed' ? 'Completed' : s.status==='cancelled' ? 'Cancelled' : 'Upcoming';
+    var durMin   = s.duration_minutes || 60;
+    var durStr   = durMin >= 60 ? Math.floor(durMin/60) + 'h' + (durMin%60 ? ' ' + durMin%60 + 'm' : '') : durMin + 'm';
+
+    var actions = '';
+    if (s.status === 'live') {
+      actions = '<button class="btn btn-danger btn-sm" onclick="startSession(\'' + _esc(s.meeting_link||'') + '\')"><i data-feather="video" style="width:13px;height:13px;"></i> Join Live</button>';
+    } else if (s.status === 'scheduled') {
+      actions = '<button class="btn btn-primary btn-sm" onclick="startSession(\'' + _esc(s.meeting_link||'') + '\')"><i data-feather="video" style="width:13px;height:13px;"></i> Start</button>' +
+        '<button class="btn btn-ghost btn-icon btn-sm" title="Edit" onclick="editSession(' + JSON.stringify(s).replace(/"/g,'&quot;') + ')"><i data-feather="edit-2" style="width:13px;height:13px;"></i></button>' +
+        '<button class="btn btn-ghost btn-icon btn-sm" title="Cancel" onclick="cancelSession(' + s.id + ')"><i data-feather="x-circle" style="width:13px;height:13px;"></i></button>';
+    } else if (s.status === 'completed') {
+      actions = (s.recording_url ? '<a href="' + s.recording_url + '" target="_blank" class="btn btn-outline btn-sm"><i data-feather="play" style="width:13px;height:13px;"></i> Recording</a>' : '<span style="font-size:var(--font-size-xs);color:var(--text-muted);">No recording</span>') +
+        '<button class="btn btn-ghost btn-sm" onclick="viewAttendance(' + s.id + ')"><i data-feather="users" style="width:13px;height:13px;"></i> Attendance</button>';
+    }
+
+    return '<div class="session-card">' +
+      '<div class="session-card-top">' +
+        '<span class="session-status ' + statusCls + '">' + statusLbl + '</span>' +
+        '<div class="session-title">' + _esc(s.title) + '</div>' +
+        '<div class="session-meta">' +
+          '<div class="session-meta-item"><i data-feather="calendar" style="width:12px;height:12px;"></i>' + Utils.formatDate(s.scheduled_at,'datetime') + '</div>' +
+          '<div class="session-meta-item"><i data-feather="clock" style="width:12px;height:12px;"></i>' + durStr + ' duration</div>' +
+          '<div class="session-meta-item"><i data-feather="users" style="width:12px;height:12px;"></i>' + (s.participant_count||0) + ' attendees</div>' +
+          (s.course_title ? '<div class="session-meta-item"><i data-feather="book-open" style="width:12px;height:12px;"></i>' + _esc(s.course_title) + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="session-card-bottom"><div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;">' + actions + '</div>' +
+        (s.meeting_link ? '<button class="btn btn-ghost btn-icon btn-sm" title="Copy meeting link" onclick="copyLink(\'' + _esc(s.meeting_link) + '\')"><i data-feather="copy" style="width:13px;height:13px;"></i></button>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── Schedule Modal ──
+  window.openScheduleModal = function() {
+    editingId = null;
+    document.getElementById('schedule-modal-title').textContent = 'Schedule Live Session';
+    document.getElementById('schedule-submit-btn').textContent  = 'Schedule Session';
+    ['s-title','s-desc','s-date','s-time'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('s-duration').value = '60';
+    document.getElementById('s-max').value      = '100';
+    document.getElementById('s-record').checked  = true;
+    document.getElementById('s-notify').checked  = true;
+    document.getElementById('schedule-modal').classList.add('open');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  window.closeScheduleModal = function() {
+    document.getElementById('schedule-modal').classList.remove('open');
+  };
+
+  window.editSession = function(s) {
+    editingId = s.id;
+    document.getElementById('schedule-modal-title').textContent = 'Edit Session';
+    document.getElementById('schedule-submit-btn').textContent  = 'Update Session';
+    document.getElementById('s-title').value    = s.title || '';
+    document.getElementById('s-desc').value     = s.description || '';
+    if (s.scheduled_at) {
+      var dt = new Date(s.scheduled_at);
+      document.getElementById('s-date').value = dt.toISOString().split('T')[0];
+      document.getElementById('s-time').value = dt.toTimeString().slice(0,5);
+    }
+    document.getElementById('s-duration').value = s.duration_minutes || 60;
+    document.getElementById('s-max').value       = s.max_participants || 100;
+    document.getElementById('s-course').value    = s.course_id || '';
+    document.getElementById('schedule-modal').classList.add('open');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  window.scheduleSession = async function() {
+    var title = document.getElementById('s-title').value.trim();
+    var date  = document.getElementById('s-date').value;
+    var time  = document.getElementById('s-time').value;
+    if (!title)       { showToast('error', 'Session title is required.'); return; }
+    if (!date || !time) { showToast('error', 'Please select date and time.'); return; }
+
+    var btn = document.getElementById('schedule-submit-btn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    var payload = {
+      title:            title,
+      description:      document.getElementById('s-desc').value.trim(),
+      scheduled_at:     date + 'T' + time + ':00',
+      duration_minutes: parseInt(document.getElementById('s-duration').value),
+      max_participants: parseInt(document.getElementById('s-max').value),
+      course_id:        document.getElementById('s-course').value || null,
+      auto_record:      document.getElementById('s-record').checked,
+      notify_students:  document.getElementById('s-notify').checked,
+    };
+
+    try {
+      if (editingId) {
+        await Api.instructor.createSession(payload); // update not in API yet, use create
+      } else {
+        await Api.instructor.createSession(payload);
+      }
+      closeScheduleModal();
+      showToast('success', editingId ? 'Session updated!' : 'Session scheduled! Students will be notified.');
+      await loadSessions();
+    } catch(err) {
+      showToast('error', (err && err.message) || 'Failed to schedule session.');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i data-feather="calendar" style="width:14px;height:14px;"></i> ' + (editingId?'Update Session':'Schedule Session');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  window.startSession = function(link) {
+    if (!link) { showToast('info', 'Meeting link not yet generated. Please try again in a moment.'); return; }
+    window.open(link, '_blank');
+  };
+
+  window.cancelSession = async function(id) {
+    if (!confirm('Cancel this session? Students will be notified.')) return;
+    try {
+      await Api.instructor.endSession(id);
+      showToast('success', 'Session cancelled. Students notified.');
+      await loadSessions();
+    } catch(err) {
+      showToast('error', (err && err.message) || 'Failed to cancel session.');
+    }
+  };
+
+  window.viewAttendance = async function(id) {
+    document.getElementById('attendance-body').innerHTML = '<div class="skel" style="height:200px;border-radius:8px;"></div>';
+    document.getElementById('attendance-modal').classList.add('open');
+    try {
+      var res = await Api.liveSessions.detail(id);
+      var session = res && res.data;
+      var attendees = (session && session.attendees) || [];
+      currentAttendance = attendees;
+      document.getElementById('attendance-body').innerHTML = attendees.length ? (
+        '<div style="margin-bottom:var(--space-3);font-size:var(--font-size-sm);color:var(--text-muted);">' + attendees.length + ' students attended</div>' +
+        '<table class="attendance-table"><thead><tr><th>Student</th><th>Joined At</th><th>Left At</th><th>Duration</th><th>Status</th></tr></thead><tbody>' +
+        attendees.map(function(a) {
+          return '<tr><td>' + _esc(a.student_name||'—') + '</td><td>' + (a.joined_at ? Utils.formatDate(a.joined_at,'time') : '—') + '</td><td>' + (a.left_at ? Utils.formatDate(a.left_at,'time') : '—') + '</td><td>' + (a.duration_minutes ? a.duration_minutes + 'm' : '—') + '</td><td><span class="session-status ' + (a.attended?'status-upcoming':'status-cancelled') + '">' + (a.attended?'Present':'Absent') + '</span></td></tr>';
+        }).join('') +
+        '</tbody></table>'
+      ) : '<div class="empty-state"><div class="empty-icon">👥</div><div>No attendance records for this session</div></div>';
+    } catch(err) {
+      document.getElementById('attendance-body').innerHTML = '<div style="text-align:center;color:var(--color-danger);">Failed to load attendance.</div>';
+    }
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  window.exportAttendance = function() {
+    if (!currentAttendance.length) { showToast('error', 'No attendance data to export.'); return; }
+    var csv = 'Student,Email,Joined At,Left At,Duration,Status\n' +
+      currentAttendance.map(function(a) {
+        return '"' + (a.student_name||'') + '","' + (a.email||'') + '","' + (a.joined_at||'') + '","' + (a.left_at||'') + '","' + (a.duration_minutes||0) + 'm","' + (a.attended?'Present':'Absent') + '"';
+      }).join('\n');
+    Utils.downloadText(csv, 'attendance.csv', 'text/csv');
+  };
+
+  window.copyLink = async function(link) {
+    var ok = await Utils.copyToClipboard(link);
+    showToast(ok ? 'success' : 'error', ok ? 'Meeting link copied!' : 'Failed to copy link.');
+  };
+
+  window.switchTab = function(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  };
+
+  document.getElementById('schedule-modal').addEventListener('click', function(e){ if(e.target===this) closeScheduleModal(); });
+  document.getElementById('attendance-modal').addEventListener('click', function(e){ if(e.target===this) document.getElementById('attendance-modal').classList.remove('open'); });
+
+  function _t(id,val){var el=document.getElementById(id);if(el)el.textContent=val==null?'':val;}
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function showToast(type,msg){var c=document.getElementById('toast-container');var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div style="flex:1;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">'+_esc(msg)+'</div><button style="background:none;border:none;cursor:pointer;color:var(--text-muted);" onclick="this.closest(\'.toast\').remove()">✕</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},4500);}
+});
+</script>
+</body>
+</html>

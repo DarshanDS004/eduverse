@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Courses — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <link rel="stylesheet" href="../../css/variables.css" />
+  <link rel="stylesheet" href="../../css/reset.css" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/layout.css" />
+  <script>try{if(localStorage.getItem('ev_theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.documentElement.classList.add('dark');}}catch(e){}</script>
+  <style>
+    /* ── Layout ── */
+    .view-toggle{display:flex;gap:4px;padding:4px;background:var(--neutral-100);border-radius:var(--border-radius-md);}
+    .view-btn{width:32px;height:32px;border:none;background:none;border-radius:var(--border-radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all var(--transition-fast);}
+    .view-btn.active{background:var(--bg-surface);color:var(--text-primary);box-shadow:var(--shadow-xs);}
+    .courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-5);}
+    .courses-list{display:flex;flex-direction:column;gap:var(--space-3);}
+    /* ── Course card (grid) ── */
+    .ccard{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);overflow:hidden;transition:box-shadow var(--transition-base),transform var(--transition-base);cursor:pointer;}
+    .ccard:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+    .ccard-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--neutral-100);display:block;position:relative;}
+    .ccard-thumb-wrap{position:relative;}
+    .ccard-status{position:absolute;top:var(--space-2);left:var(--space-2);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+    .s-published{background:#d1fae5;color:#065f46;}
+    .s-draft{background:var(--neutral-100);color:var(--text-muted);}
+    .s-review{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .s-archived{background:var(--color-danger-light);color:var(--color-danger-dark);}
+    .ccard-body{padding:var(--space-4);}
+    .ccard-cat{font-size:var(--font-size-xs);font-weight:700;color:var(--color-primary-600);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+    .ccard-title{font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);line-height:var(--leading-snug);margin-bottom:var(--space-2);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .ccard-meta{display:flex;align-items:center;gap:var(--space-4);font-size:var(--font-size-xs);color:var(--text-muted);margin-bottom:var(--space-3);}
+    .ccard-foot{display:flex;align-items:center;justify-content:space-between;padding-top:var(--space-3);border-top:1px solid var(--border-color);}
+    .ccard-price{font-size:var(--font-size-base);font-weight:800;color:var(--text-primary);}
+    .ccard-actions{display:flex;gap:var(--space-1);}
+    /* ── Course card (list) ── */
+    .clist-item{background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--card-shadow);display:flex;align-items:center;gap:var(--space-4);padding:var(--space-4);transition:box-shadow var(--transition-fast);}
+    .clist-item:hover{box-shadow:var(--shadow-md);}
+    .clist-thumb{width:100px;height:60px;border-radius:var(--border-radius-md);object-fit:cover;background:var(--neutral-100);flex-shrink:0;}
+    .clist-info{flex:1;min-width:0;}
+    .clist-title{font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .clist-meta{font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;}
+    /* ── Modal ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:var(--bg-overlay);z-index:var(--z-modal);align-items:flex-start;justify-content:center;padding:var(--space-6) var(--space-4);overflow-y:auto;}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:var(--bg-elevated);border-radius:var(--border-radius-xl);box-shadow:var(--shadow-modal);width:100%;max-width:860px;display:flex;flex-direction:column;}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border-color);position:sticky;top:0;background:var(--bg-elevated);z-index:1;border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;}
+    .modal-title{font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);}
+    .modal-body{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-5);}
+    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4) var(--space-6);border-top:1px solid var(--border-color);background:var(--neutral-50);border-radius:0 0 var(--border-radius-xl) var(--border-radius-xl);position:sticky;bottom:0;}
+    .form-section{display:flex;flex-direction:column;gap:var(--space-4);}
+    .form-section-title{font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);padding-bottom:var(--space-3);border-bottom:1px solid var(--border-color);}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);}
+    .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4);}
+    /* ── Course Builder ── */
+    .builder-overlay{display:none;position:fixed;inset:0;background:var(--bg-page);z-index:var(--z-modal);flex-direction:column;overflow:hidden;}
+    .builder-overlay.open{display:flex;}
+    .builder-header{display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6);height:60px;background:var(--bg-surface);border-bottom:1px solid var(--border-color);flex-shrink:0;}
+    .builder-body{flex:1;display:grid;grid-template-columns:320px 1fr;overflow:hidden;}
+    .builder-sidebar{border-right:1px solid var(--border-color);display:flex;flex-direction:column;overflow:hidden;background:var(--bg-surface);}
+    .builder-sidebar-header{padding:var(--space-4);border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;}
+    .builder-modules{flex:1;overflow-y:auto;padding:var(--space-3);}
+    .module-block{border:1px solid var(--border-color);border-radius:var(--border-radius-md);margin-bottom:var(--space-3);overflow:hidden;background:var(--bg-surface);}
+    .module-header{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-3);cursor:pointer;background:var(--neutral-50);}
+    .module-title-input{flex:1;border:none;outline:none;background:none;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);font-family:var(--font-ui);}
+    .module-lessons{padding:var(--space-2) var(--space-2) var(--space-2) var(--space-8);}
+    .lesson-item{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border-radius:var(--border-radius-sm);cursor:pointer;transition:background var(--transition-fast);}
+    .lesson-item:hover,.lesson-item.active{background:var(--color-primary-50);}
+    .lesson-item.active .lesson-name{color:var(--color-primary-700);font-weight:600;}
+    .lesson-name{flex:1;font-size:var(--font-size-xs);color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .lesson-type-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+    .lt-video{background:var(--color-primary-50);color:var(--color-primary-600);}
+    .lt-quiz{background:var(--color-warning-light);color:var(--color-warning-dark);}
+    .lt-text{background:var(--color-success-light);color:var(--color-success-dark);}
+    .builder-main{overflow-y:auto;padding:var(--space-6);}
+    .builder-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:var(--space-3);}
+    .upload-zone{border:2px dashed var(--border-color);border-radius:var(--border-radius-lg);padding:var(--space-8);text-align:center;cursor:pointer;transition:all var(--transition-base);}
+    .upload-zone:hover,.upload-zone.dragover{border-color:var(--color-primary-400);background:var(--color-primary-50);}
+    .progress-bar-upload{height:6px;background:var(--neutral-100);border-radius:99px;overflow:hidden;margin-top:var(--space-3);}
+    .progress-bar-fill{height:100%;background:var(--color-primary-600);border-radius:99px;transition:width .3s;}
+    .thumb-preview{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:var(--border-radius-md);background:var(--neutral-100);cursor:pointer;}
+    .skel{background:var(--neutral-100);border-radius:4px;animation:shimmer 1.5s infinite;}
+    @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.5}}
+    .toast-container{position:fixed;bottom:var(--space-6);right:var(--space-6);z-index:9999;max-width:360px;}
+    .toast{background:var(--bg-elevated);border:var(--card-border);border-radius:var(--card-radius);box-shadow:var(--shadow-lg);padding:var(--space-4);display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-2);}
+    .toast-success{border-left:4px solid var(--color-success);}
+    .toast-error{border-left:4px solid var(--color-danger);}
+    .toast-info{border-left:4px solid var(--color-info);}
+    @media(max-width:1279px){.courses-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:767px){.courses-grid{grid-template-columns:1fr;}.form-row-2,.form-row-3{grid-template-columns:1fr;}.builder-body{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="app-sidebar" id="app-sidebar">
+    <a class="sidebar-brand" href="../../index.html"><div class="sidebar-logo">E</div><div><div class="sidebar-brand-name">EduVerse</div><div class="sidebar-brand-tagline">Instructor Portal</div></div></a>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="dashboard.html"><span class="sidebar-item-icon"><i data-feather="grid"></i></span><span class="sidebar-item-label">Dashboard</span></a>
+      <a class="sidebar-item active" href="courses.html"><span class="sidebar-item-icon"><i data-feather="book-open"></i></span><span class="sidebar-item-label">My Courses</span></a>
+      <a class="sidebar-item" href="materials.html"><span class="sidebar-item-icon"><i data-feather="file-text"></i></span><span class="sidebar-item-label">Study Materials</span></a>
+      <a class="sidebar-item" href="students.html"><span class="sidebar-item-icon"><i data-feather="users"></i></span><span class="sidebar-item-label">Students</span></a>
+      <a class="sidebar-item" href="assessments.html"><span class="sidebar-item-icon"><i data-feather="clipboard"></i></span><span class="sidebar-item-label">Assessments</span></a>
+      <a class="sidebar-item" href="live-sessions.html"><span class="sidebar-item-icon"><i data-feather="video"></i></span><span class="sidebar-item-label">Live Sessions</span></a>
+      <a class="sidebar-item" href="analytics.html"><span class="sidebar-item-icon"><i data-feather="bar-chart-2"></i></span><span class="sidebar-item-label">Analytics</span></a>
+      <a class="sidebar-item" href="earnings.html"><span class="sidebar-item-icon"><i data-feather="dollar-sign"></i></span><span class="sidebar-item-label">Earnings</span></a>
+      <a class="sidebar-item" href="messages.html"><span class="sidebar-item-icon"><i data-feather="message-circle"></i></span><span class="sidebar-item-label">Messages</span></a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item" href="profile.html"><span class="sidebar-item-icon"><i data-feather="user"></i></span><span class="sidebar-item-label">My Profile</span></a>
+    </nav>
+    <div class="sidebar-user"><div class="avatar avatar-sm" id="sidebar-avatar"></div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role">Instructor</div></div></div>
+    <button class="sidebar-toggle" id="sidebar-collapse-btn"><i data-feather="chevron-left"></i></button>
+  </aside>
+  <div class="app-body">
+    <nav class="app-navbar">
+      <div class="navbar-left">
+        <button class="navbar-menu-btn" id="navbar-menu-btn"><i data-feather="menu"></i></button>
+        <div><div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">My Courses</div><div style="font-size:var(--font-size-xs);color:var(--text-muted);" id="courses-count-label">Manage your courses</div></div>
+      </div>
+      <div class="navbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+          <i data-feather="plus" style="width:14px;height:14px;"></i> Create Course
+        </button>
+        <button class="navbar-icon-btn" data-action="toggle-theme"><i data-feather="moon"></i></button>
+        <div class="navbar-user" id="navbar-user-trigger"><div class="avatar avatar-sm" id="navbar-avatar"></div><span class="navbar-user-name" id="navbar-user-name">Loading…</span><i data-feather="chevron-down" style="width:14px;height:14px;color:var(--text-muted);"></i></div>
+        <div class="dropdown-menu dropdown-menu-right" id="user-dropdown" hidden style="position:absolute;top:calc(var(--navbar-height) - 8px);right:var(--page-padding-x);min-width:180px;">
+          <a class="dropdown-item" data-action="toggle-theme"><i data-feather="moon"></i> Toggle Theme</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="color:var(--color-danger);" data-action="logout"><i data-feather="log-out"></i> Sign Out</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <main class="app-main">
+      <div class="page-content">
+
+        <!-- Filters Bar -->
+        <div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-5);">
+          <div style="position:relative;flex:1;min-width:200px;">
+            <i data-feather="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-muted);pointer-events:none;"></i>
+            <input type="text" id="search-input" placeholder="Search courses…" style="width:100%;height:38px;padding:0 var(--space-4) 0 var(--space-9);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-surface);outline:none;font-family:var(--font-ui);color:var(--text-primary);" />
+          </div>
+          <select id="filter-status" style="height:38px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-surface);outline:none;font-family:var(--font-ui);color:var(--text-primary);">
+            <option value="">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="review">Under Review</option>
+            <option value="archived">Archived</option>
+          </select>
+          <select id="filter-sort" style="height:38px;padding:0 var(--space-3);border:1px solid var(--border-color);border-radius:var(--border-radius-md);font-size:var(--font-size-sm);background:var(--bg-surface);outline:none;font-family:var(--font-ui);color:var(--text-primary);">
+            <option value="recent">Recently Updated</option>
+            <option value="students">Most Students</option>
+            <option value="rating">Highest Rating</option>
+            <option value="revenue">Highest Revenue</option>
+          </select>
+          <div class="view-toggle">
+            <button class="view-btn active" id="grid-btn" title="Grid view" onclick="setView('grid',this)"><i data-feather="grid" style="width:15px;height:15px;"></i></button>
+            <button class="view-btn" id="list-btn" title="List view" onclick="setView('list',this)"><i data-feather="list" style="width:15px;height:15px;"></i></button>
+          </div>
+        </div>
+
+        <!-- Courses Container -->
+        <div id="courses-container">
+          <div class="courses-grid">
+            <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);overflow:hidden;"><div class="skel" style="aspect-ratio:16/9;width:100%;"></div><div style="padding:var(--space-4);"><div class="skel" style="height:16px;width:60%;margin-bottom:8px;"></div><div class="skel" style="height:20px;width:90%;margin-bottom:16px;"></div><div class="skel" style="height:12px;width:40%;"></div></div></div>
+            <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);overflow:hidden;"><div class="skel" style="aspect-ratio:16/9;width:100%;"></div><div style="padding:var(--space-4);"><div class="skel" style="height:16px;width:60%;margin-bottom:8px;"></div><div class="skel" style="height:20px;width:90%;margin-bottom:16px;"></div><div class="skel" style="height:12px;width:40%;"></div></div></div>
+            <div style="background:var(--bg-surface);border:var(--card-border);border-radius:var(--card-radius);overflow:hidden;"><div class="skel" style="aspect-ratio:16/9;width:100%;"></div><div style="padding:var(--space-4);"><div class="skel" style="height:16px;width:60%;margin-bottom:8px;"></div><div class="skel" style="height:20px;width:90%;margin-bottom:16px;"></div><div class="skel" style="height:12px;width:40%;"></div></div></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     CREATE / EDIT COURSE MODAL
+═══════════════════════════════ -->
+<div class="modal-overlay" id="course-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Create New Course</div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal()"><i data-feather="x"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Basic Info -->
+      <div class="form-section">
+        <div class="form-section-title">Basic Information</div>
+        <div class="form-group">
+          <label class="form-label">Course Title *</label>
+          <input type="text" id="c-title" class="form-input" placeholder="e.g. Complete Mathematics for Class 10 CBSE" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Short Description *</label>
+          <input type="text" id="c-short-desc" class="form-input" placeholder="One line summary shown on course cards (max 160 chars)" maxlength="160" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Description</label>
+          <textarea id="c-desc" class="form-textarea" rows="4" placeholder="Detailed course description — what students will learn, what's covered, prerequisites…"></textarea>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select id="c-category" class="form-select">
+              <option value="">Select category</option>
+              <option>Mathematics</option>
+              <option>Science</option>
+              <option>Physics</option>
+              <option>Chemistry</option>
+              <option>Biology</option>
+              <option>Computer Science</option>
+              <option>English</option>
+              <option>History</option>
+              <option>Geography</option>
+              <option>Economics</option>
+              <option>Commerce</option>
+              <option>Arts</option>
+              <option>Languages</option>
+              <option>Engineering</option>
+              <option>Medical</option>
+              <option>Law</option>
+              <option>Management</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Education Level *</label>
+            <select id="c-level" class="form-select">
+              <option value="">Select level</option>
+              <option value="preschool">Pre-School</option>
+              <option value="primary">Primary (Grade 1–5)</option>
+              <option value="middle">Middle School (Grade 6–8)</option>
+              <option value="high">High School (Grade 9–12)</option>
+              <option value="ug">Undergraduate (UG)</option>
+              <option value="pg">Postgraduate (PG)</option>
+              <option value="professional">Professional / Certification</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Language</label>
+            <select id="c-language" class="form-select">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Kannada">Kannada</option>
+              <option value="Tamil">Tamil</option>
+              <option value="Telugu">Telugu</option>
+              <option value="Marathi">Marathi</option>
+              <option value="Bengali">Bengali</option>
+              <option value="Gujarati">Gujarati</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thumbnail -->
+      <div class="form-section">
+        <div class="form-section-title">Course Thumbnail</div>
+        <div style="display:flex;gap:var(--space-5);align-items:flex-start;">
+          <div style="flex:1;">
+            <div class="upload-zone" id="thumb-zone" onclick="document.getElementById('thumb-input').click()">
+              <i data-feather="image" style="width:32px;height:32px;color:var(--text-muted);margin-bottom:var(--space-2);"></i>
+              <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">Click to upload thumbnail</div>
+              <div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;">JPG, PNG — recommended 1280×720px</div>
+              <input type="file" id="thumb-input" accept="image/*" hidden />
+            </div>
+          </div>
+          <div style="width:200px;flex-shrink:0;">
+            <img id="thumb-preview" class="thumb-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='113' viewBox='0 0 200 113'%3E%3Crect fill='%23e5e7eb' width='200' height='113'/%3E%3Ctext fill='%236b7280' font-size='14' text-anchor='middle' x='100' y='62'%3EPreview%3C/text%3E%3C/svg%3E" alt="Thumbnail preview" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="form-section">
+        <div class="form-section-title">Pricing</div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Pricing Type *</label>
+            <select id="c-price-type" class="form-select" onchange="togglePriceField()">
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+          <div class="form-group" id="price-field" style="display:none;">
+            <label class="form-label">Price (₹) *</label>
+            <input type="number" id="c-price" class="form-input" placeholder="e.g. 999" min="1" />
+          </div>
+        </div>
+        <!-- Coupon -->
+        <div id="coupon-section" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
+            <div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-secondary);">Coupon Codes</div>
+            <button class="btn btn-ghost btn-sm" onclick="addCoupon()"><i data-feather="plus" style="width:13px;height:13px;"></i> Add Coupon</button>
+          </div>
+          <div id="coupons-list"></div>
+        </div>
+      </div>
+
+      <!-- What you'll learn + Requirements -->
+      <div class="form-section">
+        <div class="form-section-title">Course Details</div>
+        <div class="form-group">
+          <label class="form-label">What Students Will Learn <span style="font-weight:400;color:var(--text-muted);">(one per line)</span></label>
+          <textarea id="c-outcomes" class="form-textarea" rows="3" placeholder="Master algebra and geometry&#10;Solve exam-level problems confidently&#10;Understand concepts with real-world examples"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Requirements / Prerequisites <span style="font-weight:400;color:var(--text-muted);">(one per line)</span></label>
+          <textarea id="c-requirements" class="form-textarea" rows="2" placeholder="Basic arithmetic knowledge&#10;Access to a calculator"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Audience</label>
+          <input type="text" id="c-audience" class="form-input" placeholder="e.g. Class 10 CBSE students preparing for board exams" />
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="form-section">
+        <div class="form-section-title">Publish Settings</div>
+        <div class="form-group">
+          <label class="form-label">Course Status</label>
+          <select id="c-status" class="form-select">
+            <option value="draft">Save as Draft</option>
+            <option value="review">Submit for Review</option>
+            <option value="published">Publish Now</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-outline" id="builder-btn" style="display:none;" onclick="openBuilder()">
+        <i data-feather="layers" style="width:14px;height:14px;"></i> Open Course Builder
+      </button>
+      <button class="btn btn-primary" id="course-save-btn" onclick="saveCourse()">
+        <i data-feather="save" style="width:14px;height:14px;"></i> Save Course
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     COURSE BUILDER
+═══════════════════════════════ -->
+<div class="builder-overlay" id="builder-overlay">
+  <div class="builder-header">
+    <button class="btn btn-ghost btn-sm" onclick="closeBuilder()">
+      <i data-feather="arrow-left" style="width:14px;height:14px;"></i> Back
+    </button>
+    <div style="font-size:var(--font-size-base);font-weight:700;color:var(--text-primary);flex:1;" id="builder-course-name">Course Builder</div>
+    <div style="display:flex;gap:var(--space-2);">
+      <button class="btn btn-outline btn-sm" onclick="saveBuilderDraft()">Save Draft</button>
+      <button class="btn btn-primary btn-sm" onclick="publishCourse()">
+        <i data-feather="globe" style="width:13px;height:13px;"></i> Publish
+      </button>
+    </div>
+  </div>
+  <div class="builder-body">
+    <!-- Module Sidebar -->
+    <div class="builder-sidebar">
+      <div class="builder-sidebar-header">
+        <div style="font-size:var(--font-size-sm);font-weight:700;color:var(--text-primary);">Course Structure</div>
+        <button class="btn btn-primary btn-xs" style="height:28px;padding:0 var(--space-2-5);font-size:var(--font-size-xs);" onclick="addModule()">
+          <i data-feather="plus" style="width:12px;height:12px;"></i> Module
+        </button>
+      </div>
+      <div class="builder-modules" id="builder-modules">
+        <div style="text-align:center;padding:var(--space-8);color:var(--text-muted);font-size:var(--font-size-sm);">
+          Click "+ Module" to create your first module
+        </div>
+      </div>
+    </div>
+    <!-- Lesson Editor -->
+    <div class="builder-main" id="builder-main">
+      <div class="builder-empty">
+        <i data-feather="layers" style="width:48px;height:48px;color:var(--text-muted);opacity:.4;"></i>
+        <div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Select a lesson to edit</div>
+        <div style="font-size:var(--font-size-sm);">Or add a module to get started</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>window.EV_BASE="../../";</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/init.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u)window.location.replace('../../pages/auth/login.html');else if(u.role!=='instructor')window.location.replace('../../pages/errors/403.html');})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+
+  var user=Store.get('auth.user')||{};
+  var name=user.name||'';
+  ['sidebar-user-name','navbar-user-name'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  ['sidebar-avatar','navbar-avatar'].forEach(function(id){var el=document.getElementById(id);if(!el)return;el.textContent=Utils.getInitials(name);el.className='avatar avatar-sm '+Utils.getAvatarColor(name);});
+  var shell=document.getElementById('app-shell');
+  document.getElementById('navbar-menu-btn').addEventListener('click',function(){shell.classList.toggle('sidebar-open');});
+  document.getElementById('sidebar-overlay').addEventListener('click',function(){shell.classList.remove('sidebar-open');});
+  document.getElementById('sidebar-collapse-btn').addEventListener('click',function(){var c=shell.classList.toggle('sidebar-collapsed');try{localStorage.setItem('ev_sidebar_collapsed',String(c));}catch(e){}});
+  try{if(localStorage.getItem('ev_sidebar_collapsed')==='true')shell.classList.add('sidebar-collapsed');else shell.classList.remove('sidebar-collapsed');}catch(e){}
+  document.querySelectorAll('[data-action="toggle-theme"]').forEach(function(btn){btn.addEventListener('click',function(){var d=document.documentElement.classList.toggle('dark');document.documentElement.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('ev_theme',d?'dark':'light');}catch(e){}});});
+  document.querySelectorAll('[data-action="logout"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();Auth.logout();});});
+  var trigger=document.getElementById('navbar-user-trigger'),dropdown=document.getElementById('user-dropdown');
+  if(trigger&&dropdown){trigger.addEventListener('click',function(e){e.stopPropagation();dropdown.hidden=!dropdown.hidden;});document.addEventListener('click',function(){if(dropdown)dropdown.hidden=true;});}
+
+  // ── State ──
+  var allCourses   = [];
+  var editingId    = null;
+  var currentView  = 'grid';
+  var coupons      = [];
+  var builderCourseId   = null;
+  var builderModules    = [];
+  var activeLesson      = null;
+  var thumbFile         = null;
+
+  loadCourses();
+
+  // ── Thumbnail upload preview ──
+  document.getElementById('thumb-input').addEventListener('change', function() {
+    thumbFile = this.files[0];
+    if (!thumbFile) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('thumb-preview').src = e.target.result;
+      document.getElementById('thumb-zone').style.borderColor = 'var(--color-primary-400)';
+    };
+    reader.readAsDataURL(thumbFile);
+  });
+
+  // ── Load Courses ──
+  async function loadCourses() {
+    try {
+      var res    = await Api.instructor.courses();
+      allCourses = (res && res.data) || [];
+      _t('courses-count-label', allCourses.length + ' course' + (allCourses.length !== 1 ? 's' : ''));
+      applyFilters();
+    } catch(err) {
+      document.getElementById('courses-container').innerHTML =
+        '<div style="text-align:center;padding:var(--space-16);color:var(--text-muted);">' +
+        '<div style="font-size:3rem;margin-bottom:var(--space-4);opacity:.4;">📚</div>' +
+        '<div style="font-size:var(--font-size-lg);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);">No courses yet</div>' +
+        '<div style="font-size:var(--font-size-sm);margin-bottom:var(--space-5);">Create your first course to start teaching</div>' +
+        '<button class="btn btn-primary" onclick="openCreateModal()">Create My First Course</button></div>';
+    }
+  }
+
+  function applyFilters() {
+    var q      = document.getElementById('search-input').value.toLowerCase();
+    var status = document.getElementById('filter-status').value;
+    var sort   = document.getElementById('filter-sort').value;
+
+    var filtered = allCourses.filter(function(c) {
+      var mQ = !q || (c.title||'').toLowerCase().includes(q);
+      var mS = !status || c.status === status;
+      return mQ && mS;
+    });
+
+    filtered.sort(function(a,b) {
+      if (sort === 'students') return (b.enrollment_count||0) - (a.enrollment_count||0);
+      if (sort === 'rating')   return (parseFloat(b.avg_rating)||0) - (parseFloat(a.avg_rating)||0);
+      if (sort === 'revenue')  return (parseFloat(b.total_revenue)||0) - (parseFloat(a.total_revenue)||0);
+      return new Date(b.updated_at||0) - new Date(a.updated_at||0);
+    });
+
+    renderCourses(filtered);
+  }
+
+  function renderCourses(courses) {
+    var container = document.getElementById('courses-container');
+    if (!courses.length) {
+      container.innerHTML = '<div style="text-align:center;padding:var(--space-12);color:var(--text-muted);"><div style="font-size:2.5rem;margin-bottom:var(--space-3);opacity:.4;">🔍</div><div style="font-weight:600;color:var(--text-primary);">No courses found</div><div style="font-size:var(--font-size-sm);margin-top:var(--space-1);">Try adjusting your filters</div></div>';
+      return;
+    }
+    if (currentView === 'list') {
+      container.innerHTML = '<div class="courses-list">' + courses.map(renderListItem).join('') + '</div>';
+    } else {
+      container.innerHTML = '<div class="courses-grid">' + courses.map(renderGridCard).join('') + '</div>';
+    }
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  }
+
+  function renderGridCard(c) {
+    var statusCls = {published:'s-published',draft:'s-draft',review:'s-review',archived:'s-archived'}[c.status]||'s-draft';
+    var statusLbl = {published:'Published',draft:'Draft',review:'Under Review',archived:'Archived'}[c.status]||'Draft';
+    var thumbSrc  = c.thumbnail_url || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'320\' height=\'180\' viewBox=\'0 0 320 180\'%3E%3Crect fill=\'%23e5e7eb\' width=\'320\' height=\'180\'/%3E%3Ctext fill=\'%236b7280\' font-size=\'16\' text-anchor=\'middle\' x=\'160\' y=\'96\'%3ENo thumbnail%3C/text%3E%3C/svg%3E';
+    return '<div class="ccard">' +
+      '<div class="ccard-thumb-wrap">' +
+        '<img class="ccard-thumb" src="' + _esc(thumbSrc) + '" alt="' + _esc(c.title) + '" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'320\\\' height=\\\'180\\\'%3E%3Crect fill=\\\'%23e5e7eb\\\' width=\\\'320\\\' height=\\\'180\\\'/%3E%3C/svg%3E\'" />' +
+        '<span class="ccard-status ' + statusCls + '">' + statusLbl + '</span>' +
+      '</div>' +
+      '<div class="ccard-body">' +
+        '<div class="ccard-cat">' + _esc(c.category||'General') + '</div>' +
+        '<div class="ccard-title">' + _esc(c.title) + '</div>' +
+        '<div class="ccard-meta">' +
+          '<span><i data-feather="users" style="width:12px;height:12px;display:inline;"></i> ' + (c.enrollment_count||0) + '</span>' +
+          '<span><i data-feather="star" style="width:12px;height:12px;display:inline;"></i> ' + (c.avg_rating ? parseFloat(c.avg_rating).toFixed(1) : '—') + '</span>' +
+          '<span><i data-feather="video" style="width:12px;height:12px;display:inline;"></i> ' + (c.video_count||0) + ' videos</span>' +
+        '</div>' +
+        '<div class="ccard-foot">' +
+          '<div class="ccard-price">' + (c.is_free || !c.price ? 'Free' : '₹' + c.price) + '</div>' +
+          '<div class="ccard-actions">' +
+            '<button class="btn btn-primary btn-xs" style="height:28px;padding:0 var(--space-2-5);font-size:var(--font-size-xs);" onclick="openBuilderForCourse(' + c.id + ',\'' + _esc(c.title) + '\')">' +
+              '<i data-feather="edit-3" style="width:12px;height:12px;"></i> Build' +
+            '</button>' +
+            '<button class="btn btn-outline btn-icon" style="width:28px;height:28px;" title="Edit details" onclick="editCourse(' + JSON.stringify(c).replace(/"/g,'&quot;') + ')"><i data-feather="settings" style="width:12px;height:12px;"></i></button>' +
+            '<button class="btn btn-ghost btn-icon" style="width:28px;height:28px;" title="More" onclick="showCourseMenu(event,' + c.id + ',\'' + _esc(c.status) + '\')"><i data-feather="more-vertical" style="width:12px;height:12px;"></i></button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderListItem(c) {
+    var statusCls = {published:'s-published',draft:'s-draft',review:'s-review',archived:'s-archived'}[c.status]||'s-draft';
+    var thumbSrc  = c.thumbnail_url || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'60\'%3E%3Crect fill=\'%23e5e7eb\' width=\'100\' height=\'60\'/%3E%3C/svg%3E';
+    return '<div class="clist-item">' +
+      '<img class="clist-thumb" src="' + _esc(thumbSrc) + '" alt="" />' +
+      '<div class="clist-info">' +
+        '<div class="clist-title">' + _esc(c.title) + '</div>' +
+        '<div class="clist-meta">' + _esc(c.category||'') + ' · ' + (c.enrollment_count||0) + ' students · ' + (c.avg_rating ? parseFloat(c.avg_rating).toFixed(1) + ' ★' : 'No ratings') + '</div>' +
+        '<span class="ccard-status ' + statusCls + '" style="margin-top:4px;display:inline-flex;">' + (c.status||'draft') + '</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:var(--space-2);flex-shrink:0;">' +
+        '<div style="text-align:right;margin-right:var(--space-4);">' +
+          '<div style="font-size:var(--font-size-base);font-weight:800;color:var(--text-primary);">' + (c.is_free||!c.price ? 'Free' : '₹'+c.price) + '</div>' +
+          '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">' + (c.total_revenue ? '₹'+parseFloat(c.total_revenue).toFixed(0)+' earned' : '') + '</div>' +
+        '</div>' +
+        '<button class="btn btn-primary btn-sm" onclick="openBuilderForCourse(' + c.id + ',\'' + _esc(c.title) + '\')"><i data-feather="edit-3" style="width:13px;height:13px;"></i> Build</button>' +
+        '<button class="btn btn-outline btn-sm" onclick="editCourse(' + JSON.stringify(c).replace(/"/g,'&quot;') + ')"><i data-feather="settings" style="width:13px;height:13px;"></i></button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── View toggle ──
+  window.setView = function(view, btn) {
+    currentView = view;
+    document.querySelectorAll('.view-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    applyFilters();
+  };
+
+  // ── Course menu ──
+  window.showCourseMenu = function(e, id, status) {
+    e.stopPropagation();
+    var existing = document.getElementById('course-ctx-menu');
+    if (existing) existing.remove();
+    var menu = document.createElement('div');
+    menu.id = 'course-ctx-menu';
+    menu.className = 'dropdown-menu';
+    menu.style.cssText = 'display:block;position:fixed;min-width:160px;z-index:9999;top:' + e.clientY + 'px;left:' + (e.clientX - 150) + 'px;';
+    var items = '';
+    if (status !== 'published') items += '<button class="dropdown-item" onclick="publishDirect(' + id + ')"><i data-feather="globe" style="width:14px;height:14px;"></i> Publish</button>';
+    if (status !== 'archived')  items += '<button class="dropdown-item" onclick="archiveCourse(' + id + ')"><i data-feather="archive" style="width:14px;height:14px;"></i> Archive</button>';
+    items += '<button class="dropdown-item" onclick="duplicateCourse(' + id + ')"><i data-feather="copy" style="width:14px;height:14px;"></i> Duplicate</button>';
+    items += '<div class="dropdown-divider"></div>';
+    items += '<button class="dropdown-item dropdown-item-danger" onclick="deleteCourse(' + id + ')"><i data-feather="trash-2" style="width:14px;height:14px;"></i> Delete</button>';
+    menu.innerHTML = items;
+    document.body.appendChild(menu);
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+    setTimeout(function(){ document.addEventListener('click', function rm(){ document.removeEventListener('click',rm); if(menu.parentNode) menu.remove(); }); }, 0);
+  };
+
+  // ── Create / Edit modal ──
+  window.openCreateModal = function() {
+    editingId = null;
+    coupons   = [];
+    thumbFile = null;
+    document.getElementById('modal-title').textContent     = 'Create New Course';
+    document.getElementById('builder-btn').style.display   = 'none';
+    document.getElementById('course-save-btn').textContent = 'Save Course';
+    ['c-title','c-short-desc','c-desc','c-outcomes','c-requirements','c-audience'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('c-category').value  = '';
+    document.getElementById('c-level').value     = '';
+    document.getElementById('c-language').value  = 'English';
+    document.getElementById('c-price-type').value= 'free';
+    document.getElementById('c-status').value    = 'draft';
+    document.getElementById('price-field').style.display   = 'none';
+    document.getElementById('coupon-section').style.display= 'none';
+    document.getElementById('thumb-preview').src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'113\'%3E%3Crect fill=\'%23e5e7eb\' width=\'200\' height=\'113\'/%3E%3Ctext fill=\'%236b7280\' font-size=\'14\' text-anchor=\'middle\' x=\'100\' y=\'62\'%3EPreview%3C/text%3E%3C/svg%3E';
+    renderCoupons();
+    document.getElementById('course-modal').classList.add('open');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  window.editCourse = function(c) {
+    editingId = c.id;
+    coupons   = [];
+    document.getElementById('modal-title').textContent     = 'Edit Course';
+    document.getElementById('builder-btn').style.display   = 'inline-flex';
+    document.getElementById('course-save-btn').textContent = 'Update Course';
+    _val('c-title',        c.title        || '');
+    _val('c-short-desc',   c.short_description || '');
+    _val('c-desc',         c.description  || '');
+    _val('c-outcomes',     c.outcomes     || '');
+    _val('c-requirements', c.requirements || '');
+    _val('c-audience',     c.target_audience || '');
+    document.getElementById('c-category').value   = c.category  || '';
+    document.getElementById('c-level').value      = c.level     || '';
+    document.getElementById('c-language').value   = c.language  || 'English';
+    document.getElementById('c-price-type').value = c.is_free ? 'free' : 'paid';
+    document.getElementById('c-status').value     = c.status    || 'draft';
+    togglePriceField();
+    if (!c.is_free && c.price) document.getElementById('c-price').value = c.price;
+    if (c.thumbnail_url) document.getElementById('thumb-preview').src = c.thumbnail_url;
+    renderCoupons();
+    document.getElementById('course-modal').classList.add('open');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  window.togglePriceField = function() {
+    var isPaid = document.getElementById('c-price-type').value === 'paid';
+    document.getElementById('price-field').style.display    = isPaid ? '' : 'none';
+    document.getElementById('coupon-section').style.display = isPaid ? '' : 'none';
+  };
+
+  window.closeModal = function() {
+    document.getElementById('course-modal').classList.remove('open');
+  };
+
+  document.getElementById('course-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+
+  // ── Coupons ──
+  window.addCoupon = function() {
+    coupons.push({ code: '', type: 'percent', value: '', max_uses: '', expiry: '' });
+    renderCoupons();
+  };
+
+  function renderCoupons() {
+    var list = document.getElementById('coupons-list');
+    if (!coupons.length) {
+      list.innerHTML = '<div style="text-align:center;padding:var(--space-3);color:var(--text-muted);font-size:var(--font-size-xs);border:1px dashed var(--border-color);border-radius:var(--border-radius-md);">No coupons added</div>';
+      return;
+    }
+    list.innerHTML = coupons.map(function(cp, i) {
+      return '<div style="display:grid;grid-template-columns:1fr auto auto auto auto auto;gap:var(--space-2);align-items:center;margin-bottom:var(--space-2);">' +
+        '<input class="form-input" style="height:34px;" value="' + _esc(cp.code) + '" placeholder="COUPON10" oninput="coupons[' + i + '].code=this.value" />' +
+        '<select class="form-select" style="height:34px;width:90px;" onchange="coupons[' + i + '].type=this.value"><option value="percent"' + (cp.type==='percent'?' selected':'') + '>%</option><option value="flat"' + (cp.type==='flat'?' selected':'') + '>₹</option></select>' +
+        '<input class="form-input" style="height:34px;width:70px;" type="number" value="' + _esc(cp.value) + '" placeholder="10" oninput="coupons[' + i + '].value=this.value" />' +
+        '<input class="form-input" style="height:34px;width:80px;" type="number" value="' + _esc(cp.max_uses) + '" placeholder="Uses" oninput="coupons[' + i + '].max_uses=this.value" />' +
+        '<input class="form-input" style="height:34px;" type="date" value="' + _esc(cp.expiry) + '" oninput="coupons[' + i + '].expiry=this.value" />' +
+        '<button class="btn btn-ghost btn-icon btn-sm" onclick="coupons.splice(' + i + ',1);renderCoupons()"><i data-feather="x" style="width:13px;height:13px;"></i></button>' +
+      '</div>';
+    }).join('');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  }
+
+  // ── Save Course ──
+  window.saveCourse = async function() {
+    var title = document.getElementById('c-title').value.trim();
+    var cat   = document.getElementById('c-category').value;
+    var level = document.getElementById('c-level').value;
+    if (!title) { showToast('error', 'Course title is required.'); return; }
+    if (!cat)   { showToast('error', 'Please select a category.'); return; }
+    if (!level) { showToast('error', 'Please select an education level.'); return; }
+
+    var btn = document.getElementById('course-save-btn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    var payload = {
+      title:             title,
+      short_description: document.getElementById('c-short-desc').value.trim(),
+      description:       document.getElementById('c-desc').value.trim(),
+      category:          cat,
+      level:             level,
+      language:          document.getElementById('c-language').value,
+      is_free:           document.getElementById('c-price-type').value === 'free',
+      price:             document.getElementById('c-price-type').value === 'paid' ? parseFloat(document.getElementById('c-price').value) || 0 : 0,
+      outcomes:          document.getElementById('c-outcomes').value.trim(),
+      requirements:      document.getElementById('c-requirements').value.trim(),
+      target_audience:   document.getElementById('c-audience').value.trim(),
+      status:            document.getElementById('c-status').value,
+      coupons:           JSON.stringify(coupons),
+    };
+
+    try {
+      var res;
+      if (editingId) {
+        res = await Api.instructor.updateCourse(editingId, payload);
+      } else {
+        res = await Api.instructor.createCourse(payload);
+      }
+
+      var courseId = (res && res.data && res.data.id) || editingId;
+
+      // Upload thumbnail if selected
+      if (thumbFile && courseId) {
+        try {
+          await Api.instructor.uploadThumb(courseId, thumbFile, function(pct){ /* progress */ });
+        } catch(e) { console.warn('Thumb upload failed:', e); }
+      }
+
+      closeModal();
+      showToast('success', editingId ? 'Course updated!' : 'Course created! Open Course Builder to add videos.');
+      await loadCourses();
+
+      // Auto-open builder for new courses
+      if (!editingId && courseId) {
+        setTimeout(function(){ openBuilderForCourse(courseId, title); }, 800);
+      }
+
+    } catch(err) {
+      showToast('error', (err && err.message) || 'Failed to save course.');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i data-feather="save" style="width:14px;height:14px;"></i> ' + (editingId ? 'Update Course' : 'Save Course');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  // ── Course actions ──
+  window.publishDirect = async function(id) {
+    try {
+      await Api.instructor.publishCourse(id);
+      showToast('success', 'Course published!');
+      await loadCourses();
+    } catch(err) { showToast('error', (err&&err.message)||'Failed.'); }
+  };
+
+  window.archiveCourse = async function(id) {
+    try {
+      await Api.instructor.updateCourse(id, { status: 'archived' });
+      showToast('success', 'Course archived.');
+      await loadCourses();
+    } catch(err) { showToast('error', (err&&err.message)||'Failed.'); }
+  };
+
+  window.duplicateCourse = function(id) {
+    showToast('info', 'Duplicating course… This feature is coming soon.');
+  };
+
+  window.deleteCourse = async function(id) {
+    if (!confirm('Delete this course? This cannot be undone.')) return;
+    try {
+      await Api.instructor.deleteCourse(id);
+      showToast('success', 'Course deleted.');
+      await loadCourses();
+    } catch(err) { showToast('error', (err&&err.message)||'Failed.'); }
+  };
+
+  // ── Builder ──
+  window.openBuilderForCourse = async function(id, title) {
+    builderCourseId = id;
+    builderModules  = [];
+    document.getElementById('builder-course-name').textContent = title || 'Course Builder';
+    document.getElementById('builder-overlay').classList.add('open');
+    renderBuilderModules();
+
+    try {
+      var res      = await Api.instructor.sections(id);
+      var sections = (res && res.data) || [];
+      builderModules = await Promise.all(sections.map(async function(s) {
+        try {
+          var lr  = await Api.instructor.lessons(s.id);
+          var lss = (lr && lr.data) || [];
+          return { id: s.id, title: s.title, lessons: lss, open: true };
+        } catch(e) {
+          return { id: s.id, title: s.title, lessons: [], open: true };
+        }
+      }));
+      renderBuilderModules();
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
+  window.openBuilder = function() {
+    if (editingId) {
+      closeModal();
+      var c = allCourses.find(function(x){ return x.id === editingId; });
+      openBuilderForCourse(editingId, c ? c.title : 'Course Builder');
+    }
+  };
+
+  window.closeBuilder = function() {
+    document.getElementById('builder-overlay').classList.remove('open');
+    loadCourses();
+  };
+
+  window.addModule = async function() {
+    var title = prompt('Module title:', 'Module ' + (builderModules.length + 1));
+    if (!title) return;
+    try {
+      var res = await Api.instructor.createSection(builderCourseId, { title: title, order: builderModules.length + 1 });
+      var sec = (res && res.data) || { id: Date.now(), title: title };
+      builderModules.push({ id: sec.id, title: title, lessons: [], open: true });
+      renderBuilderModules();
+    } catch(err) {
+      showToast('error', (err&&err.message)||'Failed to create module.');
+    }
+  };
+
+  function renderBuilderModules() {
+    var el = document.getElementById('builder-modules');
+    if (!builderModules.length) {
+      el.innerHTML = '<div style="text-align:center;padding:var(--space-6);color:var(--text-muted);font-size:var(--font-size-sm);">Click "+ Module" to create your first module</div>';
+      return;
+    }
+    el.innerHTML = builderModules.map(function(m, mi) {
+      var lessonsHtml = m.open ? (
+        '<div class="module-lessons">' +
+          (m.lessons.length ? m.lessons.map(function(l, li) {
+            var typeClass = l.type === 'video' ? 'lt-video' : l.type === 'quiz' ? 'lt-quiz' : 'lt-text';
+            var typeIcon  = l.type === 'video' ? '▶' : l.type === 'quiz' ? '?' : 'T';
+            var isActive  = activeLesson && activeLesson.id === l.id;
+            return '<div class="lesson-item' + (isActive?' active':'') + '" onclick="selectLesson(' + JSON.stringify(l).replace(/"/g,'&quot;') + ',' + mi + ',' + li + ')">' +
+              '<span class="lesson-type-icon ' + typeClass + '">' + typeIcon + '</span>' +
+              '<span class="lesson-name">' + _esc(l.title||'Untitled Lesson') + '</span>' +
+              '<button class="del-btn" style="color:var(--text-muted);background:none;border:none;cursor:pointer;font-size:12px;" onclick="event.stopPropagation();deleteLesson(' + mi + ',' + li + ',' + l.id + ')" title="Delete">✕</button>' +
+            '</div>';
+          }).join('') : '<div style="font-size:var(--font-size-xs);color:var(--text-muted);padding:var(--space-2);">No lessons yet</div>') +
+          '<button class="btn btn-ghost btn-sm" style="margin-top:4px;width:100%;justify-content:flex-start;font-size:var(--font-size-xs);" onclick="addLesson(' + mi + ')">' +
+            '<i data-feather="plus" style="width:12px;height:12px;"></i> Add Lesson' +
+          '</button>' +
+        '</div>'
+      ) : '';
+
+      return '<div class="module-block">' +
+        '<div class="module-header" onclick="builderModules[' + mi + '].open=!builderModules[' + mi + '].open;renderBuilderModules()">' +
+          '<i data-feather="' + (m.open?'chevron-down':'chevron-right') + '" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>' +
+          '<input class="module-title-input" value="' + _esc(m.title) + '" onclick="event.stopPropagation()" onblur="renameModule(' + mi + ',this.value)" />' +
+          '<button style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;" onclick="event.stopPropagation();deleteModule(' + mi + ',' + m.id + ')" title="Delete module">✕</button>' +
+        '</div>' +
+        lessonsHtml +
+      '</div>';
+    }).join('');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  }
+
+  window.addLesson = async function(mi) {
+    var title = prompt('Lesson title:', 'Lesson ' + (builderModules[mi].lessons.length + 1));
+    if (!title) return;
+    try {
+      var res    = await Api.instructor.createLesson(builderModules[mi].id, { title: title, type: 'video', order: builderModules[mi].lessons.length + 1 });
+      var lesson = (res && res.data) || { id: Date.now(), title: title, type: 'video' };
+      builderModules[mi].lessons.push(lesson);
+      renderBuilderModules();
+      selectLesson(lesson, mi, builderModules[mi].lessons.length - 1);
+    } catch(err) {
+      showToast('error', (err&&err.message)||'Failed to create lesson.');
+    }
+  };
+
+  window.deleteLesson = async function(mi, li, id) {
+    if (!confirm('Delete this lesson?')) return;
+    try {
+      if (id && typeof id === 'number' && id < 1e12) await Api.instructor.deleteLesson(id);
+      builderModules[mi].lessons.splice(li, 1);
+      if (activeLesson && activeLesson.id === id) {
+        activeLesson = null;
+        document.getElementById('builder-main').innerHTML = '<div class="builder-empty"><i data-feather="layers" style="width:48px;height:48px;color:var(--text-muted);opacity:.4;"></i><div style="font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);">Select a lesson to edit</div></div>';
+        if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+      }
+      renderBuilderModules();
+    } catch(err) { showToast('error',(err&&err.message)||'Failed.'); }
+  };
+
+  window.deleteModule = async function(mi, id) {
+    if (!confirm('Delete this module and all its lessons?')) return;
+    try {
+      if (id && typeof id === 'number' && id < 1e12) await Api.instructor.deleteSection(id);
+      builderModules.splice(mi, 1);
+      renderBuilderModules();
+    } catch(err) { showToast('error',(err&&err.message)||'Failed.'); }
+  };
+
+  window.renameModule = async function(mi, title) {
+    if (!title.trim() || title.trim() === builderModules[mi].title) return;
+    builderModules[mi].title = title.trim();
+    try { await Api.instructor.updateSection(builderModules[mi].id, { title: title.trim() }); }
+    catch(e) {}
+  };
+
+  window.selectLesson = function(lesson, mi, li) {
+    activeLesson = lesson;
+    renderBuilderModules();
+    renderLessonEditor(lesson, mi, li);
+  };
+
+  function renderLessonEditor(lesson, mi, li) {
+    var main = document.getElementById('builder-main');
+    main.innerHTML =
+      '<div style="max-width:640px;">' +
+        '<div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-6);">' +
+          '<div style="width:40px;height:40px;border-radius:var(--border-radius-md);background:var(--color-primary-50);color:var(--color-primary-600);display:flex;align-items:center;justify-content:center;">' +
+            '<i data-feather="video" style="width:18px;height:18px;"></i>' +
+          '</div>' +
+          '<div>' +
+            '<div style="font-size:var(--font-size-lg);font-weight:700;color:var(--text-primary);">' + _esc(lesson.title) + '</div>' +
+            '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">Lesson Editor</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="form-group" style="margin-bottom:var(--space-4);">' +
+          '<label class="form-label">Lesson Title</label>' +
+          '<input type="text" id="lesson-title-input" class="form-input" value="' + _esc(lesson.title) + '" />' +
+        '</div>' +
+
+        '<div class="form-group" style="margin-bottom:var(--space-4);">' +
+          '<label class="form-label">Lesson Type</label>' +
+          '<select id="lesson-type-select" class="form-select" onchange="toggleLessonType(this.value)">' +
+            '<option value="video"' + (lesson.type==='video'?' selected':'') + '>Video Lesson</option>' +
+            '<option value="text"' + (lesson.type==='text'?' selected':'') + '>Text / Article</option>' +
+            '<option value="quiz"' + (lesson.type==='quiz'?' selected':'') + '>Quiz</option>' +
+          '</select>' +
+        '</div>' +
+
+        '<div id="lesson-video-section" style="' + (lesson.type!=='video'?'display:none;':'') + '">' +
+          '<div class="form-group" style="margin-bottom:var(--space-4);">' +
+            '<label class="form-label">Upload Video</label>' +
+            '<div class="upload-zone" id="video-upload-zone" onclick="document.getElementById(\'video-file-input\').click()">' +
+              '<i data-feather="upload-cloud" style="width:36px;height:36px;color:var(--text-muted);margin-bottom:8px;"></i>' +
+              '<div style="font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">' + (lesson.video_url ? 'Video uploaded ✓' : 'Click to upload video') + '</div>' +
+              '<div style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;">MP4, MOV, AVI — max 4GB</div>' +
+              '<input type="file" id="video-file-input" accept="video/*" hidden />' +
+            '</div>' +
+            '<div class="progress-bar-upload" id="video-progress-wrap" style="display:none;">' +
+              '<div class="progress-bar-fill" id="video-progress-fill" style="width:0%;"></div>' +
+            '</div>' +
+            '<div id="video-status" style="font-size:var(--font-size-xs);color:var(--text-muted);margin-top:4px;"></div>' +
+          '</div>' +
+          '<div class="form-group" style="margin-bottom:var(--space-4);">' +
+            '<label class="form-label">Video Description</label>' +
+            '<textarea id="lesson-desc-input" class="form-textarea" rows="2" placeholder="Brief description of this lesson…">' + _esc(lesson.description||'') + '</textarea>' +
+          '</div>' +
+          '<div class="form-group" style="margin-bottom:var(--space-4);">' +
+            '<label class="form-label">Chapter Timestamps <span style="font-weight:400;color:var(--text-muted);">(one per line, format: 00:00 Chapter Title)</span></label>' +
+            '<textarea id="lesson-timestamps" class="form-textarea" rows="3" placeholder="00:00 Introduction&#10;02:30 Main Concept&#10;08:45 Examples&#10;14:00 Summary">' + _esc(lesson.timestamps||'') + '</textarea>' +
+          '</div>' +
+          '<div class="form-group" style="margin-bottom:var(--space-4);">' +
+            '<label class="form-checkbox" style="cursor:pointer;align-items:center;gap:var(--space-2);">' +
+              '<input type="checkbox" id="lesson-free-preview" ' + (lesson.is_free_preview?'checked':'') + ' />' +
+              '<span style="font-size:var(--font-size-sm);">Set as free preview (publicly watchable without enrollment)</span>' +
+            '</label>' +
+          '</div>' +
+        '</div>' +
+
+        '<div id="lesson-text-section" style="' + (lesson.type!=='text'?'display:none;':'') + '">' +
+          '<div class="form-group" style="margin-bottom:var(--space-4);">' +
+            '<label class="form-label">Article Content</label>' +
+            '<textarea id="lesson-text-input" class="form-textarea" rows="10" placeholder="Write your lesson content here…">' + _esc(lesson.content||'') + '</textarea>' +
+          '</div>' +
+        '</div>' +
+
+        '<div style="display:flex;gap:var(--space-3);">' +
+          '<button class="btn btn-primary" onclick="saveLesson(' + mi + ',' + li + ')"><i data-feather="save" style="width:14px;height:14px;"></i> Save Lesson</button>' +
+          '<button class="btn btn-outline" onclick="activeLesson=null;document.getElementById(\'builder-main\').innerHTML=\'<div class=\\\'builder-empty\\\'><i data-feather=\\\'layers\\\' style=\\\'width:48px;height:48px;color:var(--text-muted);opacity:.4;\\\'></i><div style=\\\'font-size:var(--font-size-base);font-weight:600;color:var(--text-primary);\\\'>Select a lesson to edit</div></div>\';feather.replace({\'stroke-width\':1.75});renderBuilderModules()">Cancel</button>' +
+        '</div>' +
+      '</div>';
+
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+
+    // Video upload handler
+    document.getElementById('video-file-input').addEventListener('change', async function() {
+      var file = this.files[0];
+      if (!file) return;
+      if (file.size > 4 * 1024 * 1024 * 1024) { showToast('error','File must be under 4GB.'); return; }
+      document.getElementById('video-upload-zone').innerHTML = '<i data-feather="loader" style="width:24px;height:24px;color:var(--color-primary-600);margin-bottom:8px;"></i><div style="font-size:var(--font-size-sm);font-weight:600;">Uploading…</div>';
+      document.getElementById('video-progress-wrap').style.display = '';
+      if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+      try {
+        await Api.instructor.uploadVideo(lesson.id, file, function(pct) {
+          document.getElementById('video-progress-fill').style.width = pct + '%';
+          document.getElementById('video-status').textContent = 'Uploading… ' + pct + '%';
+        });
+        document.getElementById('video-upload-zone').innerHTML = '<div style="color:var(--color-success);font-size:1.5rem;margin-bottom:4px;">✓</div><div style="font-size:var(--font-size-sm);font-weight:600;color:var(--color-success);">Video uploaded!</div>';
+        document.getElementById('video-status').textContent = 'Processing in background…';
+        showToast('success', 'Video uploaded! It will be processed in the background.');
+      } catch(err) {
+        document.getElementById('video-upload-zone').innerHTML = '<div style="color:var(--color-danger);">Upload failed. Try again.</div>';
+        showToast('error', (err&&err.message)||'Upload failed.');
+      }
+    });
+  }
+
+  window.toggleLessonType = function(type) {
+    document.getElementById('lesson-video-section').style.display = type === 'video' ? '' : 'none';
+    document.getElementById('lesson-text-section').style.display  = type === 'text'  ? '' : 'none';
+  };
+
+  window.saveLesson = async function(mi, li) {
+    if (!activeLesson) return;
+    var payload = {
+      title:           document.getElementById('lesson-title-input').value.trim(),
+      type:            document.getElementById('lesson-type-select').value,
+      description:     (document.getElementById('lesson-desc-input') ? document.getElementById('lesson-desc-input').value : ''),
+      timestamps:      (document.getElementById('lesson-timestamps') ? document.getElementById('lesson-timestamps').value : ''),
+      content:         (document.getElementById('lesson-text-input') ? document.getElementById('lesson-text-input').value : ''),
+      is_free_preview: document.getElementById('lesson-free-preview') ? document.getElementById('lesson-free-preview').checked : false,
+    };
+    try {
+      await Api.instructor.updateLesson(activeLesson.id, payload);
+      builderModules[mi].lessons[li] = Object.assign({}, activeLesson, payload);
+      showToast('success', 'Lesson saved!');
+      renderBuilderModules();
+    } catch(err) {
+      showToast('error', (err&&err.message)||'Failed to save lesson.');
+    }
+  };
+
+  window.saveBuilderDraft = function() {
+    showToast('success', 'Course structure saved!');
+  };
+
+  window.publishCourse = async function() {
+    if (!confirm('Publish this course? It will be visible to students.')) return;
+    try {
+      await Api.instructor.publishCourse(builderCourseId);
+      showToast('success', 'Course published successfully!');
+      closeBuilder();
+    } catch(err) {
+      showToast('error', (err&&err.message)||'Failed to publish.');
+    }
+  };
+
+  // ── Filters ──
+  var debounce;
+  document.getElementById('search-input').addEventListener('input', function(){ clearTimeout(debounce); debounce=setTimeout(applyFilters,300); });
+  ['filter-status','filter-sort'].forEach(function(id){ document.getElementById(id).addEventListener('change', applyFilters); });
+
+  // ── Helpers ──
+  function _t(id,val){var el=document.getElementById(id);if(el)el.textContent=val==null?'':val;}
+  function _val(id,val){var el=document.getElementById(id);if(el)el.value=val;}
+  function _esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function showToast(type,msg){var c=document.getElementById('toast-container');var el=document.createElement('div');el.className='toast toast-'+type;el.innerHTML='<div style="flex:1;font-size:var(--font-size-sm);font-weight:600;color:var(--text-primary);">'+_esc(msg)+'</div><button style="background:none;border:none;cursor:pointer;color:var(--text-muted);" onclick="this.closest(\'.toast\').remove()">✕</button>';c.appendChild(el);setTimeout(function(){if(el.parentNode)el.remove();},5000);}
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Courses — EduVerse Instructor</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js" defer></script>
+  <style>
+    :root{--ink:#0d0f14;--surface:#f8f7f4;--surface-2:#f0ede8;--border:#e4e0d8;--accent:#ff5c35;--accent-soft:#fff0ec;--accent-2:#1a56db;--accent-2-soft:#eef3ff;--success:#16a34a;--success-soft:#f0fdf4;--warning:#d97706;--warning-soft:#fffbeb;--danger:#dc2626;--danger-soft:#fff5f5;--text-primary:#0d0f14;--text-secondary:#4a4e5c;--text-muted:#8a8fa8;--radius:12px;--radius-sm:8px;--sidebar-w:240px;--font:'DM Sans',sans-serif;--transition:180ms cubic-bezier(0.4,0,0.2,1);}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font);background:var(--surface);color:var(--text-primary);display:flex;height:100vh;overflow:hidden;}
+    /* Sidebar */
+    .sidebar{width:var(--sidebar-w);background:var(--ink);color:#fff;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+    .brand-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;}
+    .brand-name{font-weight:700;font-size:15px;}.brand-role{font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px;}
+    .nav-section{padding:16px 12px 8px;}.nav-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:0 8px;margin-bottom:6px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.55);font-size:13.5px;font-weight:500;text-decoration:none;transition:all var(--transition);}
+    .nav-item:hover{background:rgba(255,255,255,0.07);color:#fff;}.nav-item.active{background:var(--accent);color:#fff;}
+    .nav-item svg{width:15px;height:15px;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:var(--accent);color:#fff;border-radius:99px;font-size:10px;font-weight:700;padding:1px 6px;}
+    .nav-item.active .nav-badge{background:rgba(255,255,255,0.25);}
+    .sidebar-user{margin-top:auto;padding:16px 12px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+    .user-name{font-size:13px;font-weight:600;color:#fff;}.user-email{font-size:11px;color:rgba(255,255,255,0.4);}
+    /* Main */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .topbar-title{font-size:15px;font-weight:600;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all var(--transition);text-decoration:none;border:none;}
+    .btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{opacity:0.88;}
+    .btn-outline{background:none;border:1px solid var(--border);color:var(--text-secondary);}.btn-outline:hover{background:var(--surface);border-color:var(--text-muted);}
+    .btn-ghost{background:none;border:none;color:var(--text-muted);}.btn-ghost:hover{color:var(--text-primary);}
+    .btn-danger{background:none;border:1px solid var(--danger);color:var(--danger);}.btn-danger:hover{background:var(--danger-soft);}
+    .btn svg{width:14px;height:14px;}
+    .content{flex:1;overflow-y:auto;padding:24px 28px;}
+    /* Filters */
+    .filters-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+    .search-wrap{position:relative;flex:1;min-width:220px;}
+    .search-wrap input{width:100%;height:38px;padding:0 12px 0 38px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13.5px;background:#fff;outline:none;transition:border-color var(--transition);}
+    .search-wrap input:focus{border-color:var(--accent);}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:15px;height:15px;pointer-events:none;}
+    .filter-select{height:38px;padding:0 32px 0 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:#fff;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8fa8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+    /* Course grid */
+    .courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+    .course-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--transition);}
+    .course-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);transform:translateY(-2px);}
+    .course-thumb{height:140px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;}
+    .status-badge{position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;text-transform:uppercase;}
+    .status-published{background:var(--success-soft);color:var(--success);}
+    .status-draft{background:var(--warning-soft);color:var(--warning);}
+    .status-archived{background:var(--surface-2);color:var(--text-muted);}
+    .course-body{padding:16px;}
+    .course-category{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--accent-2);margin-bottom:4px;}
+    .course-title{font-size:14.5px;font-weight:700;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .course-stats{display:flex;gap:14px;font-size:11.5px;color:var(--text-muted);margin-bottom:14px;}
+    .course-stats span{display:flex;align-items:center;gap:4px;}
+    .course-stats svg{width:12px;height:12px;}
+    .course-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);}
+    .course-price{font-size:15px;font-weight:700;}
+    .course-actions{display:flex;gap:6px;}
+    .icon-btn{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all var(--transition);}
+    .icon-btn:hover{background:var(--surface);color:var(--text-primary);}
+    .icon-btn.danger:hover{background:var(--danger-soft);border-color:var(--danger);color:var(--danger);}
+    .icon-btn svg{width:14px;height:14px;}
+    /* Empty state */
+    .empty-state{text-align:center;padding:64px 24px;}
+    .empty-icon{font-size:3.5rem;margin-bottom:16px;}
+    .empty-title{font-size:20px;font-weight:700;margin-bottom:8px;}
+    .empty-desc{font-size:14px;color:var(--text-muted);margin-bottom:24px;}
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#fff;border-radius:var(--radius);width:100%;max-width:680px;box-shadow:0 24px 64px rgba(0,0,0,0.2);}
+    .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .modal-title{font-size:16px;font-weight:700;}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;}
+    .modal-body{padding:24px;}
+    .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+    /* Form */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-full{grid-column:1/-1;}
+    .form-group{margin-bottom:16px;}
+    .form-label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--text-secondary);}
+    .form-label span{color:var(--danger);}
+    .form-input{width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13.5px;outline:none;transition:border-color var(--transition);}
+    .form-input:focus{border-color:var(--accent);}
+    .form-textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13.5px;outline:none;resize:vertical;min-height:90px;transition:border-color var(--transition);}
+    .form-textarea:focus{border-color:var(--accent);}
+    .form-select{width:100%;height:40px;padding:0 32px 0 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13.5px;background:#fff;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8fa8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+    .form-select:focus{border-color:var(--accent);}
+    .form-row{display:flex;gap:16px;}
+    .form-row .form-group{flex:1;}
+    /* Tab bar inside modal */
+    .tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
+    .tab{padding:10px 16px;font-size:13px;font-weight:600;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);transition:all var(--transition);}
+    .tab:hover{color:var(--text-primary);}
+    .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+    /* Module builder */
+    .module-list{display:flex;flex-direction:column;gap:10px;}
+    .module-item{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+    .module-header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface);cursor:pointer;}
+    .module-drag{color:var(--text-muted);cursor:grab;}.module-drag svg{width:14px;height:14px;}
+    .module-title-input{flex:1;border:none;background:none;font-family:var(--font);font-size:13.5px;font-weight:600;outline:none;}
+    .module-actions{display:flex;gap:6px;margin-left:auto;}
+    .module-videos{padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+    .video-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border:1px solid var(--border);border-radius:6px;}
+    .video-drag{color:var(--text-muted);cursor:grab;}.video-drag svg{width:13px;height:13px;}
+    .video-icon{color:var(--accent-2);}.video-icon svg{width:14px;height:14px;}
+    .video-title{flex:1;font-size:13px;font-weight:500;}
+    .video-dur{font-size:11.5px;color:var(--text-muted);font-family:var(--mono);}
+    .add-video-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px dashed var(--border);border-radius:6px;font-size:13px;color:var(--text-muted);cursor:pointer;background:none;font-family:var(--font);transition:all var(--transition);}
+    .add-video-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .add-video-btn svg{width:13px;height:13px;}
+    .add-module-btn{display:flex;align-items:center;gap:8px;padding:12px;border:1px dashed var(--border);border-radius:var(--radius-sm);font-size:13.5px;color:var(--text-muted);cursor:pointer;background:none;font-family:var(--font);transition:all var(--transition);justify-content:center;}
+    .add-module-btn:hover{border-color:var(--accent);color:var(--accent);}
+    /* Upload zone */
+    .upload-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:all var(--transition);}
+    .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-soft);}
+    .upload-zone-icon{font-size:2rem;margin-bottom:8px;}
+    .upload-zone-text{font-size:13px;color:var(--text-muted);}
+    .upload-zone-text strong{color:var(--accent);}
+    /* Skel */
+    .skel{background:linear-gradient(90deg,var(--border) 25%,var(--surface-2) 50%,var(--border) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    /* Toast */
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:10px;}
+    .toast{background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.25);animation:slideUp 0.3s ease;}
+    .toast-success{border-left:4px solid var(--success);}
+    .toast-error{border-left:4px solid var(--danger);}
+    @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+    /* Confirm dialog */
+    .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center;}
+    .confirm-overlay.open{display:flex;}
+    .confirm-box{background:#fff;border-radius:var(--radius);padding:28px;max-width:380px;width:100%;text-align:center;}
+    .confirm-icon{font-size:2.5rem;margin-bottom:12px;}
+    .confirm-title{font-size:17px;font-weight:700;margin-bottom:8px;}
+    .confirm-desc{font-size:13.5px;color:var(--text-muted);margin-bottom:24px;}
+    .confirm-actions{display:flex;gap:10px;justify-content:center;}
+  </style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand"><div class="brand-mark">E</div><div><div class="brand-name">EduVerse</div><div class="brand-role">Instructor Portal</div></div></div>
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><i data-feather="grid"></i> Dashboard</a>
+    <a class="nav-item active" href="courses.html"><i data-feather="book-open"></i> My Courses</a>
+    <a class="nav-item" href="students.html"><i data-feather="users"></i> Students</a>
+    <a class="nav-item" href="analytics.html"><i data-feather="trending-up"></i> Analytics</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Teach</div>
+    <a class="nav-item" href="live-sessions.html"><i data-feather="video"></i> Live Sessions</a>
+    <a class="nav-item" href="assessments.html"><i data-feather="edit-3"></i> Assessments</a>
+    <a class="nav-item" href="grading.html"><i data-feather="check-square"></i> Grading Center</a>
+    <a class="nav-item" href="forum.html"><i data-feather="message-square"></i> Discussion Forum</a>
+    <a class="nav-item" href="question-bank.html"><i data-feather="database"></i> Question Bank</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Business</div>
+    <a class="nav-item" href="earnings.html"><i data-feather="dollar-sign"></i> Earnings</a>
+    <a class="nav-item" href="coupons.html"><i data-feather="tag"></i> Coupons</a>
+    <a class="nav-item" href="announcements.html"><i data-feather="bell"></i> Announcements</a>
+    <a class="nav-item" href="reports.html"><i data-feather="file-text"></i> Reports</a>
+    <a class="nav-item" href="messages.html"><i data-feather="mail"></i> Messages</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="profile.html"><i data-feather="user"></i> Profile</a>
+    <a class="nav-item" href="../../pages/auth/login.html" id="logout-btn"><i data-feather="log-out"></i> Sign Out</a>
+  </div>
+  <div class="sidebar-user"><div class="user-avatar" id="sidebar-avatar">I</div><div><div class="user-name" id="sidebar-name">Instructor</div><div class="user-email" id="sidebar-email">loading...</div></div></div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">My Courses</div>
+    <div class="topbar-right">
+      <button class="btn btn-outline" onclick="previewMode()"><i data-feather="eye"></i> Preview Mode</button>
+      <button class="btn btn-primary" id="new-course-btn"><i data-feather="plus"></i> New Course</button>
+    </div>
+  </header>
+
+  <div class="content">
+    <!-- Filters -->
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <i data-feather="search" class="search-icon"></i>
+        <input type="text" id="search-input" placeholder="Search your courses…" />
+      </div>
+      <select class="filter-select" id="status-filter">
+        <option value="">All Status</option>
+        <option value="published">Published</option>
+        <option value="draft">Draft</option>
+        <option value="archived">Archived</option>
+      </select>
+      <select class="filter-select" id="sort-filter">
+        <option value="newest">Newest first</option>
+        <option value="popular">Most students</option>
+        <option value="revenue">Top revenue</option>
+      </select>
+    </div>
+
+    <!-- Grid -->
+    <div class="courses-grid" id="courses-grid">
+      <div class="skel" style="height:300px;border-radius:12px;"></div>
+      <div class="skel" style="height:300px;border-radius:12px;"></div>
+      <div class="skel" style="height:300px;border-radius:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Course Create/Edit Modal ════ -->
+<div class="modal-overlay" id="course-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Create New Course</div>
+      <button class="modal-close" id="modal-close-btn"><i data-feather="x" style="width:18px;height:18px;"></i></button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <!-- Tab bar -->
+      <div style="padding:0 24px;">
+        <div class="tab-bar">
+          <button class="tab active" data-tab="basics">Basics</button>
+          <button class="tab" data-tab="builder">Course Builder</button>
+          <button class="tab" data-tab="pricing">Pricing</button>
+          <button class="tab" data-tab="settings">Settings</button>
+        </div>
+      </div>
+
+      <!-- Tab: Basics -->
+      <div class="tab-panel active" id="tab-basics" style="padding:20px 24px;">
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label class="form-label">Course Title <span>*</span></label>
+            <input class="form-input" id="f-title" placeholder="e.g. Complete Python for Beginners" />
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Short Description <span>*</span></label>
+            <input class="form-input" id="f-short-desc" placeholder="One sentence about this course" />
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Detailed Description</label>
+            <textarea class="form-textarea" id="f-description" rows="4" placeholder="What will students learn? Who is this for?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category <span>*</span></label>
+            <select class="form-select" id="f-category">
+              <option value="">Select category</option>
+              <option>Mathematics</option><option>Science</option><option>Programming</option>
+              <option>Languages</option><option>Commerce</option><option>Arts</option>
+              <option>Engineering</option><option>Medical</option><option>Law</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Level <span>*</span></label>
+            <select class="form-select" id="f-level">
+              <option value="">Select level</option>
+              <optgroup label="Early Education"><option>Pre-School</option><option>Primary (1–5)</option><option>Middle School (6–8)</option></optgroup>
+              <optgroup label="Secondary"><option>High School (9–10)</option><option>Senior Secondary (11–12)</option></optgroup>
+              <optgroup label="Higher Education"><option>Undergraduate</option><option>Postgraduate</option><option>PhD</option></optgroup>
+              <optgroup label="Professional"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Language</label>
+            <select class="form-select" id="f-language">
+              <option>English</option><option>Hindi</option><option>Tamil</option><option>Telugu</option><option>Kannada</option><option>Malayalam</option><option>Bengali</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Audience</label>
+            <input class="form-input" id="f-audience" placeholder="e.g. Class 10-12 students" />
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">What Students Will Learn (one per line)</label>
+            <textarea class="form-textarea" id="f-learn" rows="3" placeholder="Build real-world Python apps&#10;Understand OOP concepts&#10;Deploy to production"></textarea>
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Requirements (one per line)</label>
+            <textarea class="form-textarea" id="f-requirements" rows="2" placeholder="Basic computer knowledge&#10;No prior coding experience needed"></textarea>
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Course Thumbnail</label>
+            <div class="upload-zone" id="thumb-zone" onclick="document.getElementById('thumb-file').click()">
+              <div class="upload-zone-icon">🖼️</div>
+              <div class="upload-zone-text"><strong>Click to upload</strong> or drag & drop<br>Recommended: 1280×720px, JPG/PNG (max 5MB)</div>
+              <input type="file" id="thumb-file" accept="image/*" style="display:none;" />
+            </div>
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Trailer / Preview Video URL</label>
+            <input class="form-input" id="f-trailer" placeholder="https://youtube.com/... or upload link" />
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Tags (comma separated)</label>
+            <input class="form-input" id="f-tags" placeholder="python, programming, beginners, 2024" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Builder -->
+      <div class="tab-panel" id="tab-builder" style="padding:20px 24px;">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Build your course structure. Add modules and upload videos into each module.</p>
+        <div class="module-list" id="module-list"></div>
+        <button class="add-module-btn" id="add-module-btn" style="margin-top:10px;">
+          <i data-feather="plus"></i> Add Module
+        </button>
+      </div>
+
+      <!-- Tab: Pricing -->
+      <div class="tab-panel" id="tab-pricing" style="padding:20px 24px;">
+        <div class="form-group">
+          <label class="form-label">Pricing Type</label>
+          <div style="display:flex;gap:12px;margin-bottom:16px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:500;">
+              <input type="radio" name="pricing-type" value="free" id="price-free" style="accent-color:var(--accent);width:16px;height:16px;" />
+              Free
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:500;">
+              <input type="radio" name="pricing-type" value="paid" id="price-paid" checked style="accent-color:var(--accent);width:16px;height:16px;" />
+              Paid
+            </label>
+          </div>
+        </div>
+        <div id="price-fields">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Price (₹) <span>*</span></label>
+              <input class="form-input" id="f-price" type="number" min="0" placeholder="e.g. 999" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Original Price (₹)</label>
+              <input class="form-input" id="f-original-price" type="number" min="0" placeholder="e.g. 1999 (shown as strikethrough)" />
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);margin:20px 0;padding-top:20px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:16px;">Coupon Codes</div>
+          <a href="coupons.html" class="btn btn-outline" style="font-size:13px;"><i data-feather="tag"></i> Manage Coupons for this Course →</a>
+        </div>
+      </div>
+
+      <!-- Tab: Settings -->
+      <div class="tab-panel" id="tab-settings" style="padding:20px 24px;">
+        <div class="form-group">
+          <label class="form-label">Course Status</label>
+          <select class="form-select" id="f-status">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Only published courses appear in the catalog. Drafts are only visible to you.</div>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="f-allow-preview" style="accent-color:var(--accent);width:16px;height:16px;" />
+            <span style="font-size:14px;font-weight:500;">Allow first video as free preview</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="f-has-certificate" checked style="accent-color:var(--accent);width:16px;height:16px;" />
+            <span style="font-size:14px;font-weight:500;">Issue certificate on completion</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Enrollment Expiry (days, leave blank for lifetime)</label>
+          <input class="form-input" id="f-expiry" type="number" min="0" placeholder="e.g. 365" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="save-draft-btn">Save as Draft</button>
+      <button class="btn btn-outline" id="cancel-modal-btn">Cancel</button>
+      <button class="btn btn-primary" id="save-course-btn">Save Course</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">Delete this course?</div>
+    <div class="confirm-desc">This action cannot be undone. Students who are enrolled will lose access. You can archive instead to preserve data.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-outline" id="confirm-cancel">Cancel</button>
+      <button class="btn" style="background:var(--danger);color:#fff;" id="confirm-delete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>window.EV_BASE='../../';</script>
+<script src="../../js/utils.js"></script>
+<script src="../../js/store.js"></script>
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script>
+(function(){var t,u;try{t=localStorage.getItem('ev_token');u=t?JSON.parse(localStorage.getItem('ev_user')):null;}catch(e){}if(!t||!u){window.location.replace('../../pages/auth/login.html');return;}if(u.role!=='instructor'){window.location.replace('../../pages/errors/403.html');}})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  var user;try{user=JSON.parse(localStorage.getItem('ev_user'))||{};}catch(e){user={};}
+  var name=user.name||'Instructor';
+  var initials=name.trim().split(/\s+/).map(function(p){return p[0];}).join('').slice(0,2).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent=initials;
+  document.getElementById('sidebar-name').textContent=name;
+  document.getElementById('sidebar-email').textContent=user.email||'';
+  document.getElementById('logout-btn').addEventListener('click',function(e){e.preventDefault();localStorage.removeItem('ev_token');localStorage.removeItem('ev_user');window.location.replace('../../pages/auth/login.html');});
+
+  var allCourses=[],editingId=null,deleteId=null,moduleCounter=0;
+  var COLORS=['#ff5c3522','#1a56db22','#16a34a22','#d9770622','#7c3aed22'];
+  var EMOJIS=['📚','🎯','💡','🔬','✏️','🎨','🏆','🌍'];
+
+  function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+
+  function toast(msg,type){
+    var c=document.getElementById('toast-wrap');
+    var el=document.createElement('div');
+    el.className='toast toast-'+(type||'success');
+    el.innerHTML='<span>'+esc(msg)+'</span>';
+    c.appendChild(el);
+    setTimeout(function(){if(el.parentNode)el.remove();},3500);
+  }
+
+  // Load courses
+  async function loadCourses(){
+    try{
+      var res=await Api.instructor.getMyCourses();
+      allCourses=(res&&res.data)||[];
+    }catch(e){allCourses=[];}
+    renderCourses(allCourses);
+  }
+
+  function renderCourses(list){
+    var grid=document.getElementById('courses-grid');
+    if(!list.length){
+      grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">'+
+        '<div class="empty-icon">📭</div>'+
+        '<div class="empty-title">No courses yet</div>'+
+        '<div class="empty-desc">Create your first course and start teaching students worldwide.</div>'+
+        '<button class="btn btn-primary" id="empty-new-btn"><i data-feather="plus"></i> Create First Course</button>'+
+      '</div>';
+      if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+      var eb=document.getElementById('empty-new-btn');
+      if(eb) eb.addEventListener('click',openCreateModal);
+      return;
+    }
+    grid.innerHTML=list.map(function(c,i){
+      var statusCls='status-'+c.status;
+      var price=c.is_free?'Free':'₹'+(parseFloat(c.price)||0).toFixed(0);
+      return '<div class="course-card">'+
+        '<div class="course-thumb" style="background:'+COLORS[i%COLORS.length]+';font-size:3rem;">'+EMOJIS[i%EMOJIS.length]+
+        '<span class="status-badge '+statusCls+'">'+esc(c.status)+'</span></div>'+
+        '<div class="course-body">'+
+          '<div class="course-category">'+esc(c.category||'General')+'</div>'+
+          '<div class="course-title">'+esc(c.title)+'</div>'+
+          '<div class="course-stats">'+
+            '<span><i data-feather="users"></i>'+esc(c.enrolled_count||0)+' students</span>'+
+            '<span><i data-feather="video"></i>'+esc(c.total_videos||0)+' videos</span>'+
+            '<span><i data-feather="star"></i>'+(c.avg_rating?parseFloat(c.avg_rating).toFixed(1):'—')+'</span>'+
+          '</div>'+
+          '<div class="course-footer">'+
+            '<div class="course-price">'+price+'</div>'+
+            '<div class="course-actions">'+
+              '<button class="icon-btn" title="Edit" onclick="editCourse('+c.id+')"><i data-feather="edit-2"></i></button>'+
+              '<button class="icon-btn" title="Preview" onclick="previewCourse('+c.id+')"><i data-feather="eye"></i></button>'+
+              (c.status==='draft'?'<button class="icon-btn" title="Publish" onclick="publishCourse('+c.id+')"><i data-feather="upload-cloud"></i></button>':'') +
+              '<button class="icon-btn danger" title="Delete" onclick="confirmDelete('+c.id+')"><i data-feather="trash-2"></i></button>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  }
+
+  // Search/filter
+  function applyFilters(){
+    var q=document.getElementById('search-input').value.toLowerCase();
+    var s=document.getElementById('status-filter').value;
+    var filtered=allCourses.filter(function(c){
+      var titleMatch=!q||c.title.toLowerCase().includes(q);
+      var statusMatch=!s||c.status===s;
+      return titleMatch&&statusMatch;
+    });
+    renderCourses(filtered);
+  }
+  document.getElementById('search-input').addEventListener('input',applyFilters);
+  document.getElementById('status-filter').addEventListener('change',applyFilters);
+
+  // Modal tabs
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click',function(){
+      document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+      document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+      tab.classList.add('active');
+      document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+      if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+    });
+  });
+
+  // Module builder
+  function addModule(title){
+    moduleCounter++;
+    var id='mod-'+moduleCounter;
+    var li=document.createElement('div');
+    li.className='module-item';li.id=id;
+    li.innerHTML='<div class="module-header">'+
+      '<span class="module-drag"><i data-feather="menu"></i></span>'+
+      '<input class="module-title-input" placeholder="Module title…" value="'+(title||'Module '+moduleCounter)+'" />'+
+      '<div class="module-actions">'+
+        '<button class="icon-btn" title="Add Video" onclick="addVideo(\''+id+'\')"><i data-feather="plus"></i></button>'+
+        '<button class="icon-btn danger" title="Remove" onclick="removeModule(\''+id+'\')"><i data-feather="trash-2"></i></button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="module-videos" id="videos-'+id+'">'+
+      '<button class="add-video-btn" onclick="addVideo(\''+id+'\')"><i data-feather="plus"></i> Add Video</button>'+
+    '</div>';
+    document.getElementById('module-list').appendChild(li);
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  }
+
+  window.addVideo=function(modId){
+    var container=document.getElementById('videos-'+modId);
+    var addBtn=container.querySelector('.add-video-btn');
+    var vid=document.createElement('div');
+    vid.className='video-item';
+    var vCount=container.querySelectorAll('.video-item').length+1;
+    vid.innerHTML='<span class="video-drag"><i data-feather="menu"></i></span>'+
+      '<span class="video-icon"><i data-feather="play-circle"></i></span>'+
+      '<input style="flex:1;border:none;background:none;font-family:var(--font);font-size:13px;outline:none;" placeholder="Video title…" value="Lesson '+vCount+'" />'+
+      '<span class="video-dur"><input style="width:48px;border:none;background:none;font-family:var(--mono);font-size:11.5px;text-align:right;outline:none;" value="0:00" title="Duration" /></span>'+
+      '<button class="icon-btn danger" style="width:26px;height:26px;" onclick="this.closest(\'.video-item\').remove()"><i data-feather="x"></i></button>';
+    container.insertBefore(vid,addBtn);
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  window.removeModule=function(id){ var el=document.getElementById(id); if(el)el.remove(); };
+  document.getElementById('add-module-btn').addEventListener('click',function(){ addModule(); });
+
+  // Open modal
+  function openCreateModal(){
+    editingId=null;
+    document.getElementById('modal-title').textContent='Create New Course';
+    ['f-title','f-short-desc','f-description','f-category','f-level','f-price','f-original-price','f-tags','f-audience','f-learn','f-requirements','f-trailer'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.value='';
+    });
+    document.getElementById('f-language').value='English';
+    document.getElementById('f-status').value='draft';
+    document.getElementById('module-list').innerHTML='';
+    moduleCounter=0;
+    addModule('Introduction');
+    // Reset to first tab
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+    document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+    document.querySelector('.tab[data-tab="basics"]').classList.add('active');
+    document.getElementById('tab-basics').classList.add('active');
+    document.getElementById('course-modal').classList.add('open');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  }
+
+  window.editCourse=function(id){
+    var c=allCourses.find(function(x){return x.id==id;});
+    if(!c) return;
+    editingId=id;
+    document.getElementById('modal-title').textContent='Edit Course';
+    document.getElementById('f-title').value=c.title||'';
+    document.getElementById('f-short-desc').value=c.short_description||'';
+    document.getElementById('f-description').value=c.description||'';
+    document.getElementById('f-category').value=c.category||'';
+    document.getElementById('f-level').value=c.level||'';
+    document.getElementById('f-language').value=c.language||'English';
+    document.getElementById('f-price').value=c.price||'';
+    document.getElementById('f-status').value=c.status||'draft';
+    document.getElementById('f-tags').value=c.tags||'';
+    document.getElementById('module-list').innerHTML='';
+    moduleCounter=0;
+    if(c.modules&&c.modules.length){c.modules.forEach(function(m){addModule(m.title);});}
+    else{addModule('Introduction');}
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+    document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+    document.querySelector('.tab[data-tab="basics"]').classList.add('active');
+    document.getElementById('tab-basics').classList.add('active');
+    document.getElementById('course-modal').classList.add('open');
+    if(typeof feather!=='undefined') feather.replace({'stroke-width':1.75});
+  };
+
+  window.publishCourse=async function(id){
+    try{
+      await Api.post('/instructor/courses/'+id+'/publish');
+      toast('Course published successfully!','success');
+      loadCourses();
+    }catch(e){toast((e&&e.message)||'Publish failed','error');}
+  };
+
+  window.previewCourse=function(id){ window.open('../../pages/student/courses.html?preview='+id,'_blank'); };
+  window.previewMode=function(){ toast('Preview mode: shows course as student sees it','success'); };
+
+  // Save course
+  async function saveCourse(asDraft){
+    var title=document.getElementById('f-title').value.trim();
+    if(!title){toast('Please enter a course title','error');return;}
+    var payload={
+      title:title,
+      description:document.getElementById('f-description').value.trim(),
+      category:document.getElementById('f-category').value,
+      level:document.getElementById('f-level').value,
+      language:document.getElementById('f-language').value,
+      price:document.getElementById('f-price').value||0,
+      is_free:document.getElementById('price-free').checked,
+      tags:document.getElementById('f-tags').value.trim(),
+      status:asDraft?'draft':(document.getElementById('f-status').value||'draft'),
+    };
+    try{
+      if(editingId){
+        await Api.patch('/instructor/courses/'+editingId,payload);
+        toast('Course updated!','success');
+      }else{
+        await Api.post('/instructor/courses',payload);
+        toast('Course created!','success');
+      }
+      document.getElementById('course-modal').classList.remove('open');
+      loadCourses();
+    }catch(e){toast((e&&e.message)||'Save failed','error');}
+  }
+
+  document.getElementById('save-course-btn').addEventListener('click',function(){saveCourse(false);});
+  document.getElementById('save-draft-btn').addEventListener('click',function(){saveCourse(true);});
+  document.getElementById('new-course-btn').addEventListener('click',openCreateModal);
+  document.getElementById('cancel-modal-btn').addEventListener('click',function(){document.getElementById('course-modal').classList.remove('open');});
+  document.getElementById('modal-close-btn').addEventListener('click',function(){document.getElementById('course-modal').classList.remove('open');});
+
+  // Delete
+  window.confirmDelete=function(id){deleteId=id;document.getElementById('confirm-overlay').classList.add('open');};
+  document.getElementById('confirm-cancel').addEventListener('click',function(){document.getElementById('confirm-overlay').classList.remove('open');deleteId=null;});
+  document.getElementById('confirm-delete').addEventListener('click',async function(){
+    if(!deleteId) return;
+    try{
+      await Api.delete('/instructor/courses/'+deleteId);
+      toast('Course deleted','success');
+      document.getElementById('confirm-overlay').classList.remove('open');
+      deleteId=null;
+      loadCourses();
+    }catch(e){toast((e&&e.message)||'Delete failed','error');}
+  });
+
+  // Pricing type toggle
+  document.querySelectorAll('input[name="pricing-type"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      document.getElementById('price-fields').style.display=r.value==='free'?'none':'block';
+    });
+  });
+
+  // Open new if ?new=1
+  if(window.location.search.includes('new=1')) openCreateModal();
+
+  loadCourses();
+});
+</script>
+</body>
+</html>

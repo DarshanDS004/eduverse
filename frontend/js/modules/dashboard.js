@@ -51,6 +51,7 @@ const StudentDashboard = (() => {
       _renderStreak(d.streak             || { count: 0, days: [] });
       _renderLiveSession(d.live_sessions || []);
       _renderNotifications(d.notifications);
+      _loadMaterialsPreview();
 
     } catch (err) {
       _showError(err);
@@ -522,6 +523,68 @@ const StudentDashboard = (() => {
   function destroy() {
     if (_countdownTimer) clearInterval(_countdownTimer);
   }
+
+async function _loadMaterialsPreview() {
+  var el = document.getElementById('materials-preview');
+  if (!el) return;
+
+  try {
+    var res   = await Api.get('/materials', { limit: 3, sort: 'popular' });
+    var items = (res && res.data && res.data.materials) || [];
+
+    var typeEmoji = {
+      notes: '📝', question_paper: '📋',
+      study_guide: '📖', assignment: '✏️', other: '📄'
+    };
+    var typeBg = {
+      notes: '#dbeafe', question_paper: '#fef3c7',
+      study_guide: '#d1fae5', assignment: '#ede9fe', other: '#f3f4f6'
+    };
+
+    if (!items.length) {
+      el.innerHTML =
+        '<div style="text-align:center;padding:var(--space-6);' +
+        'color:var(--text-muted);font-size:var(--font-size-sm);">' +
+        '📭 No materials available yet.</div>';
+      return;
+    }
+
+    el.innerHTML = items.map(function(m) {
+      var emoji = typeEmoji[m.type] || '📄';
+      var bg    = typeBg[m.type]   || '#f3f4f6';
+      var price = (m.is_free || m.price === 0)
+        ? '<span style="color:var(--color-success);font-weight:700;' +
+          'font-size:var(--font-size-xs);">FREE</span>'
+        : '<span style="font-weight:700;font-size:var(--font-size-xs);">' +
+          '₹' + parseFloat(m.price).toFixed(0) + '</span>';
+
+      return '<div style="display:flex;align-items:center;gap:var(--space-3);' +
+        'padding:var(--space-3) 0;border-bottom:1px solid var(--border-color);">' +
+        '<div style="width:36px;height:36px;border-radius:8px;background:' +
+          bg + ';display:flex;align-items:center;justify-content:center;' +
+          'font-size:1rem;flex-shrink:0;">' + emoji + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:var(--font-size-sm);font-weight:600;' +
+            'color:var(--text-primary);white-space:nowrap;overflow:hidden;' +
+            'text-overflow:ellipsis;">' + _esc(m.title) + '</div>' +
+          '<div style="font-size:var(--font-size-xs);color:var(--text-muted);">' +
+            _esc(m.subject || m.type.replace('_', ' ')) +
+            ' · ' + (m.purchase_count || 0) + ' purchased' +
+          '</div>' +
+        '</div>' +
+        price +
+      '</div>';
+    }).join('');
+
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
+
+  } catch(e) {
+    if (el) el.innerHTML =
+      '<div style="font-size:var(--font-size-sm);color:var(--text-muted);' +
+      'padding:var(--space-4);">Could not load materials.</div>';
+  }
+}
+  
 
   return { init, destroy };
 
